@@ -231,7 +231,7 @@ function Landing() {
               in your account.
             </p>
             <Button className="mt-8" size="lg" onClick={goAuth}>
-              {signedIn ? "Open dashboard" : "Continue with Google"}
+              {signedIn ? "Open dashboard" : "Sign in with Google"}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
