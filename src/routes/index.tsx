@@ -136,7 +136,7 @@ const TYPE_CHIPS = ["Link", "Wi-Fi", "Contact", "Email", "Event", "UPI", "SMS", 
 const DEMO_STYLE: QrStyle = { ...defaultStyle, fg: "#111827", bg: "#ffffff" };
 
 function HeroScanner() {
-  const [value, setValue] = useState("https://unifiedqr.app");
+  const [value, setValue] = useState("https://qr.nxtgensec.org");
   const [scans, setScans] = useState(24813);
 
   useEffect(() => {

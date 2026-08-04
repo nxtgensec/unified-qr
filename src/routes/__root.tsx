@@ -80,8 +80,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "author", content: "Unified QR" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:image", content: "https://unified-qr.vercel.app/logo.png" },
-      { name: "twitter:image", content: "https://unified-qr.vercel.app/logo.png" },
+      { property: "og:image", content: "https://qr.nxtgensec.org/logo.png" },
+      { name: "twitter:image", content: "https://qr.nxtgensec.org/logo.png" },
     ],
     links: [
       {

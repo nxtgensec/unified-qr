@@ -483,7 +483,7 @@ export function buildPayload(kind: QrKind, c: QrContent): string {
       const ios = g("ios").trim();
       const android = g("android").trim();
       if (ios && android)
-        return `https://unifiedqr.app/app/${encodeURIComponent(g("name"))}?ios=${encodeURIComponent(ios)}&android=${encodeURIComponent(android)}`;
+        return `https://qr.nxtgensec.org/app/${encodeURIComponent(g("name"))}?ios=${encodeURIComponent(ios)}&android=${encodeURIComponent(android)}`;
       return ios || android || "";
     }
     case "bitcoin": {
