@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { GoogleIcon } from "@/components/GoogleIcon";
+import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -72,7 +73,7 @@ function AuthPage() {
 
         <div className="rounded-2xl border border-border bg-card p-8 sm:p-10">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-background">
-            <QrCode className="h-5 w-5" />
+            <Logo className="size-6" />
           </div>
 
           <h1 className="mt-6 text-2xl font-semibold tracking-tight">Welcome to Unified QR</h1>

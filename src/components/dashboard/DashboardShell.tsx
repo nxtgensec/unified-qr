@@ -15,6 +15,7 @@ import {
 import { useEffect, useState, type ReactNode } from "react";
 
 import { BetaBadge } from "@/components/BetaBadge";
+import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -89,7 +90,7 @@ export function DashboardShell({
     <div className="min-h-screen bg-background">
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r border-sidebar-border bg-sidebar p-4 lg:flex">
         <Link to="/" className="mb-8 flex items-center gap-2 px-2 font-semibold tracking-tight">
-          <QrCode className="h-5 w-5" />
+          <Logo className="size-5" />
           Unified QR
         </Link>
         {nav}
@@ -112,7 +113,7 @@ export function DashboardShell({
           <div className="absolute inset-y-0 left-0 flex w-64 flex-col border-r border-sidebar-border bg-sidebar p-4">
             <div className="mb-8 flex items-center justify-between px-2">
               <span className="flex items-center gap-2 font-semibold">
-                <QrCode className="h-5 w-5" /> Unified QR
+                <Logo className="size-5" /> Unified QR
               </span>
               <button onClick={() => setOpen(false)} aria-label="Close menu">
                 <X className="h-4 w-4" />

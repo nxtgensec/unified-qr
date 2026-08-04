@@ -14,6 +14,7 @@ import {
 import { useEffect, useState } from "react";
 
 import { BetaBadge } from "@/components/BetaBadge";
+import { Logo } from "@/components/Logo";
 import { QrStudio } from "@/components/qr/QrStudio";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -106,7 +107,7 @@ function Landing() {
       <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
           <Link to="/" className="flex items-center gap-2 font-semibold tracking-tight">
-            <QrCode className="h-5 w-5" />
+            <Logo className="size-5" />
             Unified QR
           </Link>
           <nav className="flex items-center gap-2">
@@ -240,9 +241,11 @@ function Landing() {
 
       <footer className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-5 py-8 text-xs text-muted-foreground sm:flex-row">
         <span className="flex items-center gap-2">
-          <QrCode className="h-4 w-4" /> Unified QR
+          <Logo className="size-4" /> Unified QR
         </span>
-        <span>Built for people who just need the code to work.</span>
+        <span className="text-center sm:text-right">
+          Made by NxtGenSec Interns, for Everyone on the Internet.
+        </span>
       </footer>
     </div>
   );

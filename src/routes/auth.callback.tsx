@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Loader2, QrCode } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
 
+import { Logo } from "@/components/Logo";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/auth/callback")({
@@ -37,7 +38,7 @@ function AuthCallback() {
     <div className="relative flex min-h-screen items-center justify-center bg-background px-5">
       <div className="grid-noise pointer-events-none absolute inset-0 opacity-30" aria-hidden />
       <div className="relative flex flex-col items-center gap-4 text-center">
-        <QrCode className="h-6 w-6" />
+        <Logo className="size-8" />
         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         <p className="text-sm text-muted-foreground">Completing sign-in…</p>
       </div>
