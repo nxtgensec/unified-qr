@@ -3,7 +3,9 @@ import {
   ArrowRight,
   BarChart3,
   Check,
+  Download,
   Layers,
+  MousePointerClick,
   Palette,
   QrCode,
   RefreshCw,
@@ -14,10 +16,15 @@ import {
 import { useEffect, useState } from "react";
 
 import { BetaBadge } from "@/components/BetaBadge";
+import { GoogleIcon } from "@/components/GoogleIcon";
 import { Logo } from "@/components/Logo";
+import { QrPreview } from "@/components/qr/QrPreview";
 import { QrStudio } from "@/components/qr/QrStudio";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import { defaultStyle } from "@/lib/qr/types";
+import type { QrStyle } from "@/lib/qr/types";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -78,6 +85,24 @@ const FEATURES = [
   },
 ];
 
+const STEPS = [
+  {
+    icon: MousePointerClick,
+    title: "Choose a code",
+    body: "Pick one of 11 types — a link, Wi-Fi, a contact card, an event and more.",
+  },
+  {
+    icon: Palette,
+    title: "Make it yours",
+    body: "Shape, color and logo it. The preview updates the instant you type.",
+  },
+  {
+    icon: Download,
+    title: "Share it anywhere",
+    body: "Export PNG or SVG, or go dynamic and swap the destination later.",
+  },
+];
+
 const COMPARISON = [
   { label: "Dynamic, editable codes", them: "Paid plan", us: "Free" },
   { label: "Scan analytics", them: "Paid plan", us: "Free" },
@@ -87,6 +112,103 @@ const COMPARISON = [
   { label: "Try before signing up", them: "Rarely", us: "Yes" },
   { label: "Bulk generation", them: "Enterprise", us: "Free (Beta)" },
 ];
+
+const STATS = [
+  { value: "11", label: "code types" },
+  { value: "0", label: "paywalls or watermarks" },
+  { value: "∞", label: "never expires" },
+];
+
+const MARQUEE = [
+  "11 code types",
+  "Real design control",
+  "Dynamic codes",
+  "Scan analytics",
+  "Bulk from CSV",
+  "Decode an image",
+  "SVG export",
+  "No watermark",
+  "Never expires",
+];
+
+const TYPE_CHIPS = ["Link", "Wi-Fi", "Contact", "Email", "Event", "UPI", "SMS", "WhatsApp"];
+
+const DEMO_STYLE: QrStyle = { ...defaultStyle, fg: "#111827", bg: "#ffffff" };
+
+function HeroScanner() {
+  const [value, setValue] = useState("https://unifiedqr.app");
+  const [scans, setScans] = useState(24813);
+
+  useEffect(() => {
+    const timer = setInterval(() => setScans((s) => s + Math.floor(Math.random() * 7) + 1), 1800);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="relative">
+      <div className="absolute -inset-10 rounded-full bg-brand/15 blur-3xl" aria-hidden />
+      <div className="relative rounded-3xl border border-border bg-elevated p-5 shadow-2xl shadow-black/40 sm:p-6">
+        <div className="flex items-center justify-between border-b border-border pb-4">
+          <span className="text-xs uppercase tracking-wider text-muted-foreground">
+            Live encoder
+          </span>
+          <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-brand" />
+            </span>
+            Scanning
+          </span>
+        </div>
+
+        <Input
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder="Type a link or text…"
+          className="mt-5 font-mono"
+        />
+
+        <div className="relative mt-5 overflow-hidden rounded-xl">
+          <QrPreview
+            payload={value.trim() || " "}
+            style={DEMO_STYLE}
+            size={420}
+            className="border-0"
+          />
+          <span className="scan-beam" aria-hidden />
+          <span className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 border-l-2 border-t-2 border-brand" />
+          <span className="pointer-events-none absolute right-2.5 top-2.5 h-4 w-4 border-r-2 border-t-2 border-brand" />
+          <span className="pointer-events-none absolute bottom-2.5 left-2.5 h-4 w-4 border-b-2 border-l-2 border-brand" />
+          <span className="pointer-events-none absolute bottom-2.5 right-2.5 h-4 w-4 border-b-2 border-r-2 border-brand" />
+        </div>
+
+        <div className="mt-5 flex flex-wrap gap-1.5">
+          {TYPE_CHIPS.map((chip, i) => (
+            <span
+              key={chip}
+              className="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground"
+            >
+              <span
+                className={
+                  i === 0 ? "h-1 w-1 rounded-full bg-brand" : "h-1 w-1 rounded-full bg-border"
+                }
+              />
+              {chip}
+            </span>
+          ))}
+        </div>
+
+        <div className="mt-5 flex items-center justify-between border-t border-border pt-4 text-xs">
+          <span className="text-muted-foreground">Renders as you type</span>
+          <span className="flex items-center gap-1.5 text-muted-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-brand" />
+            <span className="tabular-nums">{scans.toLocaleString("en-US")} scans today</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function Landing() {
   const navigate = useNavigate();
@@ -103,11 +225,11 @@ function Landing() {
   const goAuth = () => void navigate({ to: signedIn ? "/dashboard" : "/auth" });
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen scroll-smooth bg-background">
       <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
-          <Link to="/" className="flex items-center gap-2 font-semibold tracking-tight">
-            <Logo className="size-5" />
+          <Link to="/" className="flex items-center gap-2.5 font-semibold tracking-tight">
+            <Logo className="size-7" />
             Unified QR
           </Link>
           <nav className="flex items-center gap-2">
@@ -116,6 +238,12 @@ function Landing() {
               className="hidden px-3 text-sm text-muted-foreground transition-colors hover:text-foreground sm:block"
             >
               Features
+            </a>
+            <a
+              href="#how"
+              className="hidden px-3 text-sm text-muted-foreground transition-colors hover:text-foreground md:block"
+            >
+              How it works
             </a>
             <a
               href="#compare"
@@ -133,25 +261,69 @@ function Landing() {
       <main>
         <section className="relative overflow-hidden border-b border-border">
           <div className="grid-noise pointer-events-none absolute inset-0 opacity-40" aria-hidden />
-          <div className="relative mx-auto max-w-6xl px-5 py-16 sm:py-24">
-            <div className="mx-auto max-w-2xl text-center">
+          <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 py-16 sm:py-24 lg:grid-cols-2 lg:gap-16">
+            <div>
               <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-muted-foreground">
-                <Sparkles className="h-3 w-3" /> Everything free. Login only unlocks more.
+                <span className="h-1.5 w-1.5 rounded-full bg-brand" />
+                Everything free. Login only unlocks more.
               </span>
-              <h1 className="mt-6 text-balance text-4xl font-semibold tracking-tight sm:text-6xl">
-                Every QR code job, in one place
+              <h1 className="mt-6 text-balance text-5xl font-semibold tracking-tight sm:text-6xl">
+                Every QR code job, in <span className="text-brand">one place.</span>
               </h1>
-              <p className="mt-5 text-pretty text-base text-muted-foreground sm:text-lg">
+              <p className="mt-5 max-w-md text-pretty text-base text-muted-foreground sm:text-lg">
                 Generate, design, track and manage QR codes without hitting a paywall three clicks
-                in. Start below — no account needed.
+                in. Type something in the encoder — it becomes a code instantly.
               </p>
+              <div className="mt-8 flex flex-wrap items-center gap-3">
+                <Button size="lg" onClick={goAuth}>
+                  {signedIn ? "Open dashboard" : "Sign in with Google"}
+                  <GoogleIcon className="ml-2 h-4 w-4" />
+                </Button>
+                <Button size="lg" variant="secondary" asChild>
+                  <a href="#generator">
+                    Full generator <ArrowRight className="ml-2 h-4 w-4" />
+                  </a>
+                </Button>
+              </div>
+              <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
+                {["No watermark", "Never expires", "No card required"].map((item) => (
+                  <li key={item} className="flex items-center gap-1.5">
+                    <Check className="h-3.5 w-3.5 text-brand" /> {item}
+                  </li>
+                ))}
+              </ul>
             </div>
 
-            <div className="mx-auto mt-12 max-w-4xl rounded-2xl border border-border bg-card p-5 sm:p-8">
-              <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
+            <HeroScanner />
+          </div>
+        </section>
+
+        <section className="overflow-hidden border-b border-border py-4" aria-hidden>
+          <div className="animate-marquee flex w-max items-center gap-10 whitespace-nowrap">
+            {[...MARQUEE, ...MARQUEE].map((item, i) => (
+              <span
+                key={i}
+                className="inline-flex items-center gap-3 text-sm text-muted-foreground"
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-brand" />
+                {item}
+              </span>
+            ))}
+          </div>
+        </section>
+
+        <section id="generator" className="border-b border-border">
+          <div className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
+            <div className="mx-auto max-w-4xl">
+              <span className="font-mono text-xs uppercase tracking-widest text-brand">
+                01 — Try it now
+              </span>
+              <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
                 <div>
-                  <h2 className="text-sm font-medium">Instant generator</h2>
-                  <p className="text-xs text-muted-foreground">
+                  <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+                    Make one right now
+                  </h2>
+                  <p className="mt-2 max-w-md text-sm text-muted-foreground">
                     Links and text, free without login. Sign in for the other nine types.
                   </p>
                 </div>
@@ -159,29 +331,91 @@ function Landing() {
                   Unlock everything <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
-              <QrStudio mode="free" onLocked={goAuth} />
+              <div className="mt-8 rounded-2xl border border-border bg-card p-5 sm:p-8">
+                <QrStudio mode="free" onLocked={goAuth} />
+              </div>
             </div>
           </div>
         </section>
 
+        <section className="border-b border-border">
+          <div className="mx-auto max-w-6xl px-5 py-12">
+            <dl className="grid grid-cols-1 gap-8 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-border">
+              {STATS.map((s) => (
+                <div key={s.label} className="text-center sm:px-6">
+                  <dd className="text-3xl font-semibold tracking-tight sm:text-4xl">{s.value}</dd>
+                  <dt className="mt-2 text-sm text-muted-foreground">{s.label}</dt>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </section>
+
         <section id="features" className="border-b border-border">
-          <div className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
-            <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-              One workspace instead of five tabs
-            </h2>
-            <p className="mt-3 max-w-xl text-sm text-muted-foreground">
-              The features other platforms split across pricing tiers, gathered into a single
-              dashboard.
-            </p>
-            <div className="mt-10 grid gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-3">
-              {FEATURES.map((f) => (
-                <div key={f.title} className="bg-card p-6">
-                  <f.icon className="h-5 w-5 text-muted-foreground" />
-                  <div className="mt-4 flex items-center gap-2">
-                    <h3 className="text-sm font-medium">{f.title}</h3>
-                    {f.beta && <BetaBadge />}
+          <div className="mx-auto grid max-w-6xl gap-12 px-5 py-16 sm:py-20 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-16">
+            <div className="lg:sticky lg:top-24 lg:self-start">
+              <span className="font-mono text-xs uppercase tracking-widest text-brand">
+                02 — The workspace
+              </span>
+              <h2 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">
+                One workspace instead of five tabs
+              </h2>
+              <p className="mt-3 max-w-md text-sm text-muted-foreground">
+                The features other platforms split across pricing tiers, gathered into a single
+                dashboard.
+              </p>
+              <Button className="mt-6" variant="secondary" asChild>
+                <a href="#generator">
+                  Make a code <ArrowRight className="ml-2 h-4 w-4" />
+                </a>
+              </Button>
+            </div>
+            <div className="divide-y divide-border">
+              {FEATURES.map((f, i) => (
+                <div
+                  key={f.title}
+                  className="group grid gap-2 py-6 sm:grid-cols-[56px_minmax(0,1fr)] sm:gap-6"
+                >
+                  <span className="font-mono text-xs text-muted-foreground transition-colors group-hover:text-brand">
+                    0{i + 1}
+                  </span>
+                  <div>
+                    <div className="flex items-center gap-2.5">
+                      <f.icon className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-brand" />
+                      <h3 className="text-sm font-medium">{f.title}</h3>
+                      {f.beta && <BetaBadge />}
+                    </div>
+                    <p className="mt-2 text-sm text-muted-foreground">{f.body}</p>
                   </div>
-                  <p className="mt-2 text-sm text-muted-foreground">{f.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="how" className="border-b border-border">
+          <div className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
+            <span className="font-mono text-xs uppercase tracking-widest text-brand">
+              03 — The workflow
+            </span>
+            <h2 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">
+              Three steps to a working code
+            </h2>
+            <div className="relative mt-12 grid gap-10 sm:grid-cols-3 sm:gap-8">
+              <span
+                className="absolute left-[16%] right-[16%] top-5 hidden border-t border-dashed border-border sm:block"
+                aria-hidden
+              />
+              {STEPS.map((step, i) => (
+                <div key={step.title} className="relative text-center sm:px-2">
+                  <div className="relative z-10 mx-auto flex size-10 items-center justify-center rounded-full border border-border bg-card">
+                    <step.icon className="h-4 w-4" />
+                  </div>
+                  <span className="mt-3 block font-mono text-xs text-muted-foreground">
+                    0{i + 1}
+                  </span>
+                  <h3 className="mt-1 text-sm font-medium">{step.title}</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">{step.body}</p>
                 </div>
               ))}
             </div>
@@ -190,7 +424,10 @@ function Landing() {
 
         <section id="compare" className="border-b border-border">
           <div className="mx-auto max-w-4xl px-5 py-16 sm:py-20">
-            <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            <span className="font-mono text-xs uppercase tracking-widest text-brand">
+              04 — The difference
+            </span>
+            <h2 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">
               What the big three charge for
             </h2>
             <p className="mt-3 text-sm text-muted-foreground">
@@ -200,7 +437,10 @@ function Landing() {
               <div className="grid grid-cols-[1fr_auto_auto] gap-4 border-b border-border bg-elevated px-5 py-3 text-xs uppercase tracking-wider text-muted-foreground">
                 <span>Capability</span>
                 <span className="w-28 text-right">Typical tool</span>
-                <span className="w-24 text-right">Unified QR</span>
+                <span className="flex w-24 items-center justify-end gap-1.5">
+                  <span className="h-1 w-1 rounded-full bg-brand" />
+                  Unified QR
+                </span>
               </div>
               {COMPARISON.map((row) => (
                 <div
@@ -213,7 +453,7 @@ function Landing() {
                     {row.them}
                   </span>
                   <span className="flex w-24 items-center justify-end gap-1.5 font-medium">
-                    <Check className="h-3.5 w-3.5" />
+                    <Check className="h-3.5 w-3.5 text-brand" />
                     {row.us}
                   </span>
                 </div>
@@ -222,9 +462,13 @@ function Landing() {
           </div>
         </section>
 
-        <section className="border-b border-border">
-          <div className="mx-auto max-w-3xl px-5 py-20 text-center">
-            <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+        <section className="relative overflow-hidden border-b border-border">
+          <div className="grid-noise pointer-events-none absolute inset-0 opacity-30" aria-hidden />
+          <div className="relative mx-auto max-w-3xl px-5 py-20 text-center">
+            <span className="font-mono text-xs uppercase tracking-widest text-brand">
+              05 — No trial timer
+            </span>
+            <h2 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">
               Sign in once with Google
             </h2>
             <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">
@@ -233,19 +477,42 @@ function Landing() {
             </p>
             <Button className="mt-8" size="lg" onClick={goAuth}>
               {signedIn ? "Open dashboard" : "Sign in with Google"}
-              <ArrowRight className="ml-2 h-4 w-4" />
+              <GoogleIcon className="ml-2 h-4 w-4" />
             </Button>
           </div>
         </section>
       </main>
 
-      <footer className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-5 py-8 text-xs text-muted-foreground sm:flex-row">
-        <span className="flex items-center gap-2">
-          <Logo className="size-4" /> Unified QR
-        </span>
-        <span className="text-center sm:text-right">
-          Made by NxtGenSec Interns, for Everyone on the Internet.
-        </span>
+      <footer className="mx-auto max-w-6xl px-5">
+        <div className="flex flex-col gap-6 border-b border-border py-10 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex flex-col gap-2">
+            <span className="flex items-center gap-2.5 text-sm font-semibold tracking-tight">
+              <Logo className="size-7" />
+              Unified QR
+            </span>
+            <span className="max-w-xs text-xs text-muted-foreground">
+              Every QR code job, in one place. Free forever, no watermarks, no expiry.
+            </span>
+          </div>
+          <nav className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground">
+            <a href="#generator" className="transition-colors hover:text-foreground">
+              Generator
+            </a>
+            <a href="#features" className="transition-colors hover:text-foreground">
+              Features
+            </a>
+            <a href="#how" className="transition-colors hover:text-foreground">
+              How it works
+            </a>
+            <a href="#compare" className="transition-colors hover:text-foreground">
+              Compare
+            </a>
+          </nav>
+        </div>
+        <div className="flex flex-col items-center justify-between gap-2 py-6 text-xs text-muted-foreground sm:flex-row">
+          <span>Made by NxtGenSec Interns, for Everyone on the Internet.</span>
+          <span>© {new Date().getFullYear()} Unified QR</span>
+        </div>
       </footer>
     </div>
   );

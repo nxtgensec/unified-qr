@@ -9,8 +9,16 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { QrPreview } from "@/components/qr/QrPreview";
 import { buildQrSvg, downloadPng, downloadSvg, slugify } from "@/lib/qr/render";
-import { KINDS, buildPayload, defaultStyle } from "@/lib/qr/types";
-import type { CornerStyle, DotStyle, Ecc, QrContent, QrKind, QrStyle } from "@/lib/qr/types";
+import { KINDS, PRESETS, buildPayload, defaultStyle } from "@/lib/qr/types";
+import type {
+  DotStyle,
+  Ecc,
+  FrameKind,
+  GradientType,
+  QrContent,
+  QrKind,
+  QrStyle,
+} from "@/lib/qr/types";
 import { cn } from "@/lib/utils";
 
 export interface StudioValue {
@@ -30,9 +38,11 @@ interface QrStudioProps {
   onLocked?: () => void;
 }
 
-const DOTS: DotStyle[] = ["square", "rounded", "dots"];
-const CORNERS: CornerStyle[] = ["square", "rounded", "circle"];
+const SHAPES: DotStyle[] = ["square", "rounded", "dots", "diamond"];
+const EYE_SHAPES: DotStyle[] = ["square", "rounded", "circle", "diamond"];
 const ECCS: Ecc[] = ["L", "M", "Q", "H"];
+const GRADIENTS: GradientType[] = ["none", "linear", "radial"];
+const FRAMES: FrameKind[] = ["none", "scan-me", "visit-us", "pay-here", "call-us", "download-app"];
 const SWATCHES = ["#000000", "#111827", "#1d4ed8", "#047857", "#b91c1c", "#7c3aed"];
 const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 
@@ -137,16 +147,30 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
               onChange={(v) => setContent((c) => ({ ...c, destination: v }))}
             />
           ) : (
-            meta.fields.map((f) => (
-              <Field
-                key={f.name}
-                label={f.label}
-                value={content[f.name] ?? ""}
-                placeholder={f.placeholder}
-                type={f.type}
-                onChange={(v) => setContent((c) => ({ ...c, [f.name]: v }))}
-              />
-            ))
+            meta.fields.map((f) => {
+              if (f.type?.startsWith("select:")) {
+                const options = f.type.slice(7).split(",");
+                return (
+                  <SelectField
+                    key={f.name}
+                    label={f.label}
+                    value={content[f.name] ?? ""}
+                    options={options}
+                    onChange={(v) => setContent((c) => ({ ...c, [f.name]: v }))}
+                  />
+                );
+              }
+              return (
+                <Field
+                  key={f.name}
+                  label={f.label}
+                  value={content[f.name] ?? ""}
+                  placeholder={f.placeholder}
+                  type={f.type}
+                  onChange={(v) => setContent((c) => ({ ...c, [f.name]: v }))}
+                />
+              );
+            })
           )}
 
           {full && kind === "url" && (
@@ -171,8 +195,22 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
           <div className="space-y-5 rounded-xl border border-border bg-card p-5">
             <p className="text-xs uppercase tracking-wider text-muted-foreground">Design</p>
 
+            <OptionRow label="Presets">
+              <div className="flex flex-wrap gap-2">
+                {PRESETS.map((p) => (
+                  <Chip
+                    key={p.name}
+                    active={false}
+                    onClick={() => setStyle((s) => ({ ...s, ...p.style }))}
+                  >
+                    {p.label}
+                  </Chip>
+                ))}
+              </div>
+            </OptionRow>
+
             <OptionRow label="Module shape">
-              {DOTS.map((d) => (
+              {SHAPES.map((d) => (
                 <Chip
                   key={d}
                   active={style.dotStyle === d}
@@ -183,14 +221,26 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
               ))}
             </OptionRow>
 
-            <OptionRow label="Corner shape">
-              {CORNERS.map((c) => (
+            <OptionRow label="Eye shape">
+              {EYE_SHAPES.map((e) => (
                 <Chip
-                  key={c}
-                  active={style.cornerStyle === c}
-                  onClick={() => setStyle((s) => ({ ...s, cornerStyle: c }))}
+                  key={e}
+                  active={style.eyeStyle === e}
+                  onClick={() => setStyle((s) => ({ ...s, eyeStyle: e }))}
                 >
-                  {c}
+                  {e}
+                </Chip>
+              ))}
+            </OptionRow>
+
+            <OptionRow label="Ball shape">
+              {SHAPES.map((b) => (
+                <Chip
+                  key={b}
+                  active={style.ballStyle === b}
+                  onClick={() => setStyle((s) => ({ ...s, ballStyle: b }))}
+                >
+                  {b}
                 </Chip>
               ))}
             </OptionRow>
@@ -206,6 +256,65 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
                 </Chip>
               ))}
             </OptionRow>
+
+            <OptionRow label="Frame">
+              {FRAMES.map((f) => (
+                <Chip
+                  key={f}
+                  active={style.frame === f}
+                  onClick={() => setStyle((s) => ({ ...s, frame: f }))}
+                >
+                  {f === "none" ? "none" : f.replace(/-/g, " ")}
+                </Chip>
+              ))}
+            </OptionRow>
+
+            {style.frame !== "none" && (
+              <Field
+                label="Frame text"
+                value={style.frameText}
+                placeholder="SCAN ME"
+                onChange={(v) => setStyle((s) => ({ ...s, frameText: v }))}
+              />
+            )}
+
+            <OptionRow label="Gradient">
+              {GRADIENTS.map((g) => (
+                <Chip
+                  key={g}
+                  active={style.gradientType === g}
+                  onClick={() => setStyle((s) => ({ ...s, gradientType: g }))}
+                >
+                  {g}
+                </Chip>
+              ))}
+            </OptionRow>
+
+            {style.gradientType !== "none" && (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <ColorField
+                  label="Gradient end"
+                  value={style.gradientEnd}
+                  onChange={(v) => setStyle((s) => ({ ...s, gradientEnd: v }))}
+                />
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">
+                    Angle ({style.gradientAngle}deg)
+                  </Label>
+                  <input
+                    type="range"
+                    min={0}
+                    max={360}
+                    step={15}
+                    value={style.gradientAngle}
+                    onChange={(e) =>
+                      setStyle((s) => ({ ...s, gradientAngle: Number(e.target.value) }))
+                    }
+                    className="w-full"
+                  />
+                </div>
+              </div>
+            )}
 
             <div className="grid gap-4 sm:grid-cols-2">
               <ColorField
@@ -373,6 +482,36 @@ function Field({
           className="bg-background"
         />
       )}
+    </div>
+  );
+}
+
+function SelectField({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: string[];
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="space-y-2">
+      <Label className="text-xs text-muted-foreground">{label}</Label>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="flex h-9 w-full rounded-md border border-border bg-background px-3 py-1 text-sm capitalize text-foreground"
+      >
+        <option value="">Select…</option>
+        {options.map((o) => (
+          <option key={o} value={o}>
+            {o}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }
