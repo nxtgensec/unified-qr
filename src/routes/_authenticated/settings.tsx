@@ -25,7 +25,7 @@ function SettingsPage() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    void supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? ""));
+    void supabase.auth.getSession().then(({ data }) => setEmail(data.session?.user.email ?? ""));
   }, []);
 
   const signOut = async () => {

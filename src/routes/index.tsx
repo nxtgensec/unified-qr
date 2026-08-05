@@ -49,7 +49,7 @@ export const Route = createFileRoute("/")({
 const FEATURES = [
   {
     icon: QrCode,
-    title: "11 code types",
+    title: "19 code types",
     body: "Links, Wi-Fi, contacts, events, payments and more — none of them paywalled.",
     beta: false,
   },
@@ -89,7 +89,7 @@ const STEPS = [
   {
     icon: MousePointerClick,
     title: "Choose a code",
-    body: "Pick one of 11 types — a link, Wi-Fi, a contact card, an event and more.",
+    body: "Pick one of 19 types — a link, Wi-Fi, a contact card, an event and more.",
   },
   {
     icon: Palette,
@@ -114,13 +114,13 @@ const COMPARISON = [
 ];
 
 const STATS = [
-  { value: "11", label: "code types" },
+  { value: "19", label: "code types" },
   { value: "0", label: "paywalls or watermarks" },
   { value: "∞", label: "never expires" },
 ];
 
 const MARQUEE = [
-  "11 code types",
+  "19 code types",
   "Real design control",
   "Dynamic codes",
   "Scan analytics",
@@ -324,7 +324,7 @@ function Landing() {
                     Make one right now
                   </h2>
                   <p className="mt-2 max-w-md text-sm text-muted-foreground">
-                    Links and text, free without login. Sign in for the other nine types.
+                    Links and text, free without login. Sign in for the other seventeen types.
                   </p>
                 </div>
                 <Button variant="secondary" size="sm" onClick={goAuth}>

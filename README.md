@@ -8,7 +8,7 @@ Unified QR replaces the typical "three-tab workflow" with a single, focused tool
 
 **Core features:**
 
-- **11 QR code types** — URL, text, Wi-Fi, vCard, email, SMS, phone, WhatsApp, calendar event, location, UPI payment
+- **19 QR code types** — URL, text, Wi-Fi, vCard, email, SMS, phone, WhatsApp, calendar event, location, UPI payment, social links, app download, Bitcoin, Google review, coupon, YouTube, LinkedIn, Telegram
 - **Full design control** — module shapes (square / rounded / dots), corner styles, foreground/background colors, custom logo embed, error correction level
 - **Dynamic codes** — create a short link, print the code once, change the destination any time
 - **Scan analytics** — scans over time (30-day bar chart), device breakdown, per-code scan counts
@@ -58,13 +58,14 @@ Apply the migrations in `supabase/migrations/` to your Supabase project:
 supabase db push --linked
 ```
 
-This creates three tables with Row Level Security:
+This creates four tables with Row Level Security:
 
 | Table      | Purpose                                                           |
 | ---------- | ----------------------------------------------------------------- |
 | `profiles` | User metadata (auto-populated on first sign-in)                   |
 | `qr_codes` | Saved QR codes with style, content, dynamic link slug, scan count |
 | `qr_scans` | Per-scan records (device, country, referrer, timestamp)           |
+| `visits`   | Daily site visitors (visitor cookie + per-day rollup)             |
 
 ### Google OAuth Setup
 

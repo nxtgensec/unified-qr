@@ -28,7 +28,11 @@ export const Route = createFileRoute("/_authenticated/analytics")({
 
 function AnalyticsPage() {
   const fetch = useServerFn(getAnalytics);
-  const { data, isLoading } = useQuery({ queryKey: ["analytics"], queryFn: () => fetch() });
+  const { data, isLoading } = useQuery({
+    queryKey: ["analytics"],
+    queryFn: () => fetch(),
+    staleTime: 60_000,
+  });
 
   const days = useMemo(() => {
     const buckets = new Map<string, number>();

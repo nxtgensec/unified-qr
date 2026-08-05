@@ -20,6 +20,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedDecodeRouteImport } from './routes/_authenticated/decode'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as ApiVisitsRouteImport } from './routes/api/visits'
+import { Route as AppNameRouteImport } from './routes/app.$name'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as ApiPublicRSlugRouteImport } from './routes/api/public/r.$slug'
 
@@ -77,6 +78,11 @@ const ApiVisitsRoute = ApiVisitsRouteImport.update({
   path: '/api/visits',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppNameRoute = AppNameRouteImport.update({
+  id: '/app/$name',
+  path: '/app/$name',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
   id: '/callback',
   path: '/callback',
@@ -99,6 +105,7 @@ export interface FileRoutesByFullPath {
   '/decode': typeof AuthenticatedDecodeRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/api/visits': typeof ApiVisitsRoute
+  '/app/$name': typeof AppNameRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/api/public/r/$slug': typeof ApiPublicRSlugRoute
 }
@@ -113,6 +120,7 @@ export interface FileRoutesByTo {
   '/decode': typeof AuthenticatedDecodeRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/api/visits': typeof ApiVisitsRoute
+  '/app/$name': typeof AppNameRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/api/public/r/$slug': typeof ApiPublicRSlugRoute
 }
@@ -129,6 +137,7 @@ export interface FileRoutesById {
   '/_authenticated/decode': typeof AuthenticatedDecodeRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/api/visits': typeof ApiVisitsRoute
+  '/app/$name': typeof AppNameRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/api/public/r/$slug': typeof ApiPublicRSlugRoute
 }
@@ -145,6 +154,7 @@ export interface FileRouteTypes {
     | '/decode'
     | '/settings'
     | '/api/visits'
+    | '/app/$name'
     | '/auth/callback'
     | '/api/public/r/$slug'
   fileRoutesByTo: FileRoutesByTo
@@ -159,6 +169,7 @@ export interface FileRouteTypes {
     | '/decode'
     | '/settings'
     | '/api/visits'
+    | '/app/$name'
     | '/auth/callback'
     | '/api/public/r/$slug'
   id:
@@ -174,6 +185,7 @@ export interface FileRouteTypes {
     | '/_authenticated/decode'
     | '/_authenticated/settings'
     | '/api/visits'
+    | '/app/$name'
     | '/auth/callback'
     | '/api/public/r/$slug'
   fileRoutesById: FileRoutesById
@@ -183,6 +195,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
   ApiVisitsRoute: typeof ApiVisitsRoute
+  AppNameRoute: typeof AppNameRoute
   ApiPublicRSlugRoute: typeof ApiPublicRSlugRoute
 }
 
@@ -265,6 +278,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiVisitsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/$name': {
+      id: '/app/$name'
+      path: '/app/$name'
+      fullPath: '/app/$name'
+      preLoaderRoute: typeof AppNameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth/callback': {
       id: '/auth/callback'
       path: '/callback'
@@ -320,6 +340,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
   ApiVisitsRoute: ApiVisitsRoute,
+  AppNameRoute: AppNameRoute,
   ApiPublicRSlugRoute: ApiPublicRSlugRoute,
 }
 export const routeTree = rootRouteImport

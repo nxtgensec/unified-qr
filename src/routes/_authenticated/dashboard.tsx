@@ -23,7 +23,11 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 
 function Dashboard() {
   const fetchCodes = useServerFn(listCodes);
-  const { data, isLoading } = useQuery({ queryKey: ["codes"], queryFn: () => fetchCodes() });
+  const { data, isLoading } = useQuery({
+    queryKey: ["codes"],
+    queryFn: () => fetchCodes(),
+    staleTime: 30_000,
+  });
 
   const codes = data ?? [];
   const scans = codes.reduce((sum, c) => sum + (c.scan_count ?? 0), 0);

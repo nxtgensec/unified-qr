@@ -69,7 +69,8 @@ function BulkPage() {
                   rows.map(async (r, i) => {
                     const svg = buildQrSvg(r.value, defaultStyle, 1024);
                     const blob = await renderPngBlob(svg, 1024);
-                    zip.file(`${r.name || `qr-${i + 1}`}.png`, blob);
+                    const safe = (r.name || `qr-${i + 1}`).replace(/[\\/:*?"<>|]/g, "-").trim();
+                    zip.file(`${safe || `qr-${i + 1}`}.png`, blob);
                   }),
                 );
                 const zipBlob = await zip.generateAsync({ type: "blob" });

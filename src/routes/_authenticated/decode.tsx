@@ -31,12 +31,14 @@ function DecodePage() {
     setError(null);
     const img = new Image();
     img.onload = () => {
+      const max = 1500;
+      const scale = Math.min(1, max / Math.max(img.width, img.height));
       const canvas = document.createElement("canvas");
-      canvas.width = img.width;
-      canvas.height = img.height;
+      canvas.width = Math.max(1, Math.round(img.width * scale));
+      canvas.height = Math.max(1, Math.round(img.height * scale));
       const ctx = canvas.getContext("2d");
       if (!ctx) return setError("Could not read that image.");
-      ctx.drawImage(img, 0, 0);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const code = jsQR(data.data, data.width, data.height);
       if (code?.data) setResult(code.data);

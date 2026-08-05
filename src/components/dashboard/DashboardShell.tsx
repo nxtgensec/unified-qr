@@ -50,7 +50,7 @@ export function DashboardShell({
   const [email, setEmail] = useState<string>("");
 
   useEffect(() => {
-    void supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? ""));
+    void supabase.auth.getSession().then(({ data }) => setEmail(data.session?.user.email ?? ""));
   }, []);
 
   useEffect(() => setOpen(false), [pathname]);

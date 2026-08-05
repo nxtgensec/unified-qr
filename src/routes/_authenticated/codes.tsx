@@ -39,7 +39,11 @@ function CodesPage() {
   const [draft, setDraft] = useState("");
   const [copied, setCopied] = useState<string | null>(null);
 
-  const { data, isLoading } = useQuery({ queryKey: ["codes"], queryFn: () => fetchCodes() });
+  const { data, isLoading } = useQuery({
+    queryKey: ["codes"],
+    queryFn: () => fetchCodes(),
+    staleTime: 30_000,
+  });
 
   const removeMutation = useMutation({
     mutationFn: (id: string) => remove({ data: { id } }),
