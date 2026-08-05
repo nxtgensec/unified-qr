@@ -58,14 +58,25 @@ Apply the migrations in `supabase/migrations/` to your Supabase project:
 supabase db push --linked
 ```
 
-This creates four tables with Row Level Security:
+This creates five tables with Row Level Security:
 
-| Table      | Purpose                                                           |
-| ---------- | ----------------------------------------------------------------- |
-| `profiles` | User metadata (auto-populated on first sign-in)                   |
-| `qr_codes` | Saved QR codes with style, content, dynamic link slug, scan count |
-| `qr_scans` | Per-scan records (device, country, referrer, timestamp)           |
-| `visits`   | Daily site visitors (visitor cookie + per-day rollup)             |
+| Table              | Purpose                                                                    |
+| ------------------ | -------------------------------------------------------------------------- |
+| `profiles`         | User metadata (auto-populated on first sign-in) plus `plan_tier`           |
+| `qr_codes`         | Saved QR codes with style, content, dynamic link slug, scan count          |
+| `qr_scans`         | Per-scan records (device, country, referrer, timestamp)                    |
+| `visits`           | Daily site visitors (visitor cookie + per-day rollup)                      |
+| `upgrade_requests` | Enterprise upgrade ledger (manual requests and Razorpay order/payment ids) |
+
+### Plans & Payments
+
+Accounts default to the free **Professional** plan (`profiles.plan_tier = 'professional'`):
+3 dynamic QR codes, 30-day scan analytics, no bulk CSV. The **Enterprise** plan
+(`plan_tier = 'enterprise'`) unlocks unlimited dynamic codes, full scan history and bulk CSV.
+
+Enterprise payments use Razorpay. Set `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` in your
+environment to enable live checkout. Until they're set, the upgrade button creates a
+`pending` row in `upgrade_requests` for manual follow-up.
 
 ### Google OAuth Setup
 

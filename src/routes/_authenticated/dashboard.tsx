@@ -36,7 +36,7 @@ function Dashboard() {
   return (
     <DashboardShell
       title="Overview"
-      description="Everything unlocked. Nothing expires."
+      description="Your codes, scans and tools at a glance — nothing ever expires."
       actions={
         <Button size="sm" asChild>
           <Link to="/create">

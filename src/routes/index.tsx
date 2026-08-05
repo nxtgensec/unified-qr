@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { defaultStyle } from "@/lib/qr/types";
 import type { QrStyle } from "@/lib/qr/types";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -33,13 +34,13 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Generate, style, track and manage every kind of QR code from one dark, minimal workspace. Free without an account, everything free with Google sign-in.",
+          "Generate, style, track and manage every kind of QR code from one dark, minimal workspace. Professional is free forever; Enterprise adds unlimited dynamic codes.",
       },
       { property: "og:title", content: "Unified QR — Every QR code job in one place" },
       {
         property: "og:description",
         content:
-          "Dynamic codes, scan analytics, logos and SVG export — all free. No watermarks, no expiry.",
+          "Dynamic codes, scan analytics, logos and SVG export. Professional is free forever — no watermarks, no expiry, no trial traps.",
       },
     ],
   }),
@@ -62,19 +63,19 @@ const FEATURES = [
   {
     icon: RefreshCw,
     title: "Dynamic codes",
-    body: "Print once, change the destination whenever you like.",
+    body: "Print once, change the destination whenever you like — up to 3 free.",
     beta: false,
   },
   {
     icon: BarChart3,
     title: "Scan analytics",
-    body: "Scans over time, device split and country — free forever.",
+    body: "Scans over time, device split and country — free on the 30-day window.",
     beta: true,
   },
   {
     icon: Layers,
     title: "Bulk from CSV",
-    body: "Paste a list, get a whole batch of codes in one pass.",
+    body: "Paste a list, get a whole batch of codes in one pass — Enterprise.",
     beta: true,
   },
   {
@@ -104,13 +105,77 @@ const STEPS = [
 ];
 
 const COMPARISON = [
-  { label: "Dynamic, editable codes", them: "Paid plan", us: "Free" },
-  { label: "Scan analytics", them: "Paid plan", us: "Free" },
+  { label: "Dynamic, editable codes", them: "Paid plan", us: "Free (3)" },
+  { label: "Scan analytics", them: "Paid plan", us: "Free (30 days)" },
   { label: "SVG / vector export", them: "Paid or limited", us: "Free" },
   { label: "Watermark-free downloads", them: "Sometimes", us: "Always" },
   { label: "Codes expire on free tier", them: "Often", us: "Never" },
   { label: "Try before signing up", them: "Rarely", us: "Yes" },
-  { label: "Bulk generation", them: "Enterprise", us: "Free (Beta)" },
+  { label: "Bulk generation", them: "Enterprise", us: "Enterprise" },
+];
+
+const PRICING = [
+  {
+    id: "professional",
+    name: "Professional",
+    tagline: "For a QR code that just works — free, forever.",
+    price: "Free",
+    per: "forever",
+    featured: false,
+    cta: "Sign in with Google",
+    features: [
+      "All 19 code types, none paywalled",
+      "3 dynamic codes",
+      "Unlimited static codes",
+      "30-day scan analytics",
+      "Watermark-free PNG + SVG export",
+      "No expiry, no scan caps, no ads",
+    ],
+  },
+  {
+    id: "enterprise",
+    name: "Enterprise",
+    tagline: "For teams printing at volume and tracking everything.",
+    price: "₹299",
+    per: "/ month",
+    note: "or ₹2,999 / year — two months free",
+    featured: true,
+    cta: "Upgrade",
+    features: [
+      "Unlimited dynamic codes",
+      "Full scan history, never truncated",
+      "Bulk generation from CSV",
+      "Everything in Professional",
+      "Priority support",
+    ],
+  },
+];
+
+const GUARANTEES = [
+  {
+    title: "No expiry",
+    body: "Static and dynamic codes stay live forever, on every plan.",
+  },
+  {
+    title: "No scan caps",
+    body: "Any number of people can scan your codes — always.",
+  },
+  {
+    title: "No deactivation",
+    body: "Cancel or downgrade and your printed codes keep working.",
+  },
+  {
+    title: "No reprints on upgrade",
+    body: "Moving to Enterprise keeps every code and its slug. No recreating, no reprinting.",
+  },
+  {
+    title: "No ads or watermarks",
+    body: "The free plan stays clean — even on downloads.",
+  },
+  {
+    title: "No card-required trials",
+    body: "Professional is free without a card and without a timer.",
+  },
 ];
 
 const STATS = [
@@ -136,7 +201,7 @@ const TYPE_CHIPS = ["Link", "Wi-Fi", "Contact", "Email", "Event", "UPI", "SMS", 
 const FAQ = [
   {
     q: "Do my codes expire?",
-    a: "No. Every static code and dynamic link stays live forever — nothing expires, ever.",
+    a: "No. Every static code and dynamic link stays live forever — nothing expires, on any plan.",
   },
   {
     q: "Is there a scan limit?",
@@ -148,7 +213,11 @@ const FAQ = [
   },
   {
     q: "Is it really free?",
-    a: "Everything is free after a Google sign-in: all 19 code types, dynamic links, analytics, bulk export and vector downloads. No card, no trial timer.",
+    a: "Professional is free forever after a Google sign-in: all 19 code types, 3 dynamic links, 30 days of analytics and vector downloads. No card, no trial timer. Enterprise adds unlimited dynamic codes and bulk export at a flat price.",
+  },
+  {
+    q: "What happens to my codes if I upgrade or cancel?",
+    a: "Nothing changes. Upgrading keeps every code, slug and scan — you never recreate or reprint. And unlike some big QR platforms, cancelling never deactivates the codes you've already printed.",
   },
   {
     q: "What formats can I download?",
@@ -156,7 +225,7 @@ const FAQ = [
   },
   {
     q: "Do I need an account?",
-    a: "Links and text work without one. Sign in with Google to save your codes and unlock the rest.",
+    a: "Links and text work without one. Sign in with Google to save your codes on the free Professional plan.",
   },
 ];
 
@@ -275,6 +344,7 @@ function Landing() {
   }, []);
 
   const goAuth = () => void navigate({ to: signedIn ? "/dashboard" : "/auth" });
+  const goUpgrade = () => void navigate({ to: signedIn ? "/settings" : "/auth" });
 
   return (
     <div className="min-h-screen scroll-smooth bg-background">
@@ -296,6 +366,12 @@ function Landing() {
               className="hidden px-3 text-sm text-muted-foreground transition-colors hover:text-foreground md:block"
             >
               How it works
+            </a>
+            <a
+              href="#pricing"
+              className="hidden px-3 text-sm text-muted-foreground transition-colors hover:text-foreground sm:block"
+            >
+              Pricing
             </a>
             <a
               href="#compare"
@@ -323,7 +399,7 @@ function Landing() {
             <div>
               <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-muted-foreground">
                 <span className="h-1.5 w-1.5 rounded-full bg-brand" />
-                Everything free. Login only unlocks more.
+                Professional is free forever — no card, no trial timer.
               </span>
               <h1 className="mt-6 text-balance text-5xl font-semibold tracking-tight sm:text-6xl">
                 Every QR code job, in <span className="text-brand">one place.</span>
@@ -386,7 +462,7 @@ function Landing() {
                   </p>
                 </div>
                 <Button variant="secondary" size="sm" onClick={goAuth}>
-                  Unlock everything <ArrowRight className="ml-2 h-4 w-4" />
+                  Sign in — it's free <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
               <div className="mt-8 rounded-2xl border border-border bg-card p-5 sm:p-8">
@@ -419,8 +495,8 @@ function Landing() {
                 One workspace instead of five tabs
               </h2>
               <p className="mt-3 max-w-md text-sm text-muted-foreground">
-                The features other platforms split across pricing tiers, gathered into a single
-                dashboard.
+                Free tools first, with transparent limits only where they matter — and nothing that
+                ever breaks a printed code.
               </p>
               <Button className="mt-6" variant="secondary" asChild>
                 <a href="#generator">
@@ -451,10 +527,86 @@ function Landing() {
           </div>
         </section>
 
+        <section id="pricing" className="border-b border-border">
+          <div className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
+            <span className="font-mono text-xs uppercase tracking-widest text-brand">
+              03 — Honest pricing
+            </span>
+            <h2 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">
+              Two plans. Zero bait-and-switch.
+            </h2>
+            <p className="mt-3 max-w-lg text-sm text-muted-foreground">
+              The free tier is a real plan, not a 7-day trial in disguise. The paid tier exists for
+              one reason: people who print QR codes for a living.
+            </p>
+            <div className="mt-12 grid gap-6 lg:grid-cols-2">
+              {PRICING.map((plan) => (
+                <div
+                  key={plan.id}
+                  className={cn(
+                    "relative rounded-2xl border bg-card p-7",
+                    plan.featured && "border-brand/60",
+                  )}
+                >
+                  {plan.featured && (
+                    <span className="absolute -top-3 left-7 rounded-full border border-brand/40 bg-background px-3 py-1 text-[11px] font-medium text-brand">
+                      Most popular
+                    </span>
+                  )}
+                  <h3 className="text-base font-semibold">{plan.name}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{plan.tagline}</p>
+                  <p className="mt-5 text-4xl font-semibold tracking-tight">
+                    {plan.price}
+                    <span className="ml-1 text-sm font-normal text-muted-foreground">
+                      {plan.per}
+                    </span>
+                  </p>
+                  {plan.note && <p className="mt-1 text-xs text-muted-foreground">{plan.note}</p>}
+                  <ul className="mt-6 space-y-2.5">
+                    {plan.features.map((feature) => (
+                      <li key={feature} className="flex items-start gap-2.5 text-sm">
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    className="mt-8 w-full"
+                    size="lg"
+                    variant={plan.featured ? "default" : "secondary"}
+                    onClick={plan.featured ? goUpgrade : goAuth}
+                  >
+                    {plan.cta}
+                    {!plan.featured && <GoogleIcon className="ml-2 h-4 w-4" />}
+                  </Button>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-12 rounded-2xl border border-border bg-elevated p-6 sm:p-8">
+              <h3 className="text-sm font-medium">The anti-trap guarantee</h3>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Named after the industry's most-complained-about behaviors — the QR companies that
+                hold your codes hostage.
+              </p>
+              <div className="mt-6 grid gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
+                {GUARANTEES.map((g) => (
+                  <div key={g.title}>
+                    <p className="flex items-center gap-1.5 text-sm font-medium">
+                      <Check className="h-3.5 w-3.5 shrink-0 text-brand" /> {g.title}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">{g.body}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section id="how" className="border-b border-border">
           <div className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
             <span className="font-mono text-xs uppercase tracking-widest text-brand">
-              03 — The workflow
+              04 — The workflow
             </span>
             <h2 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">
               Three steps to a working code
@@ -483,7 +635,7 @@ function Landing() {
         <section id="compare" className="border-b border-border">
           <div className="mx-auto max-w-4xl px-5 py-16 sm:py-20">
             <span className="font-mono text-xs uppercase tracking-widest text-brand">
-              04 — The difference
+              05 — The difference
             </span>
             <h2 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">
               What the big three charge for
@@ -529,7 +681,7 @@ function Landing() {
         <section id="faq" className="border-b border-border">
           <div className="mx-auto max-w-3xl px-5 py-16 sm:py-20">
             <span className="font-mono text-xs uppercase tracking-widest text-brand">
-              05 — Good to know
+              06 — Good to know
             </span>
             <h2 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">
               Questions, answered
@@ -554,14 +706,14 @@ function Landing() {
           <div className="grid-noise pointer-events-none absolute inset-0 opacity-30" aria-hidden />
           <div className="relative mx-auto max-w-3xl px-5 py-20 text-center">
             <span className="font-mono text-xs uppercase tracking-widest text-brand">
-              06 — No trial timer
+              07 — No trial timer
             </span>
             <h2 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">
               Sign in once with Google
             </h2>
             <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">
-              No passwords, no credit card, no trial timer. Your codes and their scan history stay
-              in your account.
+              No passwords, no credit card, no trial timer. Professional stays free forever — your
+              codes and their scan history live in your account.
             </p>
             <Button className="mt-8" size="lg" onClick={goAuth}>
               {signedIn ? "Open dashboard" : "Sign in with Google"}
@@ -579,7 +731,8 @@ function Landing() {
               Unified QR
             </span>
             <span className="max-w-xs text-xs text-muted-foreground">
-              Every QR code job, in one place. Free forever, no watermarks, no expiry.
+              Every QR code job, in one place. Professional is free forever — no watermarks, no
+              expiry, no trial traps.
             </span>
           </div>
           <nav className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground">
@@ -588,6 +741,9 @@ function Landing() {
             </a>
             <a href="#features" className="transition-colors hover:text-foreground">
               Features
+            </a>
+            <a href="#pricing" className="transition-colors hover:text-foreground">
+              Pricing
             </a>
             <a href="#how" className="transition-colors hover:text-foreground">
               How it works

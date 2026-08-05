@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { PLANS, type PlanId } from "./plans";
 
 export const listCodes = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -52,6 +53,20 @@ export const saveCode = createServerFn({ method: "POST" })
     const target = data.isDynamic ? (data.content["destination"] ?? "").trim() : null;
     if (data.isDynamic && !/^https?:\/\//i.test(target ?? "")) {
       throw new Error("Dynamic codes need a destination starting with http:// or https://");
+    }
+
+    if (data.isDynamic && (await planOf(context)) === "professional") {
+      const { count, error: countError } = await context.supabase
+        .from("qr_codes")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", context.userId)
+        .eq("is_dynamic", true);
+      if (countError) throw new Error(countError.message);
+      if ((count ?? 0) >= PLANS.professional.dynamicCodes) {
+        throw new Error(
+          `Professional includes ${PLANS.professional.dynamicCodes} dynamic codes. Upgrade to Enterprise for unlimited dynamic QR codes.`,
+        );
+      }
     }
 
     const style = data.style ?? {};
@@ -143,13 +158,38 @@ export const getAnalytics = createServerFn({ method: "GET" })
       .order("scan_count", { ascending: false });
     if (codesError) throw new Error(codesError.message);
 
-    const { data: scans, error: scansError } = await context.supabase
+    const plan = await planOf(context);
+    const unlimited = PLANS[plan].analyticsDays === Number.POSITIVE_INFINITY;
+    const analyticsDays = unlimited ? null : PLANS[plan].analyticsDays;
+
+    let scansQuery = context.supabase
       .from("qr_scans")
       .select("code_id,scanned_at,device,country")
-      .gte("scanned_at", new Date(Date.now() - 30 * 86400000).toISOString())
       .order("scanned_at", { ascending: true })
-      .limit(5000);
+      .limit(unlimited ? 20000 : 5000);
+    if (!unlimited) {
+      scansQuery = scansQuery.gte(
+        "scanned_at",
+        new Date(Date.now() - (analyticsDays ?? 30) * 86400000).toISOString(),
+      );
+    }
+    const { data: scans, error: scansError } = await scansQuery;
     if (scansError) throw new Error(scansError.message);
 
-    return { codes: codes ?? [], scans: scans ?? [] };
+    return { codes: codes ?? [], scans: scans ?? [], plan, analyticsDays };
   });
+
+async function planOf(context: {
+  supabase: import("@supabase/supabase-js").SupabaseClient<
+    import("@/integrations/supabase/types").Database
+  >;
+  userId: string;
+}): Promise<PlanId> {
+  const { data, error } = await context.supabase
+    .from("profiles")
+    .select("plan_tier")
+    .eq("id", context.userId)
+    .single();
+  if (error) throw new Error(error.message);
+  return data?.plan_tier === "enterprise" ? "enterprise" : "professional";
+}

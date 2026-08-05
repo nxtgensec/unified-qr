@@ -35,13 +35,33 @@ function AnalyticsPage() {
   });
 
   const days = useMemo(() => {
+    const windowDays = data?.analyticsDays ?? 30;
     const buckets = new Map<string, number>();
-    for (let i = 29; i >= 0; i--) {
-      const d = new Date(Date.now() - i * 86400000);
-      buckets.set(localDateKey(d), 0);
+    const scanDates = (data?.scans ?? []).map((s) => new Date(s.scanned_at));
+
+    if (Number.isFinite(windowDays)) {
+      for (let i = windowDays - 1; i >= 0; i--) {
+        const d = new Date(Date.now() - i * 86400000);
+        buckets.set(localDateKey(d), 0);
+      }
+    } else if (scanDates.length > 0) {
+      const min = scanDates.reduce((a, b) => (a < b ? a : b));
+      const max = scanDates.reduce((a, b) => (a > b ? a : b));
+      const end = new Date(max);
+      end.setHours(0, 0, 0, 0);
+      const start = new Date(min);
+      start.setHours(0, 0, 0, 0);
+      const span = Math.round((end.getTime() - start.getTime()) / 86400000) + 1;
+      const capped = Math.min(span, 180);
+      const startCap = new Date(end.getTime() - (capped - 1) * 86400000);
+      startCap.setHours(0, 0, 0, 0);
+      for (let d = new Date(startCap); d <= end; d.setDate(d.getDate() + 1)) {
+        buckets.set(localDateKey(d), 0);
+      }
     }
-    for (const s of data?.scans ?? []) {
-      const key = localDateKey(new Date(s.scanned_at));
+
+    for (const s of scanDates) {
+      const key = localDateKey(s);
       if (buckets.has(key)) buckets.set(key, (buckets.get(key) ?? 0) + 1);
     }
     return [...buckets.entries()].map(([date, count]) => ({ date, count }));
@@ -58,13 +78,13 @@ function AnalyticsPage() {
 
   const max = Math.max(1, ...days.map((d) => d.count));
   const total = days.reduce((s, d) => s + d.count, 0);
+  const windowLabel =
+    data?.analyticsDays != null && Number.isFinite(data.analyticsDays)
+      ? `Last ${data.analyticsDays} days across all your dynamic codes.`
+      : "Full scan history across all your dynamic codes.";
 
   return (
-    <DashboardShell
-      title="Analytics"
-      beta
-      description="Last 30 days across all your dynamic codes."
-    >
+    <DashboardShell title="Analytics" beta description={windowLabel}>
       {isLoading ? (
         <Skeleton className="h-64" />
       ) : (

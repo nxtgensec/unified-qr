@@ -16,6 +16,7 @@ import { useEffect, useState, type ReactNode } from "react";
 
 import { BetaBadge } from "@/components/BetaBadge";
 import { Logo } from "@/components/Logo";
+import { PlanBadge } from "@/components/PlanBadge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -95,6 +96,7 @@ export function DashboardShell({
         </Link>
         {nav}
         <div className="mt-auto space-y-2 border-t border-sidebar-border pt-4">
+          <PlanBadge className="w-full justify-center" />
           <p className="truncate px-3 text-xs text-muted-foreground">{email}</p>
           <Button
             variant="ghost"
@@ -120,7 +122,8 @@ export function DashboardShell({
               </button>
             </div>
             {nav}
-            <div className="mt-auto border-t border-sidebar-border pt-4">
+            <div className="mt-auto space-y-2 border-t border-sidebar-border pt-4">
+              <PlanBadge className="w-full justify-center" />
               <Button
                 variant="ghost"
                 size="sm"

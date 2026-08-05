@@ -15,10 +15,15 @@ export const Route = createFileRoute("/auth")({
       { title: "Sign in — Unified QR" },
       {
         name: "description",
-        content: "Sign in with Google to unlock every Unified QR feature, free.",
+        content:
+          "Sign in with Google to get Professional free forever — or upgrade to Enterprise for unlimited dynamic codes.",
       },
       { property: "og:title", content: "Sign in — Unified QR" },
-      { property: "og:description", content: "One Google sign-in unlocks the full QR toolset." },
+      {
+        property: "og:description",
+        content:
+          "Professional is free forever. Enterprise adds unlimited dynamic codes and bulk export.",
+      },
     ],
   }),
   component: AuthPage,
@@ -26,9 +31,9 @@ export const Route = createFileRoute("/auth")({
 
 const BENEFITS = [
   "Save and edit your QR codes",
-  "Dynamic links you can redirect anytime",
-  "Scan analytics across every code",
-  "Bulk generation from CSV",
+  "3 dynamic links you can redirect anytime",
+  "30 days of scan analytics",
+  "Unlimited static codes, no watermark",
 ];
 
 function AuthPage() {
@@ -78,7 +83,8 @@ function AuthPage() {
 
           <h1 className="mt-6 text-2xl font-semibold tracking-tight">Welcome to Unified QR</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Sign in with Google to save your codes and unlock everything — free, forever.
+            Sign in with Google to start on Professional — free forever, no card and no trial timer.
+            Upgrade to Enterprise anytime for unlimited dynamic codes.
           </p>
 
           <Button
@@ -100,7 +106,7 @@ function AuthPage() {
           <div className="my-6 flex items-center gap-3">
             <span className="h-px flex-1 bg-border" />
             <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              Everything unlocked
+              Professional — free forever
             </span>
             <span className="h-px flex-1 bg-border" />
           </div>
@@ -117,7 +123,15 @@ function AuthPage() {
 
         <p className="mt-6 text-center text-[11px] leading-relaxed text-muted-foreground">
           By continuing you agree to Google's Terms of Service. Unified QR only receives your name,
-          email and avatar — nothing else. No password, no credit card, no trial timer.
+          email and avatar — nothing else. No password, no credit card, no trial timer. Need more
+          than 3 dynamic codes?{" "}
+          <a
+            href="/#pricing"
+            className="font-medium text-foreground underline-offset-4 transition-colors hover:underline"
+          >
+            See Enterprise pricing
+          </a>
+          .
         </p>
       </div>
     </div>

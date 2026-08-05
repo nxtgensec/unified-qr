@@ -15,6 +15,7 @@ export type Database = {
           email: string | null;
           full_name: string | null;
           id: string;
+          plan_tier: string;
           updated_at: string;
         };
         Insert: {
@@ -23,6 +24,7 @@ export type Database = {
           email?: string | null;
           full_name?: string | null;
           id: string;
+          plan_tier?: string;
           updated_at?: string;
         };
         Update: {
@@ -31,9 +33,60 @@ export type Database = {
           email?: string | null;
           full_name?: string | null;
           id?: string;
+          plan_tier?: string;
           updated_at?: string;
         };
         Relationships: [];
+      };
+      upgrade_requests: {
+        Row: {
+          amount: number;
+          created_at: string;
+          currency: string;
+          id: string;
+          plan_tier: string;
+          razorpay_order_id: string | null;
+          razorpay_payment_id: string | null;
+          razorpay_signature: string | null;
+          status: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          amount?: number;
+          created_at?: string;
+          currency?: string;
+          id?: string;
+          plan_tier?: string;
+          razorpay_order_id?: string | null;
+          razorpay_payment_id?: string | null;
+          razorpay_signature?: string | null;
+          status?: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          amount?: number;
+          created_at?: string;
+          currency?: string;
+          id?: string;
+          plan_tier?: string;
+          razorpay_order_id?: string | null;
+          razorpay_payment_id?: string | null;
+          razorpay_signature?: string | null;
+          status?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "upgrade_requests_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       qr_codes: {
         Row: {
