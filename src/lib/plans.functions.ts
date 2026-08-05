@@ -2,7 +2,14 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { ENTERPRISE_PRICE, PLANS, formatPaise, type PlanId } from "./plans";
+import {
+  ENTERPRISE_CURRENCY,
+  PLANS,
+  formatPaise,
+  termPaise,
+  type BillingTerm,
+  type PlanId,
+} from "./plans";
 
 export type PlanStatus = {
   plan: PlanId;
@@ -44,8 +51,8 @@ export const getMyPlan = createServerFn({ method: "GET" })
       dynamicLimit: unlimited ? null : def.dynamicCodes,
       analyticsDays: unlimited ? null : def.analyticsDays,
       bulk: def.bulk,
-      priceMonthly: formatPaise(ENTERPRISE_PRICE.monthlyPaise),
-      priceYearly: formatPaise(ENTERPRISE_PRICE.yearlyPaise),
+      priceMonthly: formatPaise(termPaise("monthly")),
+      priceYearly: formatPaise(termPaise("yearly")),
     };
   });
 
@@ -67,14 +74,15 @@ export type RazorpayOrderResult =
 
 export const createRazorpayOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: unknown) => z.object({ term: z.enum(["monthly", "yearly"]) }).parse(input))
+  .validator((input: unknown) =>
+    z.object({ term: z.enum(["daily", "weekly", "monthly", "yearly"]) }).parse(input),
+  )
   .handler(async ({ data, context }): Promise<RazorpayOrderResult> => {
     const keyId = process.env["RAZORPAY_KEY_ID"];
     const keySecret = process.env["RAZORPAY_KEY_SECRET"];
     if (!keyId || !keySecret) return { available: false };
 
-    const amount =
-      data.term === "monthly" ? ENTERPRISE_PRICE.monthlyPaise : ENTERPRISE_PRICE.yearlyPaise;
+    const amount = termPaise(data.term);
 
     const auth = Buffer.from(`${keyId}:${keySecret}`).toString("base64");
     const res = await fetch("https://api.razorpay.com/v1/orders", {
@@ -85,9 +93,9 @@ export const createRazorpayOrder = createServerFn({ method: "POST" })
       },
       body: JSON.stringify({
         amount,
-        currency: ENTERPRISE_PRICE.currency,
-        receipt: `ent-${context.userId.slice(0, 8)}`,
-        notes: { userId: context.userId },
+        currency: ENTERPRISE_CURRENCY,
+        receipt: `ent-${context.userId.slice(0, 8)}-${data.term}`,
+        notes: { userId: context.userId, term: data.term },
       }),
     });
     if (!res.ok) {

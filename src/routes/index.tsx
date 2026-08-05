@@ -23,6 +23,7 @@ import { QrStudio } from "@/components/qr/QrStudio";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import { ENTERPRISE_TERMS, formatPaise } from "@/lib/plans";
 import { defaultStyle } from "@/lib/qr/types";
 import type { QrStyle } from "@/lib/qr/types";
 import { cn } from "@/lib/utils";
@@ -121,6 +122,7 @@ const PRICING = [
     tagline: "For a QR code that just works — free, forever.",
     price: "Free",
     per: "forever",
+    terms: false,
     featured: false,
     cta: "Sign in with Google",
     features: [
@@ -136,9 +138,7 @@ const PRICING = [
     id: "enterprise",
     name: "Enterprise",
     tagline: "For teams printing at volume and tracking everything.",
-    price: "₹299",
-    per: "/ month",
-    note: "or ₹2,999 / year — two months free",
+    terms: true,
     featured: true,
     cta: "Upgrade",
     features: [
@@ -555,13 +555,42 @@ function Landing() {
                   )}
                   <h3 className="text-base font-semibold">{plan.name}</h3>
                   <p className="mt-1 text-sm text-muted-foreground">{plan.tagline}</p>
-                  <p className="mt-5 text-4xl font-semibold tracking-tight">
-                    {plan.price}
-                    <span className="ml-1 text-sm font-normal text-muted-foreground">
-                      {plan.per}
-                    </span>
-                  </p>
-                  {plan.note && <p className="mt-1 text-xs text-muted-foreground">{plan.note}</p>}
+                  {plan.terms ? (
+                    <div className="mt-5 grid grid-cols-2 gap-2">
+                      {ENTERPRISE_TERMS.map((term) => (
+                        <div
+                          key={term.id}
+                          className={cn(
+                            "rounded-lg border px-3 py-2",
+                            term.id === "yearly" ? "border-brand/50 bg-brand/5" : "border-border",
+                          )}
+                        >
+                          <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                            {term.label}
+                            {term.id === "yearly" && (
+                              <span className="ml-1.5 rounded-full border border-brand/40 px-1.5 py-px text-[10px] font-medium normal-case tracking-normal text-brand">
+                                Best value
+                              </span>
+                            )}
+                          </p>
+                          <p className="mt-0.5 text-lg font-semibold tracking-tight">
+                            {formatPaise(term.paise)}
+                            <span className="text-xs font-normal text-muted-foreground">
+                              {" "}
+                              / {term.per}
+                            </span>
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="mt-5 text-4xl font-semibold tracking-tight">
+                      {plan.price}
+                      <span className="ml-1 text-sm font-normal text-muted-foreground">
+                        {plan.per}
+                      </span>
+                    </p>
+                  )}
                   <ul className="mt-6 space-y-2.5">
                     {plan.features.map((feature) => (
                       <li key={feature} className="flex items-start gap-2.5 text-sm">

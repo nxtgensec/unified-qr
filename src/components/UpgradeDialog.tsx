@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ENTERPRISE_PRICE, PLANS, formatPaise } from "@/lib/plans";
+import { ENTERPRISE_TERMS, PLANS, formatPaise, termPaise, type BillingTerm } from "@/lib/plans";
 import { createRazorpayOrder, requestUpgrade, verifyRazorpayPayment } from "@/lib/plans.functions";
 import { cn } from "@/lib/utils";
 
@@ -68,10 +68,11 @@ export function UpgradeDialog({
   const createOrder = useServerFn(createRazorpayOrder);
   const verify = useServerFn(verifyRazorpayPayment);
   const request = useServerFn(requestUpgrade);
-  const [term, setTerm] = useState<"monthly" | "yearly">("yearly");
+  const [term, setTerm] = useState<BillingTerm>("yearly");
   const [paying, setPaying] = useState(false);
 
-  const price = term === "monthly" ? ENTERPRISE_PRICE.monthlyPaise : ENTERPRISE_PRICE.yearlyPaise;
+  const selected = ENTERPRISE_TERMS.find((t) => t.id === term) ?? ENTERPRISE_TERMS[2];
+  const price = termPaise(term);
 
   const refresh = () => {
     void queryClient.invalidateQueries({ queryKey: ["plan"] });
@@ -138,37 +139,41 @@ export function UpgradeDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex gap-2">
-          {(
-            [
-              { id: "monthly", label: "Monthly" },
-              { id: "yearly", label: "Yearly", badge: "2 months free" },
-            ] as const
-          ).map((option) => (
-            <button
-              key={option.id}
-              type="button"
-              onClick={() => setTerm(option.id)}
-              className={cn(
-                "flex flex-1 flex-col items-center gap-1 rounded-xl border px-3 py-3 text-sm transition-colors",
-                term === option.id
-                  ? "border-brand bg-brand/10 text-foreground"
-                  : "border-border text-muted-foreground hover:border-ring",
-              )}
-            >
-              <span className="font-medium">{option.label}</span>
-              <span className="text-xs text-muted-foreground">{option.badge}</span>
-            </button>
-          ))}
+        <div className="grid grid-cols-2 gap-2">
+          {ENTERPRISE_TERMS.map((option) => {
+            const active = term === option.id;
+            return (
+              <button
+                key={option.id}
+                type="button"
+                onClick={() => setTerm(option.id)}
+                className={cn(
+                  "relative rounded-xl border px-3 py-3 text-left transition-colors",
+                  active
+                    ? "border-brand bg-brand/10 text-foreground"
+                    : "border-border text-muted-foreground hover:border-ring",
+                )}
+              >
+                {option.id === "yearly" && (
+                  <span className="absolute -top-2 right-2 rounded-full border border-brand/40 bg-background px-2 py-0.5 text-[10px] font-medium text-brand">
+                    Best value
+                  </span>
+                )}
+                <span className="block text-sm font-medium">{option.label}</span>
+                <span className="mt-0.5 block text-sm">
+                  {formatPaise(option.paise)}
+                  <span className="text-xs text-muted-foreground"> / {option.per}</span>
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         <div className="rounded-xl border border-border bg-card p-5">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Enterprise</p>
           <p className="mt-2 text-3xl font-semibold tracking-tight">
-            {formatPaise(price)}
-            <span className="ml-1 text-sm font-normal text-muted-foreground">
-              / {term.slice(0, -2)}
-            </span>
+            {formatPaise(selected.paise)}
+            <span className="ml-1 text-sm font-normal text-muted-foreground">/ {selected.per}</span>
           </p>
           <ul className="mt-4 space-y-2">
             {ENTERPRISE.features.map((feature) => (

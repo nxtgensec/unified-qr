@@ -4,9 +4,6 @@ export interface PlanDefinition {
   id: PlanId;
   name: string;
   tagline: string;
-  currency: "INR";
-  priceMonthlyPaise: number;
-  priceYearlyPaise: number;
   dynamicCodes: number;
   analyticsDays: number;
   bulk: boolean;
@@ -18,9 +15,6 @@ export const PLANS: Record<PlanId, PlanDefinition> = {
     id: "professional",
     name: "Professional",
     tagline: "Free forever",
-    currency: "INR",
-    priceMonthlyPaise: 0,
-    priceYearlyPaise: 0,
     dynamicCodes: 3,
     analyticsDays: 30,
     bulk: false,
@@ -37,9 +31,6 @@ export const PLANS: Record<PlanId, PlanDefinition> = {
     id: "enterprise",
     name: "Enterprise",
     tagline: "Unlimited everything",
-    currency: "INR",
-    priceMonthlyPaise: 29900,
-    priceYearlyPaise: 299900,
     dynamicCodes: Number.POSITIVE_INFINITY,
     analyticsDays: Number.POSITIVE_INFINITY,
     bulk: true,
@@ -53,17 +44,26 @@ export const PLANS: Record<PlanId, PlanDefinition> = {
   },
 };
 
-export const ENTERPRISE_PRICE = {
-  monthlyPaise: PLANS.enterprise.priceMonthlyPaise,
-  yearlyPaise: PLANS.enterprise.priceYearlyPaise,
-  currency: PLANS.enterprise.currency,
-} as const;
+export const ENTERPRISE_CURRENCY = "INR" as const;
+
+export const ENTERPRISE_TERMS = [
+  { id: "daily", label: "Daily", per: "day", paise: 900 },
+  { id: "weekly", label: "Weekly", per: "week", paise: 4900 },
+  { id: "monthly", label: "Monthly", per: "month", paise: 9900 },
+  { id: "yearly", label: "Yearly", per: "year", paise: 99900 },
+] as const;
+
+export type BillingTerm = (typeof ENTERPRISE_TERMS)[number]["id"];
+
+export function termPaise(term: BillingTerm): number {
+  return ENTERPRISE_TERMS.find((t) => t.id === term)?.paise ?? 0;
+}
 
 export function formatPaise(paise: number): string {
   if (paise === 0) return "Free";
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
-    currency: "INR",
+    currency: ENTERPRISE_CURRENCY,
     maximumFractionDigits: 0,
   }).format(paise / 100);
 }
