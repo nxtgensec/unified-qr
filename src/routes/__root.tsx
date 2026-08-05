@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useMatches,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -121,6 +122,8 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
+  const matches = useMatches();
+  const showVisitCounter = matches.every((match) => !match.id.startsWith("/_authenticated"));
 
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange((event) => {
@@ -135,7 +138,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
-      <VisitCounter />
+      {showVisitCounter && <VisitCounter />}
       <Toaster position="top-center" />
     </QueryClientProvider>
   );
