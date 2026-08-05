@@ -133,15 +133,61 @@ const MARQUEE = [
 
 const TYPE_CHIPS = ["Link", "Wi-Fi", "Contact", "Email", "Event", "UPI", "SMS", "WhatsApp"];
 
-const DEMO_STYLE: QrStyle = { ...defaultStyle, fg: "#111827", bg: "#ffffff" };
+const FAQ = [
+  {
+    q: "Do my codes expire?",
+    a: "No. Every static code and dynamic link stays live forever — nothing expires, ever.",
+  },
+  {
+    q: "Is there a scan limit?",
+    a: "None. We track scans on dynamic codes, but there are no caps on how many people can scan.",
+  },
+  {
+    q: "Can I change a code after it's printed?",
+    a: "Yes, if it's dynamic. Print it once, then edit the destination any time from your dashboard — the printed code keeps working.",
+  },
+  {
+    q: "Is it really free?",
+    a: "Everything is free after a Google sign-in: all 19 code types, dynamic links, analytics, bulk export and vector downloads. No card, no trial timer.",
+  },
+  {
+    q: "What formats can I download?",
+    a: "PNG for print and web, and SVG vectors that scale to any size — both watermark-free.",
+  },
+  {
+    q: "Do I need an account?",
+    a: "Links and text work without one. Sign in with Google to save your codes and unlock the rest.",
+  },
+];
+
+const DEMO_STYLE: QrStyle = {
+  ...defaultStyle,
+  fg: "#0f172a",
+  bg: "#ffffff",
+  gradientType: "linear",
+  gradientEnd: "#0d9488",
+  gradientAngle: 135,
+};
 
 function HeroScanner() {
   const [value, setValue] = useState("https://qr.nxtgensec.org");
-  const [scans, setScans] = useState(24813);
+  const [visitors, setVisitors] = useState<number | null>(null);
 
   useEffect(() => {
-    const timer = setInterval(() => setScans((s) => s + Math.floor(Math.random() * 7) + 1), 1800);
-    return () => clearInterval(timer);
+    let cancelled = false;
+    fetch("/api/visits", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ page: "/" }),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { today?: number } | null) => {
+        if (!cancelled && data && typeof data.today === "number") setVisitors(data.today);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (
@@ -202,7 +248,13 @@ function HeroScanner() {
           <span className="text-muted-foreground">Renders as you type</span>
           <span className="flex items-center gap-1.5 text-muted-foreground">
             <span className="h-1.5 w-1.5 rounded-full bg-brand" />
-            <span className="tabular-nums">{scans.toLocaleString("en-US")} scans today</span>
+            {visitors === null ? (
+              <span>Tracking real visitors</span>
+            ) : (
+              <span className="tabular-nums">
+                {visitors.toLocaleString("en-US")} visitors today
+              </span>
+            )}
           </span>
         </div>
       </div>
@@ -250,6 +302,12 @@ function Landing() {
               className="hidden px-3 text-sm text-muted-foreground transition-colors hover:text-foreground sm:block"
             >
               Compare
+            </a>
+            <a
+              href="#faq"
+              className="hidden px-3 text-sm text-muted-foreground transition-colors hover:text-foreground sm:block"
+            >
+              FAQ
             </a>
             <Button size="sm" onClick={goAuth}>
               {signedIn ? "Dashboard" : "Sign in"}
@@ -431,7 +489,8 @@ function Landing() {
               What the big three charge for
             </h2>
             <p className="mt-3 text-sm text-muted-foreground">
-              Based on the free tiers of the most-used QR platforms.
+              Checked against the free tiers of QRCode Monkey, Bitly and Uniqode — the three
+              most-used QR platforms in 2026.
             </p>
             <div className="mt-10 overflow-hidden rounded-2xl border border-border">
               <div className="grid grid-cols-[1fr_auto_auto] gap-4 border-b border-border bg-elevated px-5 py-3 text-xs uppercase tracking-wider text-muted-foreground">
@@ -459,6 +518,35 @@ function Landing() {
                 </div>
               ))}
             </div>
+            <p className="mt-4 text-xs text-muted-foreground">
+              Free-tier terms as published by each platform. QRCode Monkey is free but static-only —
+              no editing or tracking. Bitly and Uniqode put dynamic codes, analytics and design
+              behind paid plans, and some deactivate your codes entirely when you cancel.
+            </p>
+          </div>
+        </section>
+
+        <section id="faq" className="border-b border-border">
+          <div className="mx-auto max-w-3xl px-5 py-16 sm:py-20">
+            <span className="font-mono text-xs uppercase tracking-widest text-brand">
+              05 — Good to know
+            </span>
+            <h2 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">
+              Questions, answered
+            </h2>
+            <div className="mt-10 divide-y divide-border rounded-2xl border border-border bg-card">
+              {FAQ.map((item) => (
+                <details key={item.q} className="group px-5 py-4">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-medium [&::-webkit-details-marker]:hidden">
+                    {item.q}
+                    <span className="shrink-0 text-muted-foreground transition-transform group-open:rotate-45">
+                      +
+                    </span>
+                  </summary>
+                  <p className="mt-3 text-sm text-muted-foreground">{item.a}</p>
+                </details>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -466,7 +554,7 @@ function Landing() {
           <div className="grid-noise pointer-events-none absolute inset-0 opacity-30" aria-hidden />
           <div className="relative mx-auto max-w-3xl px-5 py-20 text-center">
             <span className="font-mono text-xs uppercase tracking-widest text-brand">
-              05 — No trial timer
+              06 — No trial timer
             </span>
             <h2 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">
               Sign in once with Google
@@ -506,6 +594,9 @@ function Landing() {
             </a>
             <a href="#compare" className="transition-colors hover:text-foreground">
               Compare
+            </a>
+            <a href="#faq" className="transition-colors hover:text-foreground">
+              FAQ
             </a>
           </nav>
         </div>
