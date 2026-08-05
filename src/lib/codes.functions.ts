@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { PLANS, type PlanId } from "./plans";
+import { PLANS, effectivePlan, type PlanId } from "./plans";
 
 export const listCodes = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -187,9 +187,9 @@ async function planOf(context: {
 }): Promise<PlanId> {
   const { data, error } = await context.supabase
     .from("profiles")
-    .select("plan_tier")
+    .select("plan_tier, plan_until")
     .eq("id", context.userId)
     .single();
   if (error) throw new Error(error.message);
-  return data?.plan_tier === "enterprise" ? "enterprise" : "professional";
+  return effectivePlan(data?.plan_tier ?? null, data?.plan_until ?? null);
 }

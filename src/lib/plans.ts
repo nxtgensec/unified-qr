@@ -59,6 +59,25 @@ export function termPaise(term: BillingTerm): number {
   return ENTERPRISE_TERMS.find((t) => t.id === term)?.paise ?? 0;
 }
 
+const TERM_DAYS: Record<BillingTerm, number> = {
+  daily: 1,
+  weekly: 7,
+  monthly: 30,
+  yearly: 365,
+};
+
+export function planUntilForTerm(term: BillingTerm): Date {
+  return new Date(Date.now() + TERM_DAYS[term] * 86400000);
+}
+
+export function effectivePlan(planTier: string | null, planUntil: string | null): PlanId {
+  if (planTier === "enterprise") {
+    if (planUntil == null) return "enterprise";
+    return new Date(planUntil).getTime() > Date.now() ? "enterprise" : "professional";
+  }
+  return "professional";
+}
+
 export function formatPaise(paise: number): string {
   if (paise === 0) return "Free";
   return new Intl.NumberFormat("en-IN", {

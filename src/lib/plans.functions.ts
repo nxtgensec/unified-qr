@@ -5,7 +5,9 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
   ENTERPRISE_CURRENCY,
   PLANS,
+  effectivePlan,
   formatPaise,
+  planUntilForTerm,
   termPaise,
   type BillingTerm,
   type PlanId,
@@ -19,6 +21,7 @@ export type PlanStatus = {
   dynamicLimit: number | null;
   analyticsDays: number | null;
   bulk: boolean;
+  planUntil: string | null;
   priceMonthly: string;
   priceYearly: string;
 };
@@ -28,7 +31,7 @@ export const getMyPlan = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<PlanStatus> => {
     const { data: profile, error } = await context.supabase
       .from("profiles")
-      .select("plan_tier")
+      .select("plan_tier, plan_until")
       .eq("id", context.userId)
       .single();
     if (error) throw new Error(error.message);
@@ -40,7 +43,7 @@ export const getMyPlan = createServerFn({ method: "GET" })
       .eq("is_dynamic", true);
     if (countError) throw new Error(countError.message);
 
-    const plan: PlanId = profile?.plan_tier === "enterprise" ? "enterprise" : "professional";
+    const plan = effectivePlan(profile?.plan_tier ?? null, profile?.plan_until ?? null);
     const def = PLANS[plan];
     const unlimited = def.dynamicCodes === Number.POSITIVE_INFINITY;
     return {
@@ -51,6 +54,7 @@ export const getMyPlan = createServerFn({ method: "GET" })
       dynamicLimit: unlimited ? null : def.dynamicCodes,
       analyticsDays: unlimited ? null : def.analyticsDays,
       bulk: def.bulk,
+      planUntil: plan === "enterprise" ? (profile?.plan_until ?? null) : null,
       priceMonthly: formatPaise(termPaise("monthly")),
       priceYearly: formatPaise(termPaise("yearly")),
     };
@@ -111,6 +115,7 @@ export const createRazorpayOrder = createServerFn({ method: "POST" })
       status: "pending",
       amount: order.amount,
       currency: order.currency,
+      term: data.term,
       razorpay_order_id: order.id,
     });
 
@@ -128,6 +133,7 @@ export const verifyRazorpayPayment = createServerFn({ method: "POST" })
   .validator((input: unknown) =>
     z
       .object({
+        term: z.enum(["daily", "weekly", "monthly", "yearly"]),
         razorpayOrderId: z.string().min(1),
         razorpayPaymentId: z.string().min(1),
         razorpaySignature: z.string().min(1),
@@ -146,9 +152,10 @@ export const verifyRazorpayPayment = createServerFn({ method: "POST" })
       throw new Error("Payment verification failed.");
     }
 
+    const planUntil = planUntilForTerm(data.term).toISOString();
     const { error: updateError } = await context.supabase
       .from("profiles")
-      .update({ plan_tier: "enterprise" })
+      .update({ plan_tier: "enterprise", plan_until: planUntil })
       .eq("id", context.userId);
     if (updateError) throw new Error(updateError.message);
 
@@ -156,6 +163,7 @@ export const verifyRazorpayPayment = createServerFn({ method: "POST" })
       .from("upgrade_requests")
       .update({
         status: "paid",
+        term: data.term,
         razorpay_payment_id: data.razorpayPaymentId,
         razorpay_signature: data.razorpaySignature,
       })

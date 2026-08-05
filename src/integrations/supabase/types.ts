@@ -16,6 +16,7 @@ export type Database = {
           full_name: string | null;
           id: string;
           plan_tier: string;
+          plan_until: string | null;
           updated_at: string;
         };
         Insert: {
@@ -25,6 +26,7 @@ export type Database = {
           full_name?: string | null;
           id: string;
           plan_tier?: string;
+          plan_until?: string | null;
           updated_at?: string;
         };
         Update: {
@@ -34,6 +36,7 @@ export type Database = {
           full_name?: string | null;
           id?: string;
           plan_tier?: string;
+          plan_until?: string | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -49,6 +52,7 @@ export type Database = {
           razorpay_payment_id: string | null;
           razorpay_signature: string | null;
           status: string;
+          term: string | null;
           updated_at: string;
           user_id: string;
         };
@@ -62,6 +66,7 @@ export type Database = {
           razorpay_payment_id?: string | null;
           razorpay_signature?: string | null;
           status?: string;
+          term?: string | null;
           updated_at?: string;
           user_id: string;
         };
@@ -75,6 +80,7 @@ export type Database = {
           razorpay_payment_id?: string | null;
           razorpay_signature?: string | null;
           status?: string;
+          term?: string | null;
           updated_at?: string;
           user_id?: string;
         };

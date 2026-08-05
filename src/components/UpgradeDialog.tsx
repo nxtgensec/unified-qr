@@ -106,6 +106,7 @@ export function UpgradeDialog({
           try {
             await verify({
               data: {
+                term,
                 razorpayOrderId: res.razorpay_order_id,
                 razorpayPaymentId: res.razorpay_payment_id,
                 razorpaySignature: res.razorpay_signature,
@@ -194,8 +195,20 @@ export function UpgradeDialog({
           {paying ? "Opening payment…" : `Pay ${formatPaise(price)} with Razorpay`}
         </Button>
         <p className="text-center text-[11px] leading-relaxed text-muted-foreground">
-          Secured by Razorpay. You can cancel any time — your codes stay live and editable either
-          way.
+          Secured by Razorpay. Access lasts for the period you choose and doesn't auto-renew. By
+          paying you agree to our{" "}
+          <a href="/terms" className="underline underline-offset-2 hover:text-foreground">
+            Terms
+          </a>
+          ,{" "}
+          <a href="/payment" className="underline underline-offset-2 hover:text-foreground">
+            Payment
+          </a>{" "}
+          and{" "}
+          <a href="/refunds" className="underline underline-offset-2 hover:text-foreground">
+            Refund
+          </a>{" "}
+          policies. Your codes stay live either way.
         </p>
       </DialogContent>
     </Dialog>

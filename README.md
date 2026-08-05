@@ -73,10 +73,13 @@ This creates five tables with Row Level Security:
 Accounts default to the free **Professional** plan (`profiles.plan_tier = 'professional'`):
 3 dynamic QR codes, 30-day scan analytics, no bulk CSV. The **Enterprise** plan
 (`plan_tier = 'enterprise'`) unlocks unlimited dynamic codes, full scan history and bulk CSV.
+Enterprise access lasts until `profiles.plan_until` (set from the purchased daily/weekly/monthly/
+yearly term) and does not auto-renew — expired access falls back to Professional limits.
 
 Enterprise payments use Razorpay. Set `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` in your
 environment to enable live checkout. Until they're set, the upgrade button creates a
-`pending` row in `upgrade_requests` for manual follow-up.
+`pending` row in `upgrade_requests` for manual follow-up. Legal pages live at `/privacy`,
+`/terms`, `/payment` and `/refunds`.
 
 ### Google OAuth Setup
 

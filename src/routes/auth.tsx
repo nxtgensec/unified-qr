@@ -133,6 +133,23 @@ function AuthPage() {
           </a>
           .
         </p>
+        <div className="mt-4 flex items-center justify-center gap-4 text-[11px] text-muted-foreground">
+          <a href="/privacy" className="transition-colors hover:text-foreground">
+            Privacy
+          </a>
+          <span className="h-3 w-px bg-border" aria-hidden />
+          <a href="/terms" className="transition-colors hover:text-foreground">
+            Terms
+          </a>
+          <span className="h-3 w-px bg-border" aria-hidden />
+          <a href="/payment" className="transition-colors hover:text-foreground">
+            Payment
+          </a>
+          <span className="h-3 w-px bg-border" aria-hidden />
+          <a href="/refunds" className="transition-colors hover:text-foreground">
+            Refunds
+          </a>
+        </div>
       </div>
     </div>
   );

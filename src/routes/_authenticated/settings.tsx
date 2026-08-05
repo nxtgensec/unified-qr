@@ -111,11 +111,42 @@ function SettingsPage() {
           Codes never expire and scans are never capped on any plan. Upgrading or cancelling never
           recreates a code or breaks a printed one.
         </p>
+        {enterprise && plan?.planUntil && (
+          <p className="mt-3 text-xs text-muted-foreground">
+            Enterprise access lasts until{" "}
+            <span className="font-medium text-foreground">
+              {new Date(plan.planUntil).toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              })}
+            </span>
+            . It doesn't auto-renew — purchase again to continue.
+          </p>
+        )}
       </div>
 
       <Button className="mt-6" variant="secondary" size="sm" onClick={() => void signOut()}>
         <LogOut className="mr-2 h-4 w-4" /> Sign out
       </Button>
+
+      <div className="mt-6 flex items-center gap-4 text-xs text-muted-foreground">
+        <a href="/privacy" className="transition-colors hover:text-foreground">
+          Privacy
+        </a>
+        <span className="h-3 w-px bg-border" aria-hidden />
+        <a href="/terms" className="transition-colors hover:text-foreground">
+          Terms
+        </a>
+        <span className="h-3 w-px bg-border" aria-hidden />
+        <a href="/payment" className="transition-colors hover:text-foreground">
+          Payment
+        </a>
+        <span className="h-3 w-px bg-border" aria-hidden />
+        <a href="/refunds" className="transition-colors hover:text-foreground">
+          Refunds
+        </a>
+      </div>
 
       <UpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} />
     </DashboardShell>

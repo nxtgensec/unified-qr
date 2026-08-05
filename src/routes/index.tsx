@@ -783,6 +783,18 @@ function Landing() {
             <a href="#faq" className="transition-colors hover:text-foreground">
               FAQ
             </a>
+            <Link to="/privacy" className="transition-colors hover:text-foreground">
+              Privacy
+            </Link>
+            <Link to="/terms" className="transition-colors hover:text-foreground">
+              Terms
+            </Link>
+            <Link to="/payment" className="transition-colors hover:text-foreground">
+              Payment
+            </Link>
+            <Link to="/refunds" className="transition-colors hover:text-foreground">
+              Refunds
+            </Link>
           </nav>
         </div>
         <div className="flex flex-col items-center justify-between gap-2 py-6 text-xs text-muted-foreground sm:flex-row">
