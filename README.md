@@ -58,7 +58,7 @@ Apply the migrations in `supabase/migrations/` to your Supabase project:
 supabase db push --linked
 ```
 
-This creates five tables with Row Level Security:
+This creates six tables with Row Level Security:
 
 | Table              | Purpose                                                                    |
 | ------------------ | -------------------------------------------------------------------------- |
@@ -67,6 +67,7 @@ This creates five tables with Row Level Security:
 | `qr_scans`         | Per-scan records (device, country, referrer, timestamp)                    |
 | `visits`           | Daily site visitors (visitor cookie + per-day rollup)                      |
 | `upgrade_requests` | Enterprise upgrade ledger (manual requests and Razorpay order/payment ids) |
+| `admins`           | Admin allow-list (email) — service role only, no RLS policies              |
 
 ### Plans & Payments
 
@@ -80,6 +81,23 @@ Enterprise payments use Razorpay. Set `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET
 environment to enable live checkout. Until they're set, the upgrade button creates a
 `pending` row in `upgrade_requests` for manual follow-up. Legal pages live at `/privacy`,
 `/terms`, `/payment` and `/refunds`.
+
+### Admin Panel
+
+The admin panel lives at `/admin` and is a completely separate experience from the user
+dashboard (its own layout, nav and server functions). Access is granted by email allow-list —
+seed the `admins` table with an email (the migration ships with
+`kiransavireddy@gmail.com`). Adding more admins is a plain `INSERT INTO public.admins (email)`.
+
+- Every admin server function runs behind `requireSupabaseAdmin` (JWT check **and** an allow-list
+  lookup against `admins`). A non-admin gets a hard 403 server-side; there is no client flag to
+  spoof.
+- Admin reads/writes use the service-role client, so RLS never restricts what an *admin* sees —
+  but the allow-list check happens before any query runs.
+- The `admins` table has RLS enabled with **no** policies and grants only to `service_role`:
+  regular and `authenticated` roles cannot read it, so the allow-list is not enumerable.
+- The `/admin` route re-checks admin status in `beforeLoad` and redirects non-admins to `/dashboard`.
+- An "Admin panel" link appears in the user sidebar only when the signed-in user is on the allow-list.
 
 ### Google OAuth Setup
 
@@ -126,8 +144,15 @@ src/
       decode.tsx              # QR image reader (client-side via jsQR)
       settings.tsx            # Account info, sign out
     api/public/r/$slug.ts     # Dynamic code redirect + scan tracking (server-only)
+    admin/                    # Admin panel — entirely separate from the user dashboard
+      route.tsx               # Session + admin allow-list gate, redirects non-admins
+      index.tsx               # Platform overview: users, codes, scans, revenue, pending requests
+      users.tsx               # All accounts with plan, usage and upgrade counts
+      upgrades.tsx            # Upgrade ledger — mark requests paid and grant Enterprise
+      visits.tsx              # Site visits by day, page, device and country
   components/
     dashboard/DashboardShell.tsx   # Sidebar + header layout for all dashboard pages
+    admin/AdminShell.tsx          # Sidebar + header layout for the admin panel
     qr/QrStudio.tsx               # QR builder — content fields, style controls, export
     qr/QrPreview.tsx              # Live SVG preview component
     BetaBadge.tsx                 # "Beta" pill badge
@@ -136,12 +161,16 @@ src/
     qr/types.ts            # QR kinds, style interfaces, payload builders
     qr/render.ts           # Custom SVG renderer, PNG/SVG export, slug generator
     codes.functions.ts     # Server functions — CRUD for codes, analytics query
+    plans.ts               # Plan definitions, term pricing, plan expiry helpers
+    plans.functions.ts     # Server functions — plan status, Razorpay order/verify, manual upgrade
+    admin.functions.ts     # Server functions — admin panel data + actions (admin-gated)
     utils.ts               # cn() utility (clsx + tailwind-merge)
   integrations/
     supabase/
       client.ts            # Client-side Supabase client (browser)
       client.server.ts     # Server-side admin client (service role, bypasses RLS)
       auth-middleware.ts    # Server-function middleware — validates JWT, injects user
+      admin-middleware.ts   # Server-function middleware — JWT + admin allow-list check
       auth-attacher.ts     # Client middleware — attaches auth token to server RPCs
       types.ts             # Auto-generated Database types
 supabase/
@@ -160,9 +189,17 @@ supabase/
 
 - All server functions require a valid Supabase JWT (via `requireSupabaseAuth` middleware)
 - Row Level Security ensures users can only read/write their own data
-- The admin client (`client.server.ts`) bypasses RLS and is only used for trusted operations (redirect endpoint)
+- The admin client (`client.server.ts`) bypasses RLS and is only used for trusted operations —
+  every admin server function first passes `requireSupabaseAdmin`, which verifies the JWT **and**
+  checks the caller's email against the `admins` allow-list before any query runs
+- The `admins` table is unreadable by `anon`/`authenticated` roles (RLS on, no policies), so the
+  allow-list itself cannot be enumerated or modified by users
+- Admin panel data is only ever served through admin-gated server functions; the `/admin` UI holds
+  no data and any non-admin hit on `/admin` redirects to the user dashboard
 - QR style inputs (colors, logo) are validated server-side with regex to prevent XSS
 - The redirect endpoint includes a 30-second cooldown per code to prevent scan inflation
+- Server function mutations run server-side with schema validation (zod) and are scoped to
+  `auth.uid()` — users cannot target other users' rows
 
 ## License
 

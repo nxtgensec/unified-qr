@@ -63,7 +63,8 @@ export const getMyPlan = createServerFn({ method: "GET" })
 export const requestUpgrade = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
       .from("upgrade_requests")
       .insert({ user_id: context.userId, plan_tier: "enterprise", status: "pending" })
       .select("id")
@@ -109,7 +110,8 @@ export const createRazorpayOrder = createServerFn({ method: "POST" })
 
     const order = (await res.json()) as { id: string; amount: number; currency: string };
 
-    await context.supabase.from("upgrade_requests").insert({
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.from("upgrade_requests").insert({
       user_id: context.userId,
       plan_tier: "enterprise",
       status: "pending",
@@ -153,13 +155,15 @@ export const verifyRazorpayPayment = createServerFn({ method: "POST" })
     }
 
     const planUntil = planUntilForTerm(data.term).toISOString();
-    const { error: updateError } = await context.supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { error: updateError } = await supabaseAdmin
       .from("profiles")
       .update({ plan_tier: "enterprise", plan_until: planUntil })
       .eq("id", context.userId);
     if (updateError) throw new Error(updateError.message);
 
-    await context.supabase
+    await supabaseAdmin
       .from("upgrade_requests")
       .update({
         status: "paid",

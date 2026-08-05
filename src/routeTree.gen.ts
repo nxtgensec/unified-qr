@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as PaymentRouteImport } from './routes/payment'
 import { Route as PrivacyRouteImport } from './routes/privacy'
@@ -23,6 +24,10 @@ import { Route as AuthenticatedCreateRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedDecodeRouteImport } from './routes/_authenticated/decode'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminUpgradesRouteImport } from './routes/admin/upgrades'
+import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as AdminVisitsRouteImport } from './routes/admin/visits'
 import { Route as ApiVisitsRouteImport } from './routes/api/visits'
 import { Route as AppNameRouteImport } from './routes/app.$name'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
@@ -35,6 +40,11 @@ const IndexRoute = IndexRouteImport.update({
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRouteRoute = AdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -97,6 +107,26 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminUpgradesRoute = AdminUpgradesRouteImport.update({
+  id: '/upgrades',
+  path: '/upgrades',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminVisitsRoute = AdminVisitsRouteImport.update({
+  id: '/visits',
+  path: '/visits',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const ApiVisitsRoute = ApiVisitsRouteImport.update({
   id: '/api/visits',
   path: '/api/visits',
@@ -120,6 +150,7 @@ const ApiPublicRSlugRoute = ApiPublicRSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/payment': typeof PaymentRoute
   '/privacy': typeof PrivacyRoute
@@ -132,9 +163,13 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/decode': typeof AuthenticatedDecodeRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/admin/upgrades': typeof AdminUpgradesRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/admin/visits': typeof AdminVisitsRoute
   '/api/visits': typeof ApiVisitsRoute
   '/app/$name': typeof AppNameRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/admin/': typeof AdminIndexRoute
   '/api/public/r/$slug': typeof ApiPublicRSlugRoute
 }
 export interface FileRoutesByTo {
@@ -151,15 +186,20 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/decode': typeof AuthenticatedDecodeRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/admin/upgrades': typeof AdminUpgradesRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/admin/visits': typeof AdminVisitsRoute
   '/api/visits': typeof ApiVisitsRoute
   '/app/$name': typeof AppNameRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/admin': typeof AdminIndexRoute
   '/api/public/r/$slug': typeof ApiPublicRSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/admin': typeof AdminRouteRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/payment': typeof PaymentRoute
   '/privacy': typeof PrivacyRoute
@@ -172,15 +212,20 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/decode': typeof AuthenticatedDecodeRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/admin/upgrades': typeof AdminUpgradesRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/admin/visits': typeof AdminVisitsRoute
   '/api/visits': typeof ApiVisitsRoute
   '/app/$name': typeof AppNameRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/admin/': typeof AdminIndexRoute
   '/api/public/r/$slug': typeof ApiPublicRSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/auth'
     | '/payment'
     | '/privacy'
@@ -193,9 +238,13 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/decode'
     | '/settings'
+    | '/admin/upgrades'
+    | '/admin/users'
+    | '/admin/visits'
     | '/api/visits'
     | '/app/$name'
     | '/auth/callback'
+    | '/admin/'
     | '/api/public/r/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -212,14 +261,19 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/decode'
     | '/settings'
+    | '/admin/upgrades'
+    | '/admin/users'
+    | '/admin/visits'
     | '/api/visits'
     | '/app/$name'
     | '/auth/callback'
+    | '/admin'
     | '/api/public/r/$slug'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/admin'
     | '/auth'
     | '/payment'
     | '/privacy'
@@ -232,15 +286,20 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/decode'
     | '/_authenticated/settings'
+    | '/admin/upgrades'
+    | '/admin/users'
+    | '/admin/visits'
     | '/api/visits'
     | '/app/$name'
     | '/auth/callback'
+    | '/admin/'
     | '/api/public/r/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AdminRouteRoute: typeof AdminRouteRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
   PaymentRoute: typeof PaymentRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -265,6 +324,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -351,6 +417,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/upgrades': {
+      id: '/admin/upgrades'
+      path: '/upgrades'
+      fullPath: '/admin/upgrades'
+      preLoaderRoute: typeof AdminUpgradesRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/visits': {
+      id: '/admin/visits'
+      path: '/visits'
+      fullPath: '/admin/visits'
+      preLoaderRoute: typeof AdminVisitsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/api/visits': {
       id: '/api/visits'
       path: '/api/visits'
@@ -405,6 +499,24 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface AdminRouteRouteChildren {
+  AdminUpgradesRoute: typeof AdminUpgradesRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  AdminVisitsRoute: typeof AdminVisitsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminUpgradesRoute: AdminUpgradesRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  AdminVisitsRoute: AdminVisitsRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
+  AdminRouteRouteChildren,
+)
+
 interface AuthRouteChildren {
   AuthCallbackRoute: typeof AuthCallbackRoute
 }
@@ -418,6 +530,7 @@ const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AdminRouteRoute: AdminRouteRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
   PaymentRoute: PaymentRoute,
   PrivacyRoute: PrivacyRoute,
