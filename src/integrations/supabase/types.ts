@@ -115,6 +115,39 @@ export type Database = {
           },
         ];
       };
+      visits: {
+        Row: {
+          country: string | null;
+          device: string | null;
+          id: string;
+          page: string;
+          referrer: string | null;
+          visit_date: string;
+          visited_at: string;
+          visitor_id: string;
+        };
+        Insert: {
+          country?: string | null;
+          device?: string | null;
+          id?: string;
+          page?: string;
+          referrer?: string | null;
+          visit_date?: string;
+          visited_at?: string;
+          visitor_id: string;
+        };
+        Update: {
+          country?: string | null;
+          device?: string | null;
+          id?: string;
+          page?: string;
+          referrer?: string | null;
+          visit_date?: string;
+          visited_at?: string;
+          visitor_id?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;

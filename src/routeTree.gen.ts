@@ -19,6 +19,7 @@ import { Route as AuthenticatedCreateRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedDecodeRouteImport } from './routes/_authenticated/decode'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as ApiVisitsRouteImport } from './routes/api/visits'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as ApiPublicRSlugRouteImport } from './routes/api/public/r.$slug'
 
@@ -71,6 +72,11 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiVisitsRoute = ApiVisitsRouteImport.update({
+  id: '/api/visits',
+  path: '/api/visits',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
   id: '/callback',
   path: '/callback',
@@ -92,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/decode': typeof AuthenticatedDecodeRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/api/visits': typeof ApiVisitsRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/api/public/r/$slug': typeof ApiPublicRSlugRoute
 }
@@ -105,6 +112,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/decode': typeof AuthenticatedDecodeRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/api/visits': typeof ApiVisitsRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/api/public/r/$slug': typeof ApiPublicRSlugRoute
 }
@@ -120,6 +128,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/decode': typeof AuthenticatedDecodeRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/api/visits': typeof ApiVisitsRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/api/public/r/$slug': typeof ApiPublicRSlugRoute
 }
@@ -135,6 +144,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/decode'
     | '/settings'
+    | '/api/visits'
     | '/auth/callback'
     | '/api/public/r/$slug'
   fileRoutesByTo: FileRoutesByTo
@@ -148,6 +158,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/decode'
     | '/settings'
+    | '/api/visits'
     | '/auth/callback'
     | '/api/public/r/$slug'
   id:
@@ -162,6 +173,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/decode'
     | '/_authenticated/settings'
+    | '/api/visits'
     | '/auth/callback'
     | '/api/public/r/$slug'
   fileRoutesById: FileRoutesById
@@ -170,6 +182,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
+  ApiVisitsRoute: typeof ApiVisitsRoute
   ApiPublicRSlugRoute: typeof ApiPublicRSlugRoute
 }
 
@@ -245,6 +258,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/visits': {
+      id: '/api/visits'
+      path: '/api/visits'
+      fullPath: '/api/visits'
+      preLoaderRoute: typeof ApiVisitsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth/callback': {
       id: '/auth/callback'
       path: '/callback'
@@ -299,6 +319,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
+  ApiVisitsRoute: ApiVisitsRoute,
   ApiPublicRSlugRoute: ApiPublicRSlugRoute,
 }
 export const routeTree = rootRouteImport
