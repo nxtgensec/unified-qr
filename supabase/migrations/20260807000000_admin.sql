@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS public.admins (
 );
 
 GRANT ALL ON public.admins TO service_role;
+REVOKE ALL ON public.admins FROM anon, authenticated;
 
 ALTER TABLE public.admins ENABLE ROW LEVEL SECURITY;
 
