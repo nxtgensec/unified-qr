@@ -113,10 +113,14 @@ export type Database = {
         Row: {
           content: Json;
           created_at: string;
+          expires_at: string | null;
+          favorite: boolean;
           id: string;
           is_dynamic: boolean;
           kind: string;
           name: string;
+          password_hash: string | null;
+          redirect_rules: Json | null;
           scan_count: number;
           slug: string | null;
           style: Json;
@@ -127,10 +131,14 @@ export type Database = {
         Insert: {
           content?: Json;
           created_at?: string;
+          expires_at?: string | null;
+          favorite?: boolean;
           id?: string;
           is_dynamic?: boolean;
           kind?: string;
           name?: string;
+          password_hash?: string | null;
+          redirect_rules?: Json | null;
           scan_count?: number;
           slug?: string | null;
           style?: Json;
@@ -141,10 +149,14 @@ export type Database = {
         Update: {
           content?: Json;
           created_at?: string;
+          expires_at?: string | null;
+          favorite?: boolean;
           id?: string;
           is_dynamic?: boolean;
           kind?: string;
           name?: string;
+          password_hash?: string | null;
+          redirect_rules?: Json | null;
           scan_count?: number;
           slug?: string | null;
           style?: Json;

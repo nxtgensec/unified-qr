@@ -13,13 +13,26 @@ export type QrKind =
   | "social"
   | "app"
   | "bitcoin"
+  | "ethereum"
+  | "solana"
+  | "litecoin"
+  | "dogecoin"
+  | "monero"
+  | "paypal"
   | "googlereview"
+  | "trustpilot"
+  | "yelp"
+  | "booking"
   | "coupon"
   | "youtube"
   | "linkedin"
-  | "telegram";
+  | "telegram"
+  | "instagram"
+  | "tiktok"
+  | "facebook"
+  | "x";
 
-export type DotStyle = "square" | "rounded" | "dots" | "diamond";
+export type DotStyle = "square" | "rounded" | "dots" | "diamond" | "circle";
 export type CornerStyle = "square" | "rounded" | "circle" | "diamond";
 export type Ecc = "L" | "M" | "Q" | "H";
 export type GradientType = "none" | "linear" | "radial";
@@ -246,9 +259,18 @@ export const KINDS: KindMeta[] = [
       { name: "name", label: "Full name", placeholder: "Ada Lovelace" },
       { name: "org", label: "Company", placeholder: "Unified QR" },
       { name: "title", label: "Job title", placeholder: "Engineer" },
-      { name: "phone", label: "Phone", placeholder: "+1 555 0100" },
+      { name: "phone", label: "Mobile", placeholder: "+1 555 0100" },
+      { name: "phone2", label: "Work phone", placeholder: "+1 555 0199" },
       { name: "email", label: "Email", placeholder: "ada@example.com" },
       { name: "website", label: "Website", placeholder: "https://example.com" },
+      { name: "address", label: "Street", placeholder: "1 Example Street" },
+      { name: "city", label: "City", placeholder: "London" },
+      { name: "state", label: "State", placeholder: "" },
+      { name: "zip", label: "Postcode", placeholder: "E1 1AA" },
+      { name: "country", label: "Country", placeholder: "United Kingdom" },
+      { name: "birthday", label: "Birthday", type: "date" },
+      { name: "note", label: "Note", type: "textarea" },
+      { name: "photo", label: "Photo (makes the code denser)", type: "file" },
     ],
   },
   {
@@ -369,6 +391,76 @@ export const KINDS: KindMeta[] = [
     ],
   },
   {
+    kind: "ethereum",
+    label: "Ethereum",
+    hint: "ETH payment address",
+    proOnly: true,
+    fields: [
+      {
+        name: "address",
+        label: "Ethereum address",
+        placeholder: "0x71C7656EC7ab88b098defB751B7401B5f6d8976F",
+      },
+      { name: "amount", label: "Amount (ETH)", placeholder: "0.1" },
+      { name: "label", label: "Label", placeholder: "Invoice 42" },
+    ],
+  },
+  {
+    kind: "solana",
+    label: "Solana",
+    hint: "SOL payment address",
+    proOnly: true,
+    fields: [
+      { name: "address", label: "Solana address", placeholder: "7EcES...sollet" },
+      { name: "amount", label: "Amount (SOL)", placeholder: "1" },
+      { name: "label", label: "Label", placeholder: "Invoice 42" },
+      { name: "message", label: "Message", type: "textarea" },
+    ],
+  },
+  {
+    kind: "litecoin",
+    label: "Litecoin",
+    hint: "LTC payment address",
+    proOnly: true,
+    fields: [
+      { name: "address", label: "Litecoin address", placeholder: "LcCb1J6TLLK..." },
+      { name: "amount", label: "Amount (LTC)", placeholder: "0.5" },
+      { name: "label", label: "Label", placeholder: "Invoice 42" },
+    ],
+  },
+  {
+    kind: "dogecoin",
+    label: "Dogecoin",
+    hint: "DOGE payment address",
+    proOnly: true,
+    fields: [
+      { name: "address", label: "Dogecoin address", placeholder: "D8m4V8eW4Z..." },
+      { name: "amount", label: "Amount (DOGE)", placeholder: "500" },
+      { name: "label", label: "Label", placeholder: "Invoice 42" },
+    ],
+  },
+  {
+    kind: "monero",
+    label: "Monero",
+    hint: "XMR payment address",
+    proOnly: true,
+    fields: [
+      { name: "address", label: "Monero address", placeholder: "4AdUndXHHZ..." },
+      { name: "amount", label: "Amount (XMR)", placeholder: "0.02" },
+      { name: "label", label: "Description", placeholder: "Invoice 42" },
+    ],
+  },
+  {
+    kind: "paypal",
+    label: "PayPal",
+    hint: "PayPal.me payment link",
+    proOnly: true,
+    fields: [
+      { name: "username", label: "PayPal username", placeholder: "yourname" },
+      { name: "amount", label: "Amount (optional)", placeholder: "25" },
+    ],
+  },
+  {
     kind: "googlereview",
     label: "Google Review",
     hint: "Get more reviews",
@@ -377,6 +469,39 @@ export const KINDS: KindMeta[] = [
       { name: "placeId", label: "Google Place ID", placeholder: "ChIJN1t_tDeuEmsRUsoyG83frY4" },
       { name: "url", label: "Or direct review URL", placeholder: "https://g.page/r/..." },
     ],
+  },
+  {
+    kind: "trustpilot",
+    label: "Trustpilot Review",
+    hint: "Leave a Trustpilot review",
+    proOnly: true,
+    fields: [
+      {
+        name: "url",
+        label: "Trustpilot review URL",
+        placeholder: "https://trustpilot.com/review/example.com",
+      },
+    ],
+  },
+  {
+    kind: "yelp",
+    label: "Yelp Review",
+    hint: "Leave a Yelp review",
+    proOnly: true,
+    fields: [
+      {
+        name: "url",
+        label: "Yelp business URL",
+        placeholder: "https://yelp.com/biz/your-business",
+      },
+    ],
+  },
+  {
+    kind: "booking",
+    label: "Booking Review",
+    hint: "Booking link or review",
+    proOnly: true,
+    fields: [{ name: "url", label: "Booking link", placeholder: "https://www.booking.com/..." }],
   },
   {
     kind: "coupon",
@@ -415,6 +540,34 @@ export const KINDS: KindMeta[] = [
       { name: "message", label: "Pre-filled message", type: "textarea" },
     ],
   },
+  {
+    kind: "instagram",
+    label: "Instagram",
+    hint: "Follow an Instagram profile",
+    proOnly: true,
+    fields: [{ name: "username", label: "Instagram username", placeholder: "username" }],
+  },
+  {
+    kind: "tiktok",
+    label: "TikTok",
+    hint: "Follow a TikTok profile",
+    proOnly: true,
+    fields: [{ name: "username", label: "TikTok username", placeholder: "username" }],
+  },
+  {
+    kind: "facebook",
+    label: "Facebook",
+    hint: "Page or profile link",
+    proOnly: true,
+    fields: [{ name: "username", label: "Page or profile name", placeholder: "yourpage" }],
+  },
+  {
+    kind: "x",
+    label: "X (Twitter)",
+    hint: "Follow on X",
+    proOnly: true,
+    fields: [{ name: "username", label: "X username", placeholder: "username" }],
+  },
 ];
 
 export const KIND_LABEL: Record<QrKind, string> = KINDS.reduce(
@@ -440,20 +593,31 @@ export function buildPayload(kind: QrKind, c: QrContent): string {
       return g("text");
     case "wifi":
       return `WIFI:T:${(g("encryption") || "WPA").toUpperCase()};S:${esc(g("ssid"))};P:${esc(g("password"))};;`;
-    case "vcard":
+    case "vcard": {
+      const photo = g("photo");
+      const photoData = photo.startsWith("data:image/") ? photo.slice(photo.indexOf(",") + 1) : "";
       return [
         "BEGIN:VCARD",
         "VERSION:3.0",
-        `FN:${g("name")}`,
+        g("name") ? `FN:${g("name")}` : "",
+        g("name") ? `N:${g("name").split(" ").reverse().join(";")};;;` : "",
         g("org") ? `ORG:${g("org")}` : "",
         g("title") ? `TITLE:${g("title")}` : "",
         g("phone") ? `TEL;TYPE=CELL:${g("phone")}` : "",
+        g("phone2") ? `TEL;TYPE=WORK:${g("phone2")}` : "",
         g("email") ? `EMAIL:${g("email")}` : "",
         g("website") ? `URL:${g("website")}` : "",
+        g("address") || g("city")
+          ? `ADR;TYPE=WORK:;;${g("address")};${g("city")};${g("state")};${g("zip")};${g("country")}`
+          : "",
+        g("birthday") ? `BDAY:${g("birthday")}` : "",
+        g("note") ? `NOTE:${g("note")}` : "",
+        photoData ? `PHOTO;ENCODING=b;TYPE=JPEG:${photoData}` : "",
         "END:VCARD",
       ]
         .filter(Boolean)
         .join("\n");
+    }
     case "email":
       return `mailto:${g("to")}?subject=${encodeURIComponent(g("subject"))}&body=${encodeURIComponent(g("body"))}`;
     case "sms":
@@ -492,6 +656,44 @@ export function buildPayload(kind: QrKind, c: QrContent): string {
       const label = g("label").trim();
       return `bitcoin:${addr}${amt ? `?amount=${amt}` : ""}${label ? `${amt ? "&" : "?"}label=${encodeURIComponent(label)}` : ""}`;
     }
+    case "ethereum": {
+      const addr = g("address").trim();
+      const amt = g("amount").trim();
+      const label = g("label").trim();
+      return `ethereum:${addr}${amt ? `?value=${amt}` : ""}${label ? `${amt ? "&" : "?"}label=${encodeURIComponent(label)}` : ""}`;
+    }
+    case "solana": {
+      const addr = g("address").trim();
+      const amt = g("amount").trim();
+      const label = g("label").trim();
+      const msg = g("message").trim();
+      return `solana:${addr}${amt ? `?amount=${amt}` : ""}${label ? `${amt ? "&" : "?"}label=${encodeURIComponent(label)}` : ""}${(amt || label) && msg ? "&" : ""}${msg ? `message=${encodeURIComponent(msg)}` : ""}`;
+    }
+    case "litecoin": {
+      const addr = g("address").trim();
+      const amt = g("amount").trim();
+      const label = g("label").trim();
+      return `litecoin:${addr}${amt ? `?amount=${amt}` : ""}${label ? `${amt ? "&" : "?"}label=${encodeURIComponent(label)}` : ""}`;
+    }
+    case "dogecoin": {
+      const addr = g("address").trim();
+      const amt = g("amount").trim();
+      const label = g("label").trim();
+      return `dogecoin:${addr}${amt ? `?amount=${amt}` : ""}${label ? `${amt ? "&" : "?"}label=${encodeURIComponent(label)}` : ""}`;
+    }
+    case "monero": {
+      const addr = g("address").trim();
+      const amt = g("amount").trim();
+      const label = g("label").trim();
+      return `monero:${addr}${amt ? `?tx_amount=${amt}` : ""}${label ? `${amt ? "&" : "?"}tx_description=${encodeURIComponent(label)}` : ""}`;
+    }
+    case "paypal": {
+      const user = g("username").trim().replace(/^@/, "");
+      const amt = g("amount").trim();
+      return user
+        ? `https://paypal.me/${encodeURIComponent(user)}${amt ? `/${encodeURIComponent(amt)}` : ""}`
+        : "";
+    }
     case "googlereview": {
       const direct = g("url").trim();
       if (direct) return direct;
@@ -500,6 +702,18 @@ export function buildPayload(kind: QrKind, c: QrContent): string {
         ? `https://search.google.com/local/writereview?placeid=${encodeURIComponent(pid)}`
         : "";
     }
+    case "trustpilot":
+    case "yelp":
+    case "booking":
+      return g("url").trim();
+    case "instagram":
+      return `https://instagram.com/${g("username").replace(/^@/, "").trim()}`;
+    case "tiktok":
+      return `https://tiktok.com/@${g("username").replace(/^@/, "").trim()}`;
+    case "facebook":
+      return `https://facebook.com/${g("username").replace(/^@/, "").trim()}`;
+    case "x":
+      return `https://x.com/${g("username").replace(/^@/, "").trim()}`;
     case "coupon":
       return g("code")
         ? `COUPON:${g("code")}\n${g("discount")}\n${g("description")}`

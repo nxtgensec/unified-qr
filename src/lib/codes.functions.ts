@@ -2,6 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Json } from "@/integrations/supabase/types";
+import { assertSafeHttpUrl, hashPassword, validateRedirectRules } from "./dynamic";
+import { KINDS } from "./qr/types";
 import { PLANS, effectivePlan, type PlanId } from "./plans";
 
 export const listCodes = createServerFn({ method: "GET" })
@@ -11,49 +14,70 @@ export const listCodes = createServerFn({ method: "GET" })
       .from("qr_codes")
       .select("*")
       .eq("user_id", context.userId)
+      .order("favorite", { ascending: false })
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return data ?? [];
   });
 
+const styleSchema = z
+  .object({
+    fg: z.string().regex(/^#[0-9a-fA-F]{3,6}$/, "Invalid foreground color"),
+    bg: z.string().regex(/^#[0-9a-fA-F]{3,6}$/, "Invalid background color"),
+    dotStyle: z.enum(["square", "rounded", "dots"]),
+    cornerStyle: z.enum(["square", "rounded", "circle"]),
+    ecc: z.enum(["L", "M", "Q", "H"]),
+    margin: z.number().min(0).max(8),
+    logo: z
+      .string()
+      .refine(
+        (v) => v === "" || /^data:image\/(png|jpeg|jpg|webp|gif);base64,/i.test(v),
+        "Logo must be a PNG, JPG, WebP or GIF image",
+      )
+      .refine((v) => v.length <= 750_000, "Logo is too large")
+      .nullable()
+      .optional(),
+    logoScale: z.number().min(0.1).max(0.34),
+  })
+  .passthrough();
+
+const redirectRulesInput = z
+  .object({
+    type: z.enum(["language", "split"]),
+    rules: z
+      .array(
+        z.object({
+          lang: z.string().max(10).optional(),
+          weight: z.number().min(1).max(100).optional(),
+          url: z.string().max(2048),
+        }),
+      )
+      .min(1)
+      .max(10),
+  })
+  .nullable()
+  .optional();
+
+const codeSchema = z.object({
+  name: z.string().min(1).max(120),
+  kind: z.string().min(1).max(30),
+  content: z.record(z.string()).default({}),
+  style: styleSchema.optional(),
+  isDynamic: z.boolean(),
+  slug: z
+    .string()
+    .regex(/^[a-z0-9]{4,24}$/i)
+    .nullable(),
+  password: z.string().max(100).optional(),
+  expiresAt: z.string().max(40).nullable().optional(),
+  redirectRules: redirectRulesInput,
+});
+
 export const saveCode = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: unknown) =>
-    z
-      .object({
-        name: z.string().min(1).max(120),
-        kind: z.string().min(1).max(30),
-        content: z.record(z.string()).default({}),
-        style: z
-          .object({
-            fg: z.string().regex(/^#[0-9a-fA-F]{3,6}$/, "Invalid foreground color"),
-            bg: z.string().regex(/^#[0-9a-fA-F]{3,6}$/, "Invalid background color"),
-            dotStyle: z.enum(["square", "rounded", "dots"]),
-            cornerStyle: z.enum(["square", "rounded", "circle"]),
-            ecc: z.enum(["L", "M", "Q", "H"]),
-            margin: z.number().min(0).max(8),
-            logo: z
-              .string()
-              .refine((v) => v === "" || v.startsWith("data:image/"), "Invalid logo")
-              .nullable()
-              .optional(),
-            logoScale: z.number().min(0.1).max(0.34),
-          })
-          .passthrough()
-          .optional(),
-        isDynamic: z.boolean(),
-        slug: z
-          .string()
-          .regex(/^[a-z0-9]{4,24}$/i)
-          .nullable(),
-      })
-      .parse(input),
-  )
+  .validator((input: unknown) => codeSchema.parse(input))
   .handler(async ({ data, context }) => {
-    const target = data.isDynamic ? (data.content["destination"] ?? "").trim() : null;
-    if (data.isDynamic && !/^https?:\/\//i.test(target ?? "")) {
-      throw new Error("Dynamic codes need a destination starting with http:// or https://");
-    }
+    const target = data.isDynamic ? assertSafeHttpUrl(data.content["destination"] ?? "") : null;
 
     if (data.isDynamic && (await planOf(context)) === "professional") {
       const { count, error: countError } = await context.supabase
@@ -69,6 +93,27 @@ export const saveCode = createServerFn({ method: "POST" })
       }
     }
 
+    let passwordHash: string | null = null;
+    if (data.isDynamic && data.password && data.password.length > 0) {
+      if (data.password.length < 4) {
+        throw new Error("Password must be at least 4 characters.");
+      }
+      passwordHash = await hashPassword(data.password);
+    }
+
+    let expiresAt: string | null = null;
+    if (data.isDynamic && data.expiresAt) {
+      const time = Date.parse(data.expiresAt);
+      if (Number.isNaN(time)) throw new Error("Expiry date is invalid.");
+      if (time <= Date.now()) throw new Error("Expiry date must be in the future.");
+      expiresAt = new Date(time).toISOString();
+    }
+
+    let redirectRules: Json | null = null;
+    if (data.isDynamic && data.redirectRules) {
+      redirectRules = validateRedirectRules(data.redirectRules) as unknown as Json;
+    }
+
     const style = data.style ?? {};
 
     const base = {
@@ -80,6 +125,9 @@ export const saveCode = createServerFn({ method: "POST" })
       is_dynamic: data.isDynamic,
       slug: data.isDynamic ? data.slug : null,
       target_url: target,
+      password_hash: data.isDynamic ? passwordHash : null,
+      expires_at: data.isDynamic ? expiresAt : null,
+      redirect_rules: data.isDynamic ? redirectRules : null,
     };
 
     for (let attempt = 0; attempt < 5; attempt++) {
@@ -116,14 +164,49 @@ export const updateCode = createServerFn({ method: "POST" })
       .object({
         id: z.string().uuid(),
         name: z.string().min(1).max(120).optional(),
-        targetUrl: z.string().url().optional(),
+        targetUrl: z.string().optional(),
+        password: z.string().max(100).nullable().optional(),
+        expiresAt: z.string().max(40).nullable().optional(),
+        redirectRules: redirectRulesInput,
+        favorite: z.boolean().optional(),
       })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    const patch: { name?: string; target_url?: string } = {};
-    if (data.name) patch.name = data.name;
-    if (data.targetUrl) patch.target_url = data.targetUrl;
+    const patch: {
+      name?: string;
+      target_url?: string;
+      password_hash?: string | null;
+      expires_at?: string | null;
+      redirect_rules?: Json | null;
+      favorite?: boolean;
+    } = {};
+
+    if (data.name !== undefined) patch.name = data.name;
+    if (data.favorite !== undefined) patch.favorite = data.favorite;
+    if (data.targetUrl !== undefined) {
+      patch.target_url = assertSafeHttpUrl(data.targetUrl);
+    }
+    if (data.password !== undefined) {
+      patch.password_hash =
+        data.password && data.password.length > 0 ? await hashPassword(data.password) : null;
+    }
+    if (data.expiresAt !== undefined) {
+      if (data.expiresAt) {
+        const time = Date.parse(data.expiresAt);
+        if (Number.isNaN(time)) throw new Error("Expiry date is invalid.");
+        if (time <= Date.now()) throw new Error("Expiry date must be in the future.");
+        patch.expires_at = new Date(time).toISOString();
+      } else {
+        patch.expires_at = null;
+      }
+    }
+    if (data.redirectRules !== undefined) {
+      patch.redirect_rules = data.redirectRules
+        ? (validateRedirectRules(data.redirectRules) as unknown as Json)
+        : null;
+    }
+
     if (Object.keys(patch).length === 0) return { ok: true };
 
     const { error } = await context.supabase
@@ -133,6 +216,87 @@ export const updateCode = createServerFn({ method: "POST" })
       .eq("user_id", context.userId);
     if (error) throw new Error(error.message);
     return { ok: true };
+  });
+
+export const importCodes = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((input: unknown) =>
+    z
+      .object({
+        codes: z
+          .array(
+            z.object({
+              name: z.string().min(1).max(120),
+              kind: z.string().min(1).max(30),
+              content: z.record(z.string()).default({}),
+              style: z.record(z.unknown()).default({}),
+              is_dynamic: z.boolean().default(false),
+              slug: z
+                .string()
+                .regex(/^[a-z0-9]{4,24}$/i)
+                .nullable()
+                .optional(),
+              target_url: z.string().nullable().optional(),
+            }),
+          )
+          .min(1)
+          .max(500),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const knownKinds = new Set(KINDS.map((k) => k.kind));
+    let imported = 0;
+    let failed = 0;
+
+    for (const code of data.codes) {
+      if (!knownKinds.has(code.kind as never)) {
+        failed++;
+        continue;
+      }
+      const dynamic = code.is_dynamic;
+      let targetUrl: string | null = null;
+      if (dynamic) {
+        if (!code.target_url) {
+          failed++;
+          continue;
+        }
+        try {
+          targetUrl = assertSafeHttpUrl(code.target_url);
+        } catch {
+          failed++;
+          continue;
+        }
+      }
+      const row = {
+        user_id: context.userId,
+        name: code.name,
+        kind: code.kind,
+        content: code.content as Json,
+        style: code.style as unknown as Json,
+        is_dynamic: dynamic,
+        slug: dynamic ? (code.slug ?? null) : null,
+        target_url: targetUrl,
+      };
+
+      let ok = false;
+      for (let attempt = 0; attempt < 5 && !ok; attempt++) {
+        const { error } = await context.supabase.from("qr_codes").insert({
+          ...row,
+          slug: dynamic ? (attempt === 0 ? (code.slug ?? null) : generateSlug()) : null,
+        });
+        if (!error) {
+          ok = true;
+          imported++;
+        } else if (error.code !== "23505" || !dynamic) {
+          failed++;
+          break;
+        }
+      }
+      if (!ok) failed++;
+    }
+
+    return { imported, failed };
   });
 
 export const deleteCode = createServerFn({ method: "POST" })

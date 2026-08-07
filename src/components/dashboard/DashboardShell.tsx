@@ -16,34 +16,31 @@ import {
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
-import { BetaBadge } from "@/components/BetaBadge";
-import { Logo } from "@/components/Logo";
-import { PlanBadge } from "@/components/PlanBadge";
+import { Logo } from "@/components/brand/Logo";
+import { PlanBadge } from "@/components/plan/PlanBadge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { getAdminStatus } from "@/lib/admin.functions";
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { to: "/dashboard", label: "Overview", icon: LayoutGrid, beta: false },
-  { to: "/create", label: "Create", icon: Plus, beta: false },
-  { to: "/codes", label: "My codes", icon: QrCode, beta: false },
-  { to: "/analytics", label: "Analytics", icon: BarChart3, beta: true },
-  { to: "/bulk", label: "Bulk CSV", icon: Layers, beta: true },
-  { to: "/decode", label: "Decode", icon: ScanLine, beta: true },
-  { to: "/settings", label: "Settings", icon: Settings, beta: false },
+  { to: "/dashboard", label: "Overview", icon: LayoutGrid },
+  { to: "/create", label: "Create", icon: Plus },
+  { to: "/codes", label: "My codes", icon: QrCode },
+  { to: "/analytics", label: "Analytics", icon: BarChart3 },
+  { to: "/bulk", label: "Bulk CSV", icon: Layers },
+  { to: "/decode", label: "Decode", icon: ScanLine },
+  { to: "/settings", label: "Settings", icon: Settings },
 ] as const;
 
 export function DashboardShell({
   title,
   description,
-  beta,
   actions,
   children,
 }: {
   title: string;
   description?: string;
-  beta?: boolean;
   actions?: ReactNode;
   children: ReactNode;
 }) {
@@ -90,7 +87,6 @@ export function DashboardShell({
           >
             <item.icon className="h-4 w-4" />
             <span className="flex-1">{item.label}</span>
-            {item.beta && <BetaBadge />}
           </Link>
         );
       })}
@@ -173,7 +169,6 @@ export function DashboardShell({
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <h1 className="text-lg font-semibold tracking-tight">{title}</h1>
-                {beta && <BetaBadge />}
               </div>
               {description && <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>}
             </div>

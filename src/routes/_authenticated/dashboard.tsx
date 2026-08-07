@@ -1,9 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowRight, BarChart3, Layers, Plus, QrCode, ScanLine } from "lucide-react";
+import {
+  ArrowRight,
+  BarChart3,
+  Check,
+  Copy,
+  Download,
+  Layers,
+  Plus,
+  QrCode,
+  ScanLine,
+} from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
-import { BetaBadge } from "@/components/BetaBadge";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,6 +34,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 
 function Dashboard() {
   const fetchCodes = useServerFn(listCodes);
+  const [copied, setCopied] = useState<string | null>(null);
   const { data, isLoading } = useQuery({
     queryKey: ["codes"],
     queryFn: () => fetchCodes(),
@@ -78,26 +90,53 @@ function Dashboard() {
               </Button>
             </div>
           ) : (
-            codes.slice(0, 5).map((c) => (
-              <div
-                key={c.id}
-                className="flex items-center justify-between border-b border-border px-5 py-3 text-sm last:border-b-0"
-              >
-                <div className="min-w-0">
-                  <p className="truncate font-medium">{c.name}</p>
-                  <p className="text-xs capitalize text-muted-foreground">
-                    {c.kind}
-                    {c.is_dynamic ? " · dynamic" : ""}
-                  </p>
+            codes.slice(0, 5).map((c) => {
+              const shareUrl =
+                c.is_dynamic && c.slug
+                  ? `${typeof window === "undefined" ? "" : window.location.origin}/api/public/r/${c.slug}`
+                  : null;
+              return (
+                <div
+                  key={c.id}
+                  className="flex items-center justify-between border-b border-border px-5 py-3 text-sm last:border-b-0"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate font-medium">{c.name}</p>
+                    <p className="text-xs capitalize text-muted-foreground">
+                      {c.kind}
+                      {c.is_dynamic ? " · dynamic" : ""}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-3">
+                    {shareUrl && (
+                      <button
+                        type="button"
+                        className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                        onClick={() => {
+                          void navigator.clipboard.writeText(shareUrl);
+                          setCopied(c.id);
+                          toast.success("Share link copied");
+                          setTimeout(() => setCopied(null), 1500);
+                        }}
+                      >
+                        {copied === c.id ? (
+                          <Check className="h-3.5 w-3.5" />
+                        ) : (
+                          <Copy className="h-3.5 w-3.5" />
+                        )}
+                        Share
+                      </button>
+                    )}
+                    <span className="text-xs text-muted-foreground">{c.scan_count} scans</span>
+                  </div>
                 </div>
-                <span className="text-xs text-muted-foreground">{c.scan_count} scans</span>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>
 
-      <div className="mt-10 grid gap-4 sm:grid-cols-3">
+      <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <ToolCard
           to="/analytics"
           icon={BarChart3}
@@ -109,6 +148,12 @@ function Dashboard() {
           icon={Layers}
           title="Bulk CSV"
           body="Generate a whole batch at once."
+        />
+        <ToolCard
+          to="/settings"
+          icon={Download}
+          title="Backup"
+          body="Export your library or restore a backup."
         />
         <ToolCard to="/decode" icon={ScanLine} title="Decode" body="Read an existing QR image." />
       </div>
@@ -135,7 +180,7 @@ function ToolCard({
   title,
   body,
 }: {
-  to: "/analytics" | "/bulk" | "/decode";
+  to: "/analytics" | "/bulk" | "/decode" | "/settings";
   icon: typeof BarChart3;
   title: string;
   body: string;
@@ -148,7 +193,6 @@ function ToolCard({
       <Icon className="h-5 w-5 text-muted-foreground" />
       <div className="mt-4 flex items-center gap-2">
         <p className="text-sm font-medium">{title}</p>
-        <BetaBadge />
       </div>
       <p className="mt-1 text-xs text-muted-foreground">{body}</p>
     </Link>

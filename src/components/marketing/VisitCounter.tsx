@@ -9,11 +9,12 @@ export function VisitCounter() {
   const [stats, setStats] = useState<VisitStats | null>(null);
 
   useEffect(() => {
+    if (typeof window === "undefined" || window.location.pathname !== "/") return;
     let cancelled = false;
     fetch("/api/visits", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ page: window.location.pathname }),
+      body: JSON.stringify({ page: "/" }),
     })
       .then((res) => (res.ok ? res.json() : null))
       .then((data: VisitStats | null) => {
@@ -26,10 +27,10 @@ export function VisitCounter() {
   }, []);
 
   return (
-    <div className="pointer-events-none fixed bottom-4 left-4 z-50 flex items-center gap-2 rounded-full border border-border bg-background/80 px-3 py-1.5 text-xs text-muted-foreground backdrop-blur">
+    <div className="pointer-events-none fixed bottom-4 left-4 z-50 hidden items-center gap-2 rounded-full border border-border bg-background/80 px-3 py-1.5 text-xs text-muted-foreground backdrop-blur sm:flex">
       <span className="relative flex h-2 w-2">
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-        <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-foreground opacity-50" />
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-foreground" />
       </span>
       <span className="font-mono">
         {stats

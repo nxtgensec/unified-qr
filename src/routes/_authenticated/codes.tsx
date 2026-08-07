@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Check, Copy, Download, Pencil, Plus, QrCode, Trash2 } from "lucide-react";
+import { Check, Copy, Download, Pencil, Plus, QrCode, Search, Star, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -38,6 +38,8 @@ function CodesPage() {
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
   const [copied, setCopied] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<"all" | "dynamic" | "static">("all");
 
   const { data, isLoading } = useQuery({
     queryKey: ["codes"],
@@ -64,7 +66,25 @@ function CodesPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const codes = data ?? [];
+  const favoriteMutation = useMutation({
+    mutationFn: (input: { id: string; favorite: boolean }) => update({ data: input }),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["codes"] }),
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const codes = (data ?? []).filter((code) => {
+    if (filter === "dynamic" && !code.is_dynamic) return false;
+    if (filter === "static" && code.is_dynamic) return false;
+    if (query.trim()) {
+      const q = query.trim().toLowerCase();
+      const matches =
+        code.name.toLowerCase().includes(q) ||
+        code.kind.toLowerCase().includes(q) ||
+        (code.slug ?? "").toLowerCase().includes(q);
+      if (!matches) return false;
+    }
+    return true;
+  });
 
   return (
     <DashboardShell
@@ -83,7 +103,7 @@ function CodesPage() {
           <Skeleton className="h-44" />
           <Skeleton className="h-44" />
         </div>
-      ) : codes.length === 0 ? (
+      ) : (data?.length ?? 0) === 0 ? (
         <div className="rounded-xl border border-border bg-card p-12 text-center">
           <QrCode className="mx-auto h-6 w-6 text-muted-foreground" />
           <p className="mt-4 text-sm">Your library is empty</p>
@@ -92,104 +112,170 @@ function CodesPage() {
           </Button>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {codes.map((code) => {
-            const style = { ...defaultStyle, ...((code.style ?? {}) as Partial<QrStyle>) };
-            const shortUrl =
-              code.is_dynamic && code.slug
-                ? `${typeof window === "undefined" ? "" : window.location.origin}/api/public/r/${code.slug}`
-                : null;
-            const payload = shortUrl
-              ? shortUrl
-              : buildPayload(code.kind as QrKind, (code.content ?? {}) as QrContent);
-            const svg = buildQrSvg(payload || " ", style);
+        <>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative min-w-0 flex-1 sm:max-w-xs">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search codes…"
+                className="pl-9"
+              />
+            </div>
+            <div className="flex rounded-lg border border-border p-0.5">
+              {(["all", "dynamic", "static"] as const).map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  onClick={() => setFilter(f)}
+                  className={`rounded-md px-3 py-1 text-xs capitalize transition-colors ${
+                    filter === f
+                      ? "bg-foreground text-background"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+          </div>
 
-            return (
-              <div key={code.id} className="rounded-xl border border-border bg-card p-5">
-                <div className="flex gap-4">
-                  <div className="h-24 w-24 shrink-0">
-                    <QrPreview payload={payload || " "} style={style} size={192} />
-                  </div>
+          {codes.length === 0 ? (
+            <div className="mt-4 rounded-xl border border-border bg-card p-10 text-center text-sm text-muted-foreground">
+              No codes match your search.
+            </div>
+          ) : (
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              {codes.map((code) => {
+                const style = { ...defaultStyle, ...((code.style ?? {}) as Partial<QrStyle>) };
+                const shortUrl =
+                  code.is_dynamic && code.slug
+                    ? `${typeof window === "undefined" ? "" : window.location.origin}/api/public/r/${code.slug}`
+                    : null;
+                const payload = shortUrl
+                  ? shortUrl
+                  : buildPayload(code.kind as QrKind, (code.content ?? {}) as QrContent);
+                const svg = buildQrSvg(payload || " ", style);
 
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{code.name}</p>
-                    <p className="text-xs capitalize text-muted-foreground">
-                      {code.kind}
-                      {code.is_dynamic ? " · dynamic" : " · static"} · {code.scan_count} scans
-                    </p>
-                    {shortUrl && (
-                      <button
-                        className="mt-2 flex max-w-full items-center gap-1.5 truncate text-xs text-muted-foreground hover:text-foreground"
-                        onClick={() => {
-                          void navigator.clipboard.writeText(shortUrl);
-                          setCopied(code.id);
-                          setTimeout(() => setCopied(null), 1500);
-                        }}
-                      >
-                        {copied === code.id ? (
-                          <Check className="h-3 w-3 shrink-0" />
-                        ) : (
-                          <Copy className="h-3 w-3 shrink-0" />
+                return (
+                  <div key={code.id} className="rounded-xl border border-border bg-card p-5">
+                    <div className="flex gap-4">
+                      <div className="h-24 w-24 shrink-0">
+                        <QrPreview payload={payload || " "} style={style} size={192} />
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="truncate text-sm font-medium">{code.name}</p>
+                          <button
+                            type="button"
+                            aria-label={code.favorite ? "Unfavorite" : "Favorite"}
+                            onClick={() =>
+                              favoriteMutation.mutate({
+                                id: code.id,
+                                favorite: !code.favorite,
+                              })
+                            }
+                            className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+                          >
+                            <Star
+                              className={`h-4 w-4 ${
+                                code.favorite ? "fill-foreground text-foreground" : ""
+                              }`}
+                            />
+                          </button>
+                        </div>
+                        <p className="text-xs capitalize text-muted-foreground">
+                          {code.kind}
+                          {code.is_dynamic ? " · dynamic" : " · static"} · {code.scan_count} scans
+                          {code.expires_at && (
+                            <>
+                              {" "}
+                              · expires{" "}
+                              {new Date(code.expires_at).toLocaleDateString("en-IN", {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              })}
+                            </>
+                          )}
+                        </p>
+                        {shortUrl && (
+                          <button
+                            className="mt-2 flex max-w-full items-center gap-1.5 truncate text-xs text-muted-foreground hover:text-foreground"
+                            onClick={() => {
+                              void navigator.clipboard.writeText(shortUrl);
+                              setCopied(code.id);
+                              setTimeout(() => setCopied(null), 1500);
+                            }}
+                          >
+                            {copied === code.id ? (
+                              <Check className="h-3 w-3 shrink-0" />
+                            ) : (
+                              <Copy className="h-3 w-3 shrink-0" />
+                            )}
+                            <span className="truncate">/api/public/r/{code.slug}</span>
+                          </button>
                         )}
-                        <span className="truncate">/api/public/r/{code.slug}</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
+                      </div>
+                    </div>
 
-                {editing === code.id ? (
-                  <div className="mt-4 flex gap-2">
-                    <Input
-                      value={draft}
-                      onChange={(e) => setDraft(e.target.value)}
-                      placeholder="https://new-destination.com"
-                    />
-                    <Button
-                      size="sm"
-                      disabled={updateMutation.isPending}
-                      onClick={() => updateMutation.mutate({ id: code.id, targetUrl: draft })}
-                    >
-                      Save
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={() => setEditing(null)}>
-                      Cancel
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => downloadPng(svg, code.name || "qr-code", 1024)}
-                    >
-                      <Download className="mr-2 h-3.5 w-3.5" /> PNG
-                    </Button>
-                    {code.is_dynamic && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => {
-                          setEditing(code.id);
-                          setDraft(code.target_url ?? "");
-                        }}
-                      >
-                        <Pencil className="mr-2 h-3.5 w-3.5" /> Edit target
-                      </Button>
+                    {editing === code.id ? (
+                      <div className="mt-4 flex gap-2">
+                        <Input
+                          value={draft}
+                          onChange={(e) => setDraft(e.target.value)}
+                          placeholder="https://new-destination.com"
+                        />
+                        <Button
+                          size="sm"
+                          disabled={updateMutation.isPending}
+                          onClick={() => updateMutation.mutate({ id: code.id, targetUrl: draft })}
+                        >
+                          Save
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => setEditing(null)}>
+                          Cancel
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => downloadPng(svg, code.name || "qr-code", 1024)}
+                        >
+                          <Download className="mr-2 h-3.5 w-3.5" /> PNG
+                        </Button>
+                        {code.is_dynamic && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              setEditing(code.id);
+                              setDraft(code.target_url ?? "");
+                            }}
+                          >
+                            <Pencil className="mr-2 h-3.5 w-3.5" /> Edit target
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => removeMutation.mutate(code.id)}
+                        >
+                          <Trash2 className="mr-2 h-3.5 w-3.5" /> Delete
+                        </Button>
+                      </div>
                     )}
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="text-destructive hover:text-destructive"
-                      onClick={() => removeMutation.mutate(code.id)}
-                    >
-                      <Trash2 className="mr-2 h-3.5 w-3.5" /> Delete
-                    </Button>
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                );
+              })}
+            </div>
+          )}
+        </>
       )}
     </DashboardShell>
   );

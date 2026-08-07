@@ -36,6 +36,7 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -77,7 +78,7 @@
   --primary: oklch(0.985 0 0);
   --primary-foreground: oklch(0.16 0 0);
 
-  --brand: oklch(0.85 0.21 145);
+  --brand: oklch(0.985 0 0);
   --brand-foreground: oklch(0.16 0 0);
 
   --secondary: oklch(0.245 0 0);
@@ -92,6 +93,7 @@
   --destructive: oklch(0.62 0.2 25);
   --destructive-foreground: oklch(0.985 0 0);
 
+  --success: oklch(0.72 0.16 152);
   --border: oklch(0.28 0 0);
   --input: oklch(0.3 0 0);
   --ring: oklch(0.7 0 0);
@@ -192,4 +194,54 @@
 
 .animate-marquee {
   animation: marquee 32s linear infinite;
+}
+
+@keyframes hero-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-enter {
+  animation: hero-fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.hero-delay-1 {
+  animation-delay: 90ms;
+}
+
+.hero-delay-2 {
+  animation-delay: 180ms;
+}
+
+.hero-delay-3 {
+  animation-delay: 270ms;
+}
+
+.hero-delay-4 {
+  animation-delay: 380ms;
+}
+
+.hero-delay-5 {
+  animation-delay: 500ms;
+}
+
+@keyframes hero-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.hero-scale-in {
+  animation: hero-scale-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }

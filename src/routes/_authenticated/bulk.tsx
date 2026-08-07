@@ -8,7 +8,7 @@ import { toast } from "sonner";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { QrPreview } from "@/components/qr/QrPreview";
-import { UpgradeDialog } from "@/components/UpgradeDialog";
+import { UpgradeDialog } from "@/components/plan/UpgradeDialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
@@ -55,11 +55,7 @@ function BulkPage() {
   };
 
   return (
-    <DashboardShell
-      title="Bulk CSV"
-      beta
-      description="One row per code: name,value — or just a value."
-    >
+    <DashboardShell title="Bulk CSV" description="One row per code: name,value — or just a value.">
       {isLoading ? (
         <Skeleton className="h-64" />
       ) : plan?.bulk ? (

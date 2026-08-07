@@ -92,7 +92,7 @@ seed the `admins` table with an email (the migration ships with
 - Every admin server function runs behind `requireSupabaseAdmin` (JWT check **and** an allow-list
   lookup against `admins`). A non-admin gets a hard 403 server-side; there is no client flag to
   spoof.
-- Admin reads/writes use the service-role client, so RLS never restricts what an *admin* sees —
+- Admin reads/writes use the service-role client, so RLS never restricts what an _admin_ sees —
   but the allow-list check happens before any query runs.
 - The `admins` table has RLS enabled with **no** policies and grants only to `service_role`:
   regular and `authenticated` roles cannot read it, so the allow-list is not enumerable.
@@ -155,7 +155,7 @@ src/
     admin/AdminShell.tsx          # Sidebar + header layout for the admin panel
     qr/QrStudio.tsx               # QR builder — content fields, style controls, export
     qr/QrPreview.tsx              # Live SVG preview component
-    BetaBadge.tsx                 # "Beta" pill badge
+    HeroStudio.tsx                # Landing page live generator widget
     ui/                           # shadcn/ui primitives (46 components)
   lib/
     qr/types.ts            # QR kinds, style interfaces, payload builders

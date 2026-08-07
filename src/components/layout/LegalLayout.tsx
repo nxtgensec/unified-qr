@@ -1,13 +1,14 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
-import { Logo } from "@/components/Logo";
+import { Logo } from "@/components/brand/Logo";
 
 const LEGAL_LINKS = [
   { to: "/privacy", label: "Privacy" },
   { to: "/terms", label: "Terms" },
   { to: "/payment", label: "Payment" },
   { to: "/refunds", label: "Refunds" },
+  { to: "/contact", label: "Contact" },
 ] as const;
 
 export function LegalLayout({

@@ -22,7 +22,8 @@ dist-ssr
 .vercel
 *.local
 
-# Wrangler / Cloudflare
+# Supabase
+supabase/.temp/
 .wrangler/
 .dev.vars
 

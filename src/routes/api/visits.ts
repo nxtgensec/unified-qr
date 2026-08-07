@@ -26,7 +26,13 @@ export const Route = createFileRoute("/api/visits")({
         let page = "/";
         try {
           const body = (await request.json()) as { page?: string };
-          if (typeof body.page === "string" && body.page) page = body.page;
+          if (typeof body.page === "string" && body.page) {
+            const cleaned = Array.from(body.page)
+              .filter((ch) => ch.charCodeAt(0) >= 32 && ch.charCodeAt(0) !== 127)
+              .join("")
+              .slice(0, 200);
+            if (cleaned) page = cleaned;
+          }
         } catch {
           // body is optional
         }

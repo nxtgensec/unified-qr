@@ -50,7 +50,7 @@ function DecodePage() {
   };
 
   return (
-    <DashboardShell title="Decode" beta description="Read the contents of an existing QR image.">
+    <DashboardShell title="Decode" description="Read the contents of an existing QR image.">
       <div className="rounded-xl border border-dashed border-border bg-card p-12 text-center">
         <ScanLine className="mx-auto h-6 w-6 text-muted-foreground" />
         <p className="mt-4 text-sm">Upload a PNG or JPG containing a QR code</p>

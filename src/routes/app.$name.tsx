@@ -9,13 +9,22 @@ export const Route = createFileRoute("/app/$name")({
         const android = url.searchParams.get("android");
         const ua = request.headers.get("user-agent") ?? "";
         const isApple = /iphone|ipad|ipod/i.test(ua);
-        const destination = (isApple ? ios : android) ?? ios ?? android;
-        if (!destination) {
+        const candidate = (isApple ? ios : android) ?? ios ?? android;
+        if (!candidate) {
           return new Response("Missing app store link.", { status: 400 });
+        }
+        let destination: URL;
+        try {
+          destination = new URL(candidate);
+        } catch {
+          return new Response("Invalid app store link.", { status: 400 });
+        }
+        if (destination.protocol !== "https:") {
+          return new Response("Invalid app store link.", { status: 400 });
         }
         return new Response(null, {
           status: 302,
-          headers: { Location: destination, "Cache-Control": "no-store" },
+          headers: { Location: destination.toString(), "Cache-Control": "no-store" },
         });
       },
     },

@@ -1,15 +1,19 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { LogOut, Sparkles } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Download, Loader2, LogOut, Sparkles, Upload } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
-import { UpgradeDialog } from "@/components/UpgradeDialog";
+import { UpgradeDialog } from "@/components/plan/UpgradeDialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
+import { exportBackup, toBackupCode } from "@/lib/backup";
+import type { BackupCode } from "@/lib/backup";
+import { importCodes, listCodes } from "@/lib/codes.functions";
 import { getMyPlan } from "@/lib/plans.functions";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
@@ -26,14 +30,63 @@ export const Route = createFileRoute("/_authenticated/settings")({
 function SettingsPage() {
   const [email, setEmail] = useState("");
   const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [backupBusy, setBackupBusy] = useState<"json" | "csv" | "zip" | null>(null);
+  const importRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const fetchPlan = useServerFn(getMyPlan);
+  const fetchCodes = useServerFn(listCodes);
   const { data: plan, isLoading } = useQuery({
     queryKey: ["plan"],
     queryFn: () => fetchPlan(),
     staleTime: 60_000,
   });
+
+  const importMutation = useMutation({
+    mutationFn: (codes: unknown) => importCodes({ data: { codes } }),
+    onSuccess: (res) => {
+      toast.success(
+        res.failed > 0
+          ? `Imported ${res.imported} code(s), skipped ${res.failed}`
+          : `Imported ${res.imported} code(s)`,
+      );
+      void queryClient.invalidateQueries({ queryKey: ["codes"] });
+    },
+    onError: (error) => toast.error(error.message || "Import failed"),
+  });
+
+  const onExport = async (format: "json" | "csv" | "zip") => {
+    setBackupBusy(format);
+    try {
+      const rows = await fetchCodes();
+      const codes: BackupCode[] = rows.map((row) => toBackupCode(row as never));
+      const res = await exportBackup(codes, format);
+      toast.success(`Exported ${res.count} code(s) as ${res.name}`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Export failed");
+    } finally {
+      setBackupBusy(null);
+    }
+  };
+
+  const onImportFile = (file: File | undefined) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(String(reader.result)) as unknown;
+        const codes = Array.isArray(parsed) ? parsed : (parsed as { codes?: unknown }).codes;
+        if (!Array.isArray(codes) || codes.length === 0) {
+          toast.error("No codes found in that file");
+          return;
+        }
+        importMutation.mutate(codes);
+      } catch {
+        toast.error("Could not read that backup file");
+      }
+    };
+    reader.readAsText(file);
+  };
 
   useEffect(() => {
     void supabase.auth.getSession().then(({ data }) => setEmail(data.session?.user.email ?? ""));
@@ -124,6 +177,78 @@ function SettingsPage() {
             . It doesn't auto-renew — purchase again to continue.
           </p>
         )}
+      </div>
+
+      <div className="mt-6 rounded-xl border border-border bg-card p-5">
+        <p className="text-sm font-medium">Backup &amp; restore</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Export your whole library as JSON, CSV, or a ZIP that also includes every QR image — or
+          re-import a JSON backup any time.
+        </p>
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <Button
+            size="sm"
+            variant="secondary"
+            disabled={backupBusy != null}
+            onClick={() => void onExport("json")}
+          >
+            {backupBusy === "json" ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="mr-2 h-4 w-4" />
+            )}
+            JSON
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            disabled={backupBusy != null}
+            onClick={() => void onExport("csv")}
+          >
+            {backupBusy === "csv" ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="mr-2 h-4 w-4" />
+            )}
+            CSV
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            disabled={backupBusy != null}
+            onClick={() => void onExport("zip")}
+          >
+            {backupBusy === "zip" ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="mr-2 h-4 w-4" />
+            )}
+            ZIP + images
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            disabled={importMutation.isPending}
+            onClick={() => importRef.current?.click()}
+          >
+            {importMutation.isPending ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Upload className="mr-2 h-4 w-4" />
+            )}
+            Restore from JSON
+          </Button>
+          <input
+            ref={importRef}
+            type="file"
+            accept="application/json,.json"
+            className="hidden"
+            onChange={(e) => {
+              onImportFile(e.target.files?.[0]);
+              e.target.value = "";
+            }}
+          />
+        </div>
       </div>
 
       <Button className="mt-6" variant="secondary" size="sm" onClick={() => void signOut()}>

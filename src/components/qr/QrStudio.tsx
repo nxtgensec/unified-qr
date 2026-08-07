@@ -1,16 +1,44 @@
-import { Download, ImageIcon, Loader2, Lock, RefreshCw, Save, X } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  Copy,
+  Download,
+  ImageIcon,
+  Loader2,
+  Lock,
+  RefreshCw,
+  Save,
+  X,
+} from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { DynamicOptions, type RedirectRulesInput } from "@/components/qr/DynamicOptions";
 import { QrPreview } from "@/components/qr/QrPreview";
-import { buildQrSvg, downloadPng, downloadSvg, slugify } from "@/lib/qr/render";
+import {
+  buildQrEps,
+  buildQrSvg,
+  downloadEps,
+  downloadPdf,
+  downloadPng,
+  downloadSvg,
+  renderPngBlob,
+  slugify,
+} from "@/lib/qr/render";
 import { KINDS, PRESETS, buildPayload, defaultStyle } from "@/lib/qr/types";
 import type {
+  CornerStyle,
   DotStyle,
   Ecc,
   FrameKind,
@@ -28,6 +56,9 @@ export interface StudioValue {
   style: QrStyle;
   isDynamic: boolean;
   slug: string | null;
+  password?: string;
+  expiresAt?: string | null;
+  redirectRules?: RedirectRulesInput | null;
 }
 
 interface QrStudioProps {
@@ -39,7 +70,14 @@ interface QrStudioProps {
 }
 
 const SHAPES: DotStyle[] = ["square", "rounded", "dots", "diamond"];
-const EYE_SHAPES: DotStyle[] = ["square", "rounded", "circle", "diamond"];
+const EYE_SHAPES: CornerStyle[] = ["square", "rounded", "circle", "diamond"];
+
+function toLocalInput(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
 const ECCS: Ecc[] = ["L", "M", "Q", "H"];
 const GRADIENTS: GradientType[] = ["none", "linear", "radial"];
 const FRAMES: FrameKind[] = ["none", "scan-me", "visit-us", "pay-here", "call-us", "download-app"];
@@ -54,6 +92,11 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
   const [name, setName] = useState(initial?.name ?? "");
   const [isDynamic, setIsDynamic] = useState(initial?.isDynamic ?? false);
   const [slug] = useState<string>(initial?.slug ?? slugify());
+  const [password, setPassword] = useState(initial?.password ?? "");
+  const [expiresAt, setExpiresAt] = useState(
+    initial?.expiresAt ? toLocalInput(initial.expiresAt) : "",
+  );
+  const [rules, setRules] = useState<RedirectRulesInput | null>(initial?.redirectRules ?? null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const meta = useMemo(() => KINDS.find((k) => k.kind === kind) ?? KINDS[0]!, [kind]);
@@ -65,22 +108,43 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
 
   const filename = (name || meta.label || "unified-qr").toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
-  const download = async (format: "png" | "svg") => {
+  const download = async (format: "png" | "svg" | "pdf" | "eps") => {
     if (!payload.trim()) {
       toast.error("Add some content first");
       return;
     }
     try {
       const svg = buildQrSvg(payload, style, 1024);
-      if (format === "svg") {
-        if (!full) return onLocked?.();
-        downloadSvg(svg, filename);
-      } else {
+      if (format === "png") {
         await downloadPng(svg, filename);
+      } else {
+        if (!full) return onLocked?.();
+        if (format === "svg") downloadSvg(svg, filename);
+        else if (format === "pdf") await downloadPdf(svg, filename);
+        else downloadEps(buildQrEps(payload, style), filename);
       }
       toast.success(`Downloaded ${format.toUpperCase()}`);
     } catch {
       toast.error("Could not export this code");
+    }
+  };
+
+  const copyImage = async () => {
+    if (!payload.trim()) {
+      toast.error("Add some content first");
+      return;
+    }
+    try {
+      const blob = await renderPngBlob(buildQrSvg(payload, style, 512), 512);
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+      toast.success("Image copied — paste it anywhere");
+    } catch {
+      try {
+        await navigator.clipboard.writeText(payload.trim());
+        toast.success("Content copied");
+      } catch {
+        toast.error("Could not copy");
+      }
     }
   };
 
@@ -90,12 +154,39 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
       toast.error("Please use a logo under 500 KB");
       return;
     }
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please choose an image file");
+    if (!/^image\/(png|jpe?g|webp|gif)$/.test(file.type)) {
+      toast.error("Please choose a PNG, JPG, WebP or GIF image");
       return;
     }
     const reader = new FileReader();
     reader.onload = () => setStyle((s) => ({ ...s, logo: String(reader.result) }));
+    reader.readAsDataURL(file);
+  };
+
+  const pickPhoto = (file: File | undefined) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please choose an image");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const max = 128;
+        const scale = Math.min(1, max / Math.max(img.width, img.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(img.width * scale));
+        canvas.height = Math.max(1, Math.round(img.height * scale));
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        setContent((c) => ({ ...c, photo: canvas.toDataURL("image/jpeg", 0.6) }));
+        toast.success("Photo added — the code is denser but still scannable");
+      };
+      img.onerror = () => toast.error("Could not read that image");
+      img.src = String(reader.result);
+    };
     reader.readAsDataURL(file);
   };
 
@@ -160,6 +251,47 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
                   />
                 );
               }
+              if (f.type === "file") {
+                return (
+                  <div key={f.name} className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">{f.label}</Label>
+                    <div className="flex items-center gap-3">
+                      {content[f.name] ? (
+                        <img
+                          src={content[f.name]}
+                          alt="Contact photo"
+                          className="h-12 w-12 rounded-lg border border-border object-cover"
+                        />
+                      ) : null}
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => fileRef.current?.click()}
+                      >
+                        {content[f.name] ? "Replace photo" : "Add photo"}
+                      </Button>
+                      {content[f.name] && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setContent((c) => ({ ...c, photo: "" }))}
+                        >
+                          <X className="mr-2 h-3.5 w-3.5" /> Remove
+                        </Button>
+                      )}
+                      <input
+                        ref={fileRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => pickPhoto(e.target.files?.[0])}
+                      />
+                    </div>
+                  </div>
+                );
+              }
               return (
                 <Field
                   key={f.name}
@@ -188,6 +320,17 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
               </div>
               <Switch checked={isDynamic} onCheckedChange={setIsDynamic} />
             </div>
+          )}
+
+          {dynamicOn && (
+            <DynamicOptions
+              password={password}
+              onPassword={setPassword}
+              expiresAt={expiresAt}
+              onExpiresAt={setExpiresAt}
+              rules={rules}
+              onRules={setRules}
+            />
           )}
         </div>
 
@@ -412,10 +555,31 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
           <Button type="button" onClick={() => void download("png")}>
             <Download className="mr-2 h-4 w-4" /> PNG
           </Button>
-          <Button type="button" variant="secondary" onClick={() => void download("svg")}>
-            {full ? <Download className="mr-2 h-4 w-4" /> : <Lock className="mr-2 h-4 w-4" />} SVG
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button type="button" variant="secondary">
+                {full ? <Download className="mr-2 h-4 w-4" /> : <Lock className="mr-2 h-4 w-4" />}
+                Export
+                <ChevronDown className="ml-1 h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={() => void download("svg")}>SVG vector</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => void download("pdf")}>
+                PDF (print-ready)
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => void download("eps")}>EPS vector</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
+        <Button
+          type="button"
+          variant="secondary"
+          className="w-full"
+          onClick={() => void copyImage()}
+        >
+          <Copy className="mr-2 h-4 w-4" /> Copy image
+        </Button>
         {full && onSave && (
           <Button
             type="button"
@@ -430,6 +594,15 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
                 style,
                 isDynamic: dynamicOn,
                 slug: dynamicOn ? slug : null,
+                ...(dynamicOn ? { password } : {}),
+                expiresAt: dynamicOn && expiresAt ? new Date(expiresAt).toISOString() : null,
+                redirectRules:
+                  dynamicOn && rules
+                    ? (() => {
+                        const filled = rules.rules.filter((r) => r.url.trim());
+                        return filled.length > 0 ? { type: rules.type, rules: filled } : null;
+                      })()
+                    : null,
               })
             }
           >

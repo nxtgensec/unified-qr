@@ -38,7 +38,7 @@ function AdminUpgrades() {
 
   const markPaid = useServerFn(adminMarkUpgradePaid);
   const mutation = useMutation({
-    mutationFn: (input: { upgradeId: string; term: BillingTerm }) => markPaid(input),
+    mutationFn: (input: { upgradeId: string; term: BillingTerm }) => markPaid({ data: input }),
     onSuccess: () => {
       toast.success("Upgrade marked paid and Enterprise granted");
       void queryClient.invalidateQueries({ queryKey: ["admin-upgrades"] });

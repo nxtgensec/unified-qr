@@ -84,7 +84,7 @@ function AnalyticsPage() {
       : "Full scan history across all your dynamic codes.";
 
   return (
-    <DashboardShell title="Analytics" beta description={windowLabel}>
+    <DashboardShell title="Analytics" description={windowLabel}>
       {isLoading ? (
         <Skeleton className="h-64" />
       ) : (

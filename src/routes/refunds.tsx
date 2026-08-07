@@ -1,16 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { LegalLayout, LegalSection } from "@/components/LegalLayout";
+import { LegalLayout, LegalSection } from "@/components/layout/LegalLayout";
 
 export const Route = createFileRoute("/refunds")({
   head: () => ({
     meta: [
-      { title: "Refund Policy — Unified QR" },
+      { title: "Refunds & Cancellations — Unified QR" },
       {
         name: "description",
         content: "Returns, refunds and cancellations for Unified QR Enterprise purchases.",
       },
-      { property: "og:title", content: "Refund Policy — Unified QR" },
+      { property: "og:title", content: "Refunds & Cancellations — Unified QR" },
       {
         property: "og:description",
         content: "Returns, refunds and cancellations for Unified QR Enterprise purchases.",
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/refunds")({
 
 function RefundsPage() {
   return (
-    <LegalLayout title="Refund Policy" updated="August 5, 2026">
+    <LegalLayout title="Refunds & Cancellations" updated="August 5, 2026">
       <LegalSection title="1. Digital services are non-returnable">
         <p>
           Enterprise access is a digital service, not a physical product, so there is no "return" in

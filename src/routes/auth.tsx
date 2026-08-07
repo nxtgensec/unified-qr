@@ -3,8 +3,8 @@ import { ArrowLeft, Check, Loader2, QrCode } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { GoogleIcon } from "@/components/GoogleIcon";
-import { Logo } from "@/components/Logo";
+import { GoogleIcon } from "@/components/brand/GoogleIcon";
+import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -148,6 +148,10 @@ function AuthPage() {
           <span className="h-3 w-px bg-border" aria-hidden />
           <a href="/refunds" className="transition-colors hover:text-foreground">
             Refunds
+          </a>
+          <span className="h-3 w-px bg-border" aria-hidden />
+          <a href="/contact" className="transition-colors hover:text-foreground">
+            Contact
           </a>
         </div>
       </div>

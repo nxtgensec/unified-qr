@@ -8,9 +8,12 @@ function safeColor(value: string | undefined, fallback: string): string {
   return value && HEX_COLOR.test(value) ? value.toLowerCase() : fallback;
 }
 
+const RASTER_LOGO = /^data:image\/(png|jpeg|jpg|webp|gif);base64,/i;
+
 function safeLogo(value: string | undefined | null): string | null {
   if (!value) return null;
-  return value.startsWith("data:image/") ? value : null;
+  if (value.length > 750_000) return null;
+  return RASTER_LOGO.test(value) ? value : null;
 }
 
 function buildDefs(style: QrStyle): string {
@@ -220,7 +223,7 @@ export function buildQrSvg(payload: string, style: QrStyle, size = 512): string 
   const defs = buildDefs(style);
 
   return (
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${finalW} ${finalH}" shape-rendering="geometricPrecision">` +
+    `<svg xmlns="http://www.w3.org/2000/svg" class="block h-auto w-full" width="${size}" height="${size}" viewBox="0 0 ${finalW} ${finalH}" shape-rendering="geometricPrecision">` +
     defs +
     `<rect width="${finalW}" height="${finalH}" fill="${bg}"/>` +
     frame.frameSvg +
@@ -263,6 +266,278 @@ export async function renderPngBlob(svg: string, size = 1024): Promise<Blob> {
 export async function downloadPng(svg: string, filename: string, size = 1024) {
   const blob = await renderPngBlob(svg, size);
   triggerDownload(URL.createObjectURL(blob), `${filename}.png`, true);
+}
+
+function hexToRgb(hex: string): [number, number, number] {
+  const value = hex.replace("#", "");
+  const full =
+    value.length === 3
+      ? value
+          .split("")
+          .map((c) => c + c)
+          .join("")
+      : value;
+  const num = parseInt(full, 16);
+  return [((num >> 16) & 255) / 255, ((num >> 8) & 255) / 255, (num & 255) / 255];
+}
+
+const FRAME_LABELS: Record<string, string> = {
+  "scan-me": "SCAN ME",
+  "visit-us": "VISIT US",
+  "pay-here": "PAY HERE",
+  "call-us": "CALL US",
+  "download-app": "DOWNLOAD APP",
+};
+
+function escEps(s: string): string {
+  return s.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+}
+
+export function buildQrEps(payload: string, style: QrStyle): string {
+  const safePayload = payload && payload.length > 0 ? payload : " ";
+  const qr = QRCode.create(safePayload, { errorCorrectionLevel: style.ecc });
+  const fg = safeColor(style.fg, "#000000");
+  const bg = safeColor(style.bg, "#ffffff");
+  const n = qr.modules.size;
+  const data = qr.modules.data;
+  const margin = Math.max(0, Math.min(8, style.margin));
+  const total = n + margin * 2;
+
+  const frame = buildFrame(n, margin, style.frame, style.frameText, total, fg);
+  const finalW = total + frame.extraLeft + frame.extraRight;
+  const finalH = total + frame.extraTop + frame.extraBottom;
+  const offsetX = frame.extraLeft;
+  const offsetY = frame.extraTop;
+
+  const [fr, fgc, fb] = hexToRgb(fg);
+  const [br, bgc, bb] = hexToRgb(bg);
+  const f = (v: number) => v.toFixed(3);
+  const flipY = (y: number, h = 0) => finalH - y - h;
+  const setFg = `${fr} ${fgc} ${fb} setrgbcolor`;
+  const setBg = `${br} ${bgc} ${bb} setrgbcolor`;
+
+  const eps: string[] = [];
+  eps.push("%!PS-Adobe-3.0 EPSF-3.0");
+  eps.push(`%%BoundingBox: 0 0 ${f(finalW)} ${f(finalH)}`);
+  eps.push("%%Pages: 1");
+  eps.push("%%EndComments");
+  eps.push("gsave");
+
+  eps.push(setBg);
+  eps.push(`0 0 ${f(finalW)} ${f(finalH)} rectfill`);
+  eps.push(setFg);
+
+  const isFinder = (x: number, y: number) =>
+    (x < 7 && y < 7) || (x >= n - 7 && y < 7) || (x < 7 && y >= n - 7);
+
+  for (let y = 0; y < n; y++) {
+    for (let x = 0; x < n; x++) {
+      if (!data[y * n + x]) continue;
+      if (isFinder(x, y)) continue;
+      const cx = x + margin + offsetX;
+      const cy = y + margin + offsetY;
+      if (style.dotStyle === "dots") {
+        eps.push(`newpath ${f(cx + 0.5)} ${f(flipY(cy, 1) + 0.5)} 0.5 0 360 arc fill`);
+      } else if (style.dotStyle === "diamond") {
+        const s = 0.72;
+        const px = cx + 0.5;
+        const py = cy + 0.5;
+        eps.push(
+          `${f(px)} ${f(flipY(py - s))} moveto ${f(px + s)} ${f(flipY(py))} lineto ${f(px)} ${f(flipY(py + s))} lineto ${f(px - s)} ${f(flipY(py))} lineto closepath fill`,
+        );
+      } else {
+        eps.push(`${f(cx)} ${f(flipY(cy, 1))} 1 1 rectfill`);
+      }
+    }
+  }
+
+  const finder = (ox: number, oy: number) => {
+    const x = ox + margin + offsetX;
+    const y = oy + margin + offsetY;
+    if (style.eyeStyle === "diamond") {
+      const s = 3.5;
+      eps.push(
+        `${f(x + 3.5)} ${f(flipY(y))} moveto ${f(x + 7)} ${f(flipY(y + 3.5))} lineto ${f(x + 3.5)} ${f(flipY(y + 7))} lineto ${f(x)} ${f(flipY(y + 3.5))} lineto closepath fill`,
+      );
+    } else if (style.eyeStyle === "circle") {
+      eps.push(`newpath ${f(x + 3.5)} ${f(flipY(y, 7) + 3.5)} 3.5 0 360 arc fill`);
+    } else {
+      eps.push(`${f(x)} ${f(flipY(y, 7))} 7 7 rectfill`);
+    }
+    if (style.eyeStyle === "diamond") {
+      eps.push(setBg);
+      const s = 2.5;
+      eps.push(
+        `${f(x + 3.5)} ${f(flipY(y + 1))} moveto ${f(x + 6)} ${f(flipY(y + 3.5))} lineto ${f(x + 3.5)} ${f(flipY(y + 6))} lineto ${f(x + 1)} ${f(flipY(y + 3.5))} lineto closepath fill`,
+      );
+    } else {
+      eps.push(setBg);
+      eps.push(`${f(x + 1)} ${f(flipY(y + 1, 5))} 5 5 rectfill`);
+    }
+    eps.push(setFg);
+    if (style.ballStyle === "diamond") {
+      const s = 1.08;
+      eps.push(
+        `${f(x + 3.5)} ${f(flipY(y + 3.5 - s))} moveto ${f(x + 3.5 + s)} ${f(flipY(y + 3.5))} lineto ${f(x + 3.5)} ${f(flipY(y + 3.5 + s))} lineto ${f(x + 3.5 - s)} ${f(flipY(y + 3.5))} lineto closepath fill`,
+      );
+    } else if (style.ballStyle === "circle") {
+      eps.push(`newpath ${f(x + 3.5)} ${f(flipY(y + 3.5, 3)) + 1.5} 1.5 0 360 arc fill`);
+    } else {
+      eps.push(`${f(x + 2)} ${f(flipY(y + 2, 3))} 3 3 rectfill`);
+    }
+  };
+  finder(0, 0);
+  finder(n - 7, 0);
+  finder(0, n - 7);
+
+  const bannerHeight = 6.5;
+  if (frame.extraTop > 0) {
+    eps.push(`${f(0)} ${f(finalH - bannerHeight)} ${f(total)} ${f(bannerHeight)} rectfill`);
+    const text = frameTextFor(style.frame, style.frameText);
+    const fs = 1.5;
+    eps.push(`1 1 1 setrgbcolor /Helvetica-Bold findfont ${f(fs)} scalefont setfont`);
+    eps.push(
+      `(${escEps(text)}) dup stringwidth pop ${f(total)} exch sub 2 div ${f(finalH - bannerHeight / 2 - fs * 0.35)} moveto show`,
+    );
+    eps.push(setFg);
+  }
+  if (frame.extraBottom > 0) {
+    eps.push(`${f(0)} ${f(0)} ${f(total)} ${f(bannerHeight)} rectfill`);
+    const text = frameTextFor(style.frame, style.frameText);
+    const fs = 1.5;
+    eps.push(`1 1 1 setrgbcolor /Helvetica-Bold findfont ${f(fs)} scalefont setfont`);
+    eps.push(
+      `(${escEps(text)}) dup stringwidth pop ${f(total)} exch sub 2 div ${f(bannerHeight / 2 - fs * 0.35)} moveto show`,
+    );
+    eps.push(setFg);
+  }
+
+  eps.push("grestore");
+  eps.push("showpage");
+  eps.push("%%EOF");
+  return eps.join("\n");
+}
+
+function frameTextFor(frame: string, frameText: string): string {
+  if (frame === "none" || !frame) return "";
+  return frameText || FRAME_LABELS[frame] || "SCAN ME";
+}
+
+export function downloadEps(eps: string, filename: string) {
+  const blob = new Blob([eps], { type: "application/postscript" });
+  triggerDownload(URL.createObjectURL(blob), `${filename}.eps`, true);
+}
+
+export async function renderJpegBlob(svg: string, size = 1024): Promise<Blob> {
+  const url = svgToDataUrl(svg);
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  await new Promise<void>((resolve, reject) => {
+    img.onload = () => resolve();
+    img.onerror = () => reject(new Error("Could not rasterise the QR code"));
+    img.src = url;
+  });
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas is unavailable");
+  ctx.drawImage(img, 0, 0, size, size);
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (b) => (b ? resolve(b) : reject(new Error("Could not create JPEG"))),
+      "image/jpeg",
+      0.92,
+    );
+  });
+}
+
+export function buildPdf(
+  jpeg: Uint8Array,
+  width: number,
+  height: number,
+  sizePt = 360,
+): Uint8Array {
+  const pageW = 595.28;
+  const pageH = 841.89;
+  const imgW = sizePt;
+  const imgH = sizePt * (height / width);
+  const x = (pageW - imgW) / 2;
+  const y = (pageH - imgH) / 2;
+  const content = `q\n${imgW} 0 0 ${imgH} ${x} ${y} cm\n/Im0 Do\nQ`;
+
+  const enc = new TextEncoder();
+  const chunks: Uint8Array[] = [];
+  const offsets: number[] = [];
+  let offset = 0;
+  const push = (bytes: Uint8Array) => {
+    chunks.push(bytes);
+    offset += bytes.length;
+  };
+
+  push(enc.encode("%PDF-1.4\n%\u00e2\u00e3\u00cf\u00d3\n"));
+
+  offsets.push(offset);
+  push(
+    enc.encode(
+      `1 0 obj\n<< /Type /XObject /Subtype /Image /Width ${width} /Height ${height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpeg.length} >>\nstream\n`,
+    ),
+  );
+  push(jpeg);
+  push(enc.encode("\nendstream\nendobj\n"));
+
+  offsets.push(offset);
+  push(
+    enc.encode(`2 0 obj\n<< /Length ${content.length} >>\nstream\n${content}\nendstream\nendobj\n`),
+  );
+
+  offsets.push(offset);
+  push(
+    enc.encode(
+      `3 0 obj\n<< /Type /Page /Parent 5 0 R /MediaBox [0 0 ${pageW} ${pageH}] /Resources << /XObject << /Im0 1 0 R >> >> /Contents 2 0 R >>\nendobj\n`,
+    ),
+  );
+
+  offsets.push(offset);
+  push(enc.encode("4 0 obj\n<< /Type /Catalog /Pages 5 0 R >>\nendobj\n"));
+
+  offsets.push(offset);
+  push(enc.encode("5 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n"));
+
+  offsets.push(offset);
+  push(
+    enc.encode(
+      `6 0 obj\n<< /Producer (Unified QR) /CreationDate (${new Date().toISOString()}) >>\nendobj\n`,
+    ),
+  );
+
+  const xrefStart = offset;
+  let xref = "xref\n0 7\n0000000000 65535 f \n";
+  for (const o of offsets) xref += `${String(o).padStart(10, "0")} 00000 n \n`;
+  push(enc.encode(xref));
+  push(
+    enc.encode(`trailer\n<< /Size 7 /Root 4 0 R /Info 6 0 R >>\nstartxref\n${xrefStart}\n%%EOF\n`),
+  );
+
+  const total = chunks.reduce((s, c) => s + c.length, 0);
+  const out = new Uint8Array(total);
+  let i = 0;
+  for (const c of chunks) {
+    out.set(c, i);
+    i += c.length;
+  }
+  return out;
+}
+
+export async function downloadPdf(svg: string, filename: string, size = 1024) {
+  const jpeg = await renderJpegBlob(svg, size);
+  const bytes = new Uint8Array(await jpeg.arrayBuffer());
+  const pdf = buildPdf(bytes, size, size);
+  triggerDownload(
+    URL.createObjectURL(new Blob([pdf.buffer as ArrayBuffer], { type: "application/pdf" })),
+    `${filename}.pdf`,
+    true,
+  );
 }
 
 function triggerDownload(href: string, name: string, revoke: boolean) {

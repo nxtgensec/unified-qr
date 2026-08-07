@@ -306,9 +306,9 @@ export type AdminVisits = {
   today: number;
   total: number;
   last14Days: { date: string; count: number }[];
-  byPage: { page: string; count: number }[];
-  byDevice: { device: string; count: number }[];
-  byCountry: { country: string; count: number }[];
+  byPage: [string, number][];
+  byDevice: [string, number][];
+  byCountry: [string, number][];
 };
 
 export const getAdminVisits = createServerFn({ method: "GET" })

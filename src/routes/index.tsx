@@ -1,630 +1,1061 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
   ArrowRight,
+  BadgeCheck,
   BarChart3,
+  Bitcoin,
+  Bone,
+  CalendarCheck,
+  CalendarDays,
   Check,
-  Download,
+  Coins,
+  Contact,
+  CreditCard,
+  EyeOff,
+  Facebook,
+  FileText,
+  FolderOpen,
+  Gem,
+  Github,
+  Globe,
+  GraduationCap,
+  HelpCircle,
+  House,
+  IndianRupee,
+  Infinity as InfinityIcon,
+  Instagram,
   Layers,
-  MousePointerClick,
+  Linkedin,
+  Link2,
+  Lock,
+  Mail,
+  MapPin,
+  MessageCircle,
+  MessageSquare,
+  Minus,
+  Music2,
   Palette,
+  PenLine,
+  Phone,
   QrCode,
-  RefreshCw,
   ScanLine,
+  Send,
+  Share2,
+  ShieldCheck,
+  ShoppingBag,
+  Smartphone,
   Sparkles,
+  Star,
+  Tag,
+  Terminal,
+  Ticket,
+  Truck,
+  Twitter,
+  UserRound,
+  UserRoundPlus,
+  Utensils,
+  Wifi,
   X,
+  XCircle,
+  Youtube,
+  Zap,
+  type LucideIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { BetaBadge } from "@/components/BetaBadge";
-import { GoogleIcon } from "@/components/GoogleIcon";
-import { Logo } from "@/components/Logo";
+import { GoogleIcon } from "@/components/brand/GoogleIcon";
+import { Logo } from "@/components/brand/Logo";
+import { HeroStudio } from "@/components/marketing/HeroStudio";
 import { QrPreview } from "@/components/qr/QrPreview";
-import { QrStudio } from "@/components/qr/QrStudio";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { supabase } from "@/integrations/supabase/client";
+import { useSignedIn } from "@/hooks/use-signed-in";
 import { ENTERPRISE_TERMS, formatPaise } from "@/lib/plans";
-import { defaultStyle } from "@/lib/qr/types";
-import type { QrStyle } from "@/lib/qr/types";
+import { KINDS, buildPayload, defaultStyle } from "@/lib/qr/types";
+import type { QrContent, QrKind } from "@/lib/qr/types";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Unified QR — Every QR code job in one place" },
+      { title: "Unified QR — The open platform for everything QR" },
       {
         name: "description",
         content:
-          "Generate, style, track and manage every kind of QR code from one dark, minimal workspace. Professional is free forever; Enterprise adds unlimited dynamic codes.",
+          "Create, manage and scale QR codes free forever. 32 code types, real design control, dynamic codes, password & expiry controls and scan analytics — open source on GitHub, no watermarks, no expiry.",
       },
-      { property: "og:title", content: "Unified QR — Every QR code job in one place" },
+      {
+        property: "og:title",
+        content: "Unified QR — The open platform for everything QR",
+      },
       {
         property: "og:description",
         content:
-          "Dynamic codes, scan analytics, logos and SVG export. Professional is free forever — no watermarks, no expiry, no trial traps.",
+          "Create, manage, track and extend QR codes on one platform. Free forever, open source, built by NxtGenSec.",
       },
     ],
   }),
   component: Landing,
 });
 
-const FEATURES = [
+const GITHUB = "https://github.com/nxtgensec/unified-qr";
+
+const NAV = [
+  { label: "Generate", to: "/create" },
+  { label: "Code types", href: "#types" },
+  { label: "Features", href: "#ecosystem" },
+  { label: "Security", href: "#security" },
+  { label: "Open Source", href: "#open-source" },
+  { label: "Pricing", href: "#pricing" },
+] as const;
+
+const MOBILE_NAV = [
+  { href: "#top", label: "Home", icon: House },
+  { href: "#types", label: "Types", icon: QrCode },
+  { href: "#ecosystem", label: "Features", icon: Layers },
+  { href: "#pricing", label: "Pricing", icon: Tag },
+  { href: "#open-source", label: "Open Source", icon: Star },
+] as const;
+
+const TRUST = [
+  { icon: Globe, label: "Open Source" },
+  { icon: Lock, label: "Privacy first" },
+  { icon: Zap, label: "Instant generation" },
+  { icon: InfinityIcon, label: "Unlimited static QR" },
+  { icon: XCircle, label: "No watermarks" },
+] as const;
+
+const STATS = [
+  { icon: QrCode, value: String(KINDS.length), label: "QR code types" },
+  { icon: Zap, value: "3", label: "Dynamic codes free" },
+  { icon: BarChart3, value: "30-day", label: "Scan analytics" },
+  { icon: Github, value: "Public", label: "Open-source repo" },
+] as const;
+
+const WHY = [
   {
-    icon: QrCode,
-    title: "19 code types",
-    body: "Links, Wi-Fi, contacts, events, payments and more — none of them paywalled.",
-    beta: false,
+    icon: BadgeCheck,
+    title: "Free forever, not a trial",
+    body: "Professional is a real free plan — no credit card, no timer, and nothing locks after day 14.",
   },
   {
-    icon: Palette,
-    title: "Real design control",
-    body: "Module and corner shapes, custom colors, your logo in the middle.",
-    beta: false,
+    icon: Lock,
+    title: "No watermarks, no expiry",
+    body: "Every code you download is clean, and every code you print stays live forever.",
   },
   {
-    icon: RefreshCw,
-    title: "Dynamic codes",
-    body: "Print once, change the destination whenever you like — up to 3 free.",
-    beta: false,
+    icon: Link2,
+    title: "Change codes after printing",
+    body: "Dynamic codes let you swap the destination any time — the printed code keeps working.",
+  },
+  {
+    icon: FolderOpen,
+    title: "No lock-in",
+    body: "Export your codes as SVG or PNG, keep your short links, and leave whenever you like.",
+  },
+] as const;
+
+const TYPE_GROUPS: { title: string; blurb: string; kinds: QrKind[] }[] = [
+  {
+    title: "Business",
+    blurb: "Websites, cards, reviews",
+    kinds: ["url", "vcard", "googlereview", "trustpilot", "yelp", "booking", "linkedin", "youtube"],
+  },
+  {
+    title: "Payments",
+    blurb: "Collect money",
+    kinds: ["upi", "paypal", "bitcoin", "ethereum", "solana", "litecoin", "dogecoin", "monero"],
+  },
+  {
+    title: "Social & messaging",
+    blurb: "Grow followings",
+    kinds: ["whatsapp", "telegram", "instagram", "tiktok", "facebook", "x", "social", "sms"],
+  },
+  {
+    title: "Productivity",
+    blurb: "Info & scheduling",
+    kinds: ["text", "email", "event", "wifi", "geo", "phone"],
+  },
+  {
+    title: "Marketing",
+    blurb: "Offers & installs",
+    kinds: ["coupon", "app"],
+  },
+];
+
+const PILLARS = [
+  {
+    icon: PenLine,
+    title: "Create",
+    items: [
+      `${KINDS.length} code types`,
+      "Real design control",
+      "Logo, colors & shapes",
+      "Watermark-free PNG, SVG, PDF & EPS",
+    ],
+  },
+  {
+    icon: FolderOpen,
+    title: "Manage",
+    items: [
+      "Saved code library",
+      "Dynamic codes",
+      "Password & expiry on dynamic codes",
+      "Backup & restore your library",
+    ],
   },
   {
     icon: BarChart3,
-    title: "Scan analytics",
-    body: "Scans over time, device split and country — free on the 30-day window.",
-    beta: true,
+    title: "Analyze",
+    items: ["Scan timeline", "By device", "By country", "30 days free, forever on Enterprise"],
+  },
+  {
+    icon: Terminal,
+    title: "Develop",
+    items: [
+      "Redirect endpoint",
+      "Public repo on GitHub",
+      "Bulk generation from CSV",
+      "Decode any QR image",
+    ],
+  },
+] as const;
+
+const TOUR = [
+  {
+    icon: PenLine,
+    title: "Generator",
+    body: "Every code type, live preview, full design control.",
+    to: "/create",
+  },
+  {
+    icon: FolderOpen,
+    title: "Dashboard",
+    body: "Your saved codes, all in one library.",
+    to: "/dashboard",
+  },
+  {
+    icon: BarChart3,
+    title: "Analytics",
+    body: "Scans over time, by device and country.",
+    to: "/analytics",
   },
   {
     icon: Layers,
-    title: "Bulk from CSV",
-    body: "Paste a list, get a whole batch of codes in one pass — Enterprise.",
-    beta: true,
+    title: "Bulk",
+    body: "Hundreds of codes from one CSV — Enterprise.",
+    to: "/bulk",
   },
   {
     icon: ScanLine,
-    title: "Decode an image",
-    body: "Drop in a QR picture and read what is inside it.",
-    beta: true,
+    title: "Decode",
+    body: "Drop in a QR image and read what's inside.",
+    to: "/decode",
   },
-];
+] as const;
 
-const STEPS = [
+const SECURITY = [
   {
-    icon: MousePointerClick,
-    title: "Choose a code",
-    body: "Pick one of 19 types — a link, Wi-Fi, a contact card, an event and more.",
+    title: "Google OAuth sign-in",
+    body: "No passwords stored on our side — auth runs through Google.",
+  },
+  {
+    title: "Row-level security",
+    body: "Every table is locked down so your codes and scans stay private to your account.",
+  },
+  {
+    title: "Safe redirects",
+    body: "Dynamic codes resolve through our domain — every scan is tracked and you can swap the destination any time without reprinting.",
+  },
+  { title: "No ads, no resale", body: "Your data is not sold, scanned, or shown ads against." },
+] as const;
+
+const DEV_READY = [
+  { title: "Open repository", body: "Read every line of the platform on GitHub." },
+  {
+    title: "Redirect endpoint",
+    body: "Dynamic codes resolve through a stable short-link endpoint.",
+  },
+  {
+    title: "Batch from CSV",
+    body: "Generate thousands of codes programmatically from a spreadsheet.",
+  },
+  { title: "Decode tool", body: "Inspect the data inside any QR image." },
+] as const;
+
+const USE_CASES = [
+  {
+    icon: Utensils,
+    title: "Restaurants",
+    body: "Menus and table-side ordering that scan instantly.",
+  },
+  { icon: ShoppingBag, title: "Retail", body: "Offers, product info and easy returns." },
+  { icon: CalendarDays, title: "Events", body: "Tickets, check-ins and post-event feedback." },
+  { icon: GraduationCap, title: "Education", body: "Handouts, lab links and campus signage." },
+  {
+    icon: UserRound,
+    title: "Personal branding",
+    body: "Business cards and portfolios that update themselves.",
+  },
+  { icon: Truck, title: "Logistics", body: "Parcel tracking and asset check-ins." },
+] as const;
+
+const FAQ_TABS = [
+  { id: "general", label: "Getting started" },
+  { id: "free", label: "Free & pricing" },
+  { id: "dynamic", label: "Dynamic & analytics" },
+] as const;
+
+type FaqTabId = (typeof FAQ_TABS)[number]["id"];
+
+const FAQS: Record<FaqTabId, { q: string; a: string }[]> = {
+  general: [
+    {
+      q: "Do I need an account?",
+      a: "Links and text work without one. Sign in with Google to save your codes on the free Professional plan — no password, no credit card.",
+    },
+    {
+      q: "Which code types are available?",
+      a: `All ${KINDS.length}: websites, text, Wi-Fi, contacts, email, SMS, calls, WhatsApp, events, locations, UPI and PayPal payments, crypto wallets (Bitcoin, Ethereum, Solana, Litecoin, Dogecoin, Monero), social profiles, app downloads, reviews (Google, Trustpilot, Yelp, Booking), coupons, YouTube, LinkedIn, Telegram, Instagram, TikTok, Facebook and X.`,
+    },
+    {
+      q: "Is Unified QR really open source?",
+      a: "Yes — the platform source is public on GitHub. You can read the code, open issues, and follow along as we build in public.",
+    },
+  ],
+  free: [
+    {
+      q: "Is it really free?",
+      a: `Professional is free forever after a Google sign-in: all ${KINDS.length} code types, 3 dynamic links, 30 days of analytics and vector downloads. No card, no trial timer.`,
+    },
+    {
+      q: "What does the free tier not include?",
+      a: "Only the volume features are paid: unlimited dynamic codes, lifetime scan history, bulk CSV generation and priority support.",
+    },
+    {
+      q: "What happens if I cancel or upgrade?",
+      a: "Nothing breaks. Upgrading keeps every code and slug, and cancelling never deactivates codes you've already printed.",
+    },
+  ],
+  dynamic: [
+    {
+      q: "Do my codes expire?",
+      a: "No. Every static code and dynamic link stays live forever, on any plan.",
+    },
+    {
+      q: "Can I change a code after it's printed?",
+      a: "Yes, if it's dynamic. Print it once, then edit the destination any time — the printed code keeps working.",
+    },
+    {
+      q: "How do scan analytics work?",
+      a: "Dynamic codes report scans over time, by device and by country. Professional keeps 30 days of history; Enterprise keeps it forever.",
+    },
+  ],
+};
+
+const ICONS: Record<QrKind, LucideIcon> = {
+  url: Link2,
+  text: FileText,
+  wifi: Wifi,
+  vcard: Contact,
+  email: Mail,
+  sms: MessageSquare,
+  phone: Phone,
+  whatsapp: MessageCircle,
+  event: CalendarDays,
+  geo: MapPin,
+  upi: IndianRupee,
+  social: Share2,
+  app: Smartphone,
+  bitcoin: Bitcoin,
+  ethereum: Gem,
+  solana: Sparkles,
+  litecoin: Coins,
+  dogecoin: Bone,
+  monero: EyeOff,
+  paypal: CreditCard,
+  googlereview: Star,
+  trustpilot: BadgeCheck,
+  yelp: Utensils,
+  booking: CalendarCheck,
+  coupon: Ticket,
+  youtube: Youtube,
+  linkedin: Linkedin,
+  telegram: Send,
+  instagram: Instagram,
+  tiktok: Music2,
+  facebook: Facebook,
+  x: Twitter,
+};
+
+const SAMPLES: Record<QrKind, QrContent> = {
+  url: { url: "https://example.com" },
+  text: { text: "Hello from Unified QR" },
+  wifi: { ssid: "Cafe-WiFi", password: "visit-again", encryption: "WPA" },
+  vcard: {
+    name: "Ada Lovelace",
+    org: "Unified QR",
+    title: "Engineer",
+    phone: "+15550100",
+    phone2: "+15550199",
+    email: "ada@example.com",
+    website: "https://example.com",
+    address: "1 Example Street",
+    city: "London",
+    country: "United Kingdom",
+  },
+  email: { to: "hello@example.com", subject: "Hello", body: "Hi from Unified QR" },
+  sms: { phone: "+15550100", message: "Hello from Unified QR" },
+  phone: { phone: "+15550100" },
+  whatsapp: { phone: "15550100", message: "Hello from Unified QR" },
+  event: {
+    title: "Product launch",
+    location: "Berlin",
+    start: "2026-08-20T10:00",
+    end: "2026-08-20T12:00",
+  },
+  geo: { lat: "52.5200", lng: "13.4050" },
+  upi: { vpa: "name@bank", name: "Ada Lovelace", amount: "250", note: "Invoice 24" },
+  social: { platform: "facebook", url: "https://facebook.com/yourpage" },
+  app: {
+    name: "My App",
+    ios: "https://apps.apple.com/app/id123",
+    android: "https://play.google.com/store/apps/details?id=com.example",
+  },
+  bitcoin: {
+    address: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+    amount: "0.001",
+    label: "Invoice 42",
+  },
+  ethereum: {
+    address: "0x71C7656EC7ab88b098defB751B7401B5f6d8976F",
+    amount: "0.1",
+    label: "Invoice 42",
+  },
+  solana: { address: "7EcES...sollet", amount: "1", label: "Invoice 42" },
+  litecoin: { address: "LcCb1J6TLLKpQYH", amount: "0.5" },
+  dogecoin: { address: "D8m4V8eW4Z", amount: "500" },
+  monero: { address: "4AdUndXHHZ", amount: "0.02", label: "Invoice 42" },
+  paypal: { username: "yourname", amount: "25" },
+  googlereview: { placeId: "ChIJN1t_tDeuEmsRUsoyG83frY4", url: "" },
+  trustpilot: { url: "https://trustpilot.com/review/example.com" },
+  yelp: { url: "https://yelp.com/biz/your-business" },
+  booking: { url: "https://www.booking.com/hotel/example" },
+  coupon: { code: "SAVE20", discount: "20% off", description: "Valid until Dec 31" },
+  youtube: { url: "https://youtube.com/@channel" },
+  linkedin: { url: "https://linkedin.com/in/username" },
+  telegram: { username: "username" },
+  instagram: { username: "username" },
+  tiktok: { username: "username" },
+  facebook: { username: "yourpage" },
+  x: { username: "username" },
+};
+
+const URL_HOW = [
+  { title: "Enter the URL", body: "Paste the link you want people to reach." },
+  {
+    title: "Generate the QR code",
+    body: "The code renders instantly from your link — nothing to upload.",
+  },
+  {
+    title: "Download & share",
+    body: "Print it, embed it in a document, or share it digitally. No watermark, ever.",
+  },
+] as const;
+
+const URL_STEPS = [
+  {
+    icon: UserRoundPlus,
+    title: "Sign in with Google",
+    body: "One click, no password. Professional is free forever — no card, no trial timer.",
+  },
+  {
+    icon: ScanLine,
+    title: "Choose the Website type",
+    body: "Open the generator and pick Website from the type tabs at the top.",
+  },
+  {
+    icon: Link2,
+    title: "Paste your link",
+    body: "Drop in any https:// URL. The live preview renders the code as you type.",
   },
   {
     icon: Palette,
-    title: "Make it yours",
-    body: "Shape, color and logo it. The preview updates the instant you type.",
+    title: "Design & download",
+    body: "Choose shapes, colors and your logo, then export a watermark-free PNG or SVG.",
   },
   {
-    icon: Download,
-    title: "Share it anywhere",
-    body: "Export PNG or SVG, or go dynamic and swap the destination later.",
+    icon: BarChart3,
+    title: "Print & track",
+    body: "Print it anywhere. Dynamic codes let you change the link later, with 30 days of scan analytics.",
+  },
+] as const;
+
+const TRAPS = [
+  {
+    trap: "Trial timers in disguise",
+    them: "Free plans that quietly expire — then your codes stop scanning until you pay.",
+    us: "Professional is free forever. No timer, no card, no countdown.",
+  },
+  {
+    trap: "Scan caps",
+    them: "Free dynamic codes capped at 500 scans — after that they die on QR TIGER and others.",
+    us: "No scan caps, on any plan, ever.",
+  },
+  {
+    trap: "Ads injected into your scans",
+    them: "Bitly shows ads on free scans. ME-QR even injects them on paid plans up to $9/mo.",
+    us: "No ads. The redirect lands where you told it to land.",
+  },
+  {
+    trap: "Codes that die when you cancel",
+    them: "The industry's dirtiest secret: cancel a subscription and your printed QR codes go dead.",
+    us: "Your codes keep scanning no matter what. No reprints, no hostage situations.",
+  },
+  {
+    trap: "Analytics paywalled",
+    them: "Where and when people scan — gated behind $16–$199/month tiers.",
+    us: "30 days of scan analytics, free, on the free plan.",
+  },
+  {
+    trap: "Hostage export",
+    them: "Print-ready vectors, logo placement and clean downloads held back for paid plans.",
+    us: "Watermark-free PNG and SVG on every plan, including free.",
+  },
+] as const;
+
+const COMPETITORS = [
+  {
+    name: "QR TIGER",
+    url: "https://www.qrcode-tiger.com/",
+    entry: "$7/mo",
+    entryNote: "12 dynamic codes",
+    free: "3 dynamic codes",
+    freeNote: "500 scans each, + branding",
+    catch: "Analytics, bulk and design gate behind $16–$37 tiers.",
+  },
+  {
+    name: "Bitly",
+    url: "https://bitly.com/",
+    entry: "$10/mo",
+    entryNote: "5 QR codes / month",
+    free: "2 dynamic codes / month",
+    freeNote: "ads shown on free scans",
+    catch: "Monthly quotas; real analytics need Premium ($199).",
+  },
+  {
+    name: "Uniqode",
+    url: "https://www.uniqode.com/",
+    entry: "$5/mo",
+    entryNote: "3 dynamic codes",
+    free: "14-day trial",
+    freeNote: "annual billing after",
+    catch: "Analytics retention drops to 30 days on entry tiers.",
+  },
+  {
+    name: "Flowcode",
+    url: "https://flowcode.com/",
+    entry: "$60/mo",
+    entryNote: "50 dynamic codes",
+    free: "2 dynamic codes",
+    freeNote: "500 scan records kept",
+    catch: "A giant jump from free straight to $60 — no mid-tier.",
+  },
+  {
+    name: "QRCode Monkey",
+    url: "https://www.qrcode-monkey.com/",
+    entry: "$9.99/mo",
+    entryNote: "or $149 lifetime",
+    free: "Static codes only",
+    freeNote: "no analytics, no editing",
+    catch: "Dynamic codes require paid; they expire if you cancel.",
+  },
+] as const;
+
+const COMPARE_MATRIX = [
+  {
+    feature: "Dynamic, editable codes",
+    us: "Free (3)",
+    cells: ["$7/mo (12)", "$10/mo (5/mo)", "$5/mo (3)", "Free (2)", "$9.99/mo"],
+  },
+  {
+    feature: "Scan analytics",
+    us: "Free · 30 days",
+    cells: ["Paid tiers", "Paid tiers", "Paid tiers", "500 records", "None"],
+  },
+  {
+    feature: "Full design control + logo",
+    us: "Free",
+    cells: ["Paid", "Paid", "Paid", "Pro ($60)", "Free (static)"],
+  },
+  {
+    feature: "Watermark-free PNG + SVG",
+    us: "Free",
+    cells: ["Paid", "Paid", "Paid", "—", "Free (static)"],
+  },
+  {
+    feature: "Bulk generation (CSV)",
+    us: "Enterprise",
+    cells: ["Advanced ($16)", "Growth ($29)", "Lite ($15)", "Growth ($250)", "No"],
+  },
+  {
+    feature: "Ads injected on scans",
+    us: "Never",
+    cells: ["Free tier", "Free tier", "No", "No", "No"],
+  },
+  {
+    feature: "Codes survive cancellation",
+    us: "Always",
+    cells: ["No", "No", "Varies", "No", "No"],
+  },
+  {
+    feature: "Free tier = real plan, not a trial",
+    us: "Yes",
+    cells: ["Limited", "No", "No", "Limited", "Static only"],
+  },
+] as const;
+
+const PLAN_MATRIX = [
+  { feature: "All 32 code types", free: true, pro: true },
+  { feature: "Unlimited static codes", free: true, pro: true },
+  { feature: "Dynamic, editable codes", free: "3", pro: "Unlimited" },
+  { feature: "Scan analytics", free: "30 days", pro: "Full history" },
+  { feature: "PNG export", free: true, pro: true },
+  { feature: "SVG vector export", free: true, pro: true },
+  { feature: "Bulk generation (CSV)", free: false, pro: true },
+  { feature: "Priority support", free: false, pro: true },
+  { feature: "No ads, no watermark, no expiry", free: true, pro: true },
+] as const;
+
+const PRICING_FAQ = [
+  {
+    q: "Is Professional really free forever?",
+    a: "Yes. Sign in with Google and it stays free — no card, no trial timer, no feature that quietly expires. You keep your codes, your analytics window and every export.",
+  },
+  {
+    q: "What does Enterprise actually add?",
+    a: "Unlimited dynamic codes, the full scan history instead of 30 days, and bulk generation from a CSV. If you print QR codes for a living, that's the plan — nothing else is paywalled.",
+  },
+  {
+    q: "Can I cancel or downgrade without losing my codes?",
+    a: "Yes. Your printed codes keep scanning on any plan. You lose the Enterprise extras, never the codes themselves — no reprints, no hostage situations.",
+  },
+  {
+    q: "What payment methods do you accept?",
+    a: "Enterprise is billed in INR through Razorpay, with daily, weekly, monthly and yearly options. See the Payment policy for details.",
   },
 ];
 
-const COMPARISON = [
-  { label: "Dynamic, editable codes", them: "Paid plan", us: "Free (3)" },
-  { label: "Scan analytics", them: "Paid plan", us: "Free (30 days)" },
-  { label: "SVG / vector export", them: "Paid or limited", us: "Free" },
-  { label: "Watermark-free downloads", them: "Sometimes", us: "Always" },
-  { label: "Codes expire on free tier", them: "Often", us: "Never" },
-  { label: "Try before signing up", them: "Rarely", us: "Yes" },
-  { label: "Bulk generation", them: "Enterprise", us: "Enterprise" },
-];
+function PricingCell({ value }: { value: boolean | string }) {
+  if (value === true) return <Check className="mx-auto h-4 w-4 text-foreground" />;
+  if (value === false) return <Minus className="mx-auto h-4 w-4 text-muted-foreground" />;
+  return <span className="text-sm">{value}</span>;
+}
 
-const PRICING = [
-  {
-    id: "professional",
-    name: "Professional",
-    tagline: "For a QR code that just works — free, forever.",
-    price: "Free",
-    per: "forever",
-    terms: false,
-    featured: false,
-    cta: "Sign in with Google",
-    features: [
-      "All 19 code types, none paywalled",
-      "3 dynamic codes",
-      "Unlimited static codes",
-      "30-day scan analytics",
-      "Watermark-free PNG + SVG export",
-      "No expiry, no scan caps, no ads",
-    ],
-  },
-  {
-    id: "enterprise",
-    name: "Enterprise",
-    tagline: "For teams printing at volume and tracking everything.",
-    terms: true,
-    featured: true,
-    cta: "Upgrade",
-    features: [
-      "Unlimited dynamic codes",
-      "Full scan history, never truncated",
-      "Bulk generation from CSV",
-      "Everything in Professional",
-      "Priority support",
-    ],
-  },
-];
+function CompareCell({ value, highlight }: { value: string; highlight?: boolean }) {
+  const good = value === "Free" || value === "Never" || value === "Always" || value === "Yes";
+  const bad = value === "No";
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 whitespace-nowrap",
+        highlight
+          ? "font-medium text-foreground"
+          : good
+            ? "text-foreground"
+            : "text-muted-foreground",
+      )}
+    >
+      {highlight && <Check className="h-3.5 w-3.5 text-foreground" />}
+      {bad && <X className="h-3.5 w-3.5 text-muted-foreground" />}
+      {value}
+    </span>
+  );
+}
 
-const GUARANTEES = [
-  {
-    title: "No expiry",
-    body: "Static and dynamic codes stay live forever, on every plan.",
-  },
-  {
-    title: "No scan caps",
-    body: "Any number of people can scan your codes — always.",
-  },
-  {
-    title: "No deactivation",
-    body: "Cancel or downgrade and your printed codes keep working.",
-  },
-  {
-    title: "No reprints on upgrade",
-    body: "Moving to Enterprise keeps every code and its slug. No recreating, no reprinting.",
-  },
-  {
-    title: "No ads or watermarks",
-    body: "The free plan stays clean — even on downloads.",
-  },
-  {
-    title: "No card-required trials",
-    body: "Professional is free without a card and without a timer.",
-  },
-];
-
-const STATS = [
-  { value: "19", label: "code types" },
-  { value: "0", label: "paywalls or watermarks" },
-  { value: "∞", label: "never expires" },
-];
-
-const MARQUEE = [
-  "19 code types",
-  "Real design control",
-  "Dynamic codes",
-  "Scan analytics",
-  "Bulk from CSV",
-  "Decode an image",
-  "SVG export",
-  "No watermark",
-  "Never expires",
-];
-
-const TYPE_CHIPS = ["Link", "Wi-Fi", "Contact", "Email", "Event", "UPI", "SMS", "WhatsApp"];
-
-const FAQ = [
-  {
-    q: "Do my codes expire?",
-    a: "No. Every static code and dynamic link stays live forever — nothing expires, on any plan.",
-  },
-  {
-    q: "Is there a scan limit?",
-    a: "None. We track scans on dynamic codes, but there are no caps on how many people can scan.",
-  },
-  {
-    q: "Can I change a code after it's printed?",
-    a: "Yes, if it's dynamic. Print it once, then edit the destination any time from your dashboard — the printed code keeps working.",
-  },
-  {
-    q: "Is it really free?",
-    a: "Professional is free forever after a Google sign-in: all 19 code types, 3 dynamic links, 30 days of analytics and vector downloads. No card, no trial timer. Enterprise adds unlimited dynamic codes and bulk export at a flat price.",
-  },
-  {
-    q: "What happens to my codes if I upgrade or cancel?",
-    a: "Nothing changes. Upgrading keeps every code, slug and scan — you never recreate or reprint. And unlike some big QR platforms, cancelling never deactivates the codes you've already printed.",
-  },
-  {
-    q: "What formats can I download?",
-    a: "PNG for print and web, and SVG vectors that scale to any size — both watermark-free.",
-  },
-  {
-    q: "Do I need an account?",
-    a: "Links and text work without one. Sign in with Google to save your codes on the free Professional plan.",
-  },
-];
-
-const DEMO_STYLE: QrStyle = {
-  ...defaultStyle,
-  fg: "#0f172a",
-  bg: "#ffffff",
-  gradientType: "linear",
-  gradientEnd: "#0d9488",
-  gradientAngle: 135,
-};
-
-function HeroScanner() {
-  const [value, setValue] = useState("https://qr.nxtgensec.org");
-  const [visitors, setVisitors] = useState<number | null>(null);
+function MobileNav() {
+  const [active, setActive] = useState("#top");
 
   useEffect(() => {
-    let cancelled = false;
-    fetch("/api/visits", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ page: "/" }),
-    })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data: { today?: number } | null) => {
-        if (!cancelled && data && typeof data.today === "number") setVisitors(data.today);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
+    const sections = MOBILE_NAV.map((n) => document.getElementById(n.href.slice(1))).filter(
+      (el): el is HTMLElement => Boolean(el),
+    );
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter((e) => e.isIntersecting);
+        if (visible.length === 0) return;
+        const top = visible.sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+        if (!top) return;
+        setActive(`#${top.target.id}`);
+      },
+      { rootMargin: "-40% 0px -50% 0px" },
+    );
+    sections.forEach((s) => observer.observe(s));
+    return () => observer.disconnect();
   }, []);
 
   return (
-    <div className="relative">
-      <div className="absolute -inset-10 rounded-full bg-brand/15 blur-3xl" aria-hidden />
-      <div className="relative rounded-3xl border border-border bg-elevated p-5 shadow-2xl shadow-black/40 sm:p-6">
-        <div className="flex items-center justify-between border-b border-border pb-4">
-          <span className="text-xs uppercase tracking-wider text-muted-foreground">
-            Live encoder
-          </span>
-          <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-brand" />
-            </span>
-            Scanning
-          </span>
-        </div>
-
-        <Input
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          placeholder="Type a link or text…"
-          className="mt-5 font-mono"
-        />
-
-        <div className="relative mt-5 overflow-hidden rounded-xl">
-          <QrPreview
-            payload={value.trim() || " "}
-            style={DEMO_STYLE}
-            size={420}
-            className="border-0"
-          />
-          <span className="scan-beam" aria-hidden />
-          <span className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 border-l-2 border-t-2 border-brand" />
-          <span className="pointer-events-none absolute right-2.5 top-2.5 h-4 w-4 border-r-2 border-t-2 border-brand" />
-          <span className="pointer-events-none absolute bottom-2.5 left-2.5 h-4 w-4 border-b-2 border-l-2 border-brand" />
-          <span className="pointer-events-none absolute bottom-2.5 right-2.5 h-4 w-4 border-b-2 border-r-2 border-brand" />
-        </div>
-
-        <div className="mt-5 flex flex-wrap gap-1.5">
-          {TYPE_CHIPS.map((chip, i) => (
-            <span
-              key={chip}
-              className="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground"
+    <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/90 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
+      <div className="mx-auto grid max-w-md grid-cols-5">
+        {MOBILE_NAV.map((item) => {
+          const isActive = active === item.href;
+          return (
+            <a
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex flex-col items-center gap-1 py-2 text-[10px] font-medium tracking-wide transition-colors",
+                isActive ? "text-foreground" : "text-muted-foreground",
+              )}
             >
               <span
-                className={
-                  i === 0 ? "h-1 w-1 rounded-full bg-brand" : "h-1 w-1 rounded-full bg-border"
-                }
-              />
-              {chip}
-            </span>
-          ))}
-        </div>
-
-        <div className="mt-5 flex items-center justify-between border-t border-border pt-4 text-xs">
-          <span className="text-muted-foreground">Renders as you type</span>
-          <span className="flex items-center gap-1.5 text-muted-foreground">
-            <span className="h-1.5 w-1.5 rounded-full bg-brand" />
-            {visitors === null ? (
-              <span>Tracking real visitors</span>
-            ) : (
-              <span className="tabular-nums">
-                {visitors.toLocaleString("en-US")} visitors today
+                className={cn(
+                  "flex h-7 w-12 items-center justify-center rounded-full transition-colors",
+                  isActive && "bg-foreground text-background",
+                )}
+              >
+                <item.icon className="size-4" />
               </span>
-            )}
-          </span>
-        </div>
+              {item.label}
+            </a>
+          );
+        })}
       </div>
-    </div>
+    </nav>
   );
 }
 
 function Landing() {
   const navigate = useNavigate();
-  const [signedIn, setSignedIn] = useState(false);
-
-  useEffect(() => {
-    void supabase.auth.getSession().then(({ data }) => setSignedIn(Boolean(data.session)));
-    const { data } = supabase.auth.onAuthStateChange((_e, session) =>
-      setSignedIn(Boolean(session)),
-    );
-    return () => data.subscription.unsubscribe();
-  }, []);
+  const signedIn = useSignedIn();
+  const [faqTab, setFaqTab] = useState<FaqTabId>("general");
 
   const goAuth = () => void navigate({ to: signedIn ? "/dashboard" : "/auth" });
   const goUpgrade = () => void navigate({ to: signedIn ? "/settings" : "/auth" });
+  const goGenerate = () => void navigate({ to: "/create" });
+  const onLocked = () => void navigate({ to: signedIn ? "/create" : "/auth" });
 
   return (
-    <div className="min-h-screen scroll-smooth bg-background">
-      <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
+    <div className="min-h-screen scroll-smooth bg-background pb-16 lg:pb-0">
+      <div className="border-b border-border bg-foreground/[0.04]">
+        <div className="mx-auto flex h-9 max-w-6xl items-center justify-center gap-2 px-5 text-xs">
+          <span className="text-muted-foreground">
+            Professional is free forever — no card, no trial timer.
+          </span>
+          <a
+            href={GITHUB}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-1 font-medium text-foreground transition-opacity hover:opacity-70"
+          >
+            Open source on GitHub <ArrowRight className="h-3 w-3" />
+          </a>
+        </div>
+      </div>
+
+      <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
           <Link to="/" className="flex items-center gap-2.5 font-semibold tracking-tight">
             <Logo className="size-7" />
-            Unified QR
+            <span>Unified QR</span>
           </Link>
-          <nav className="flex items-center gap-2">
-            <a
-              href="#features"
-              className="hidden px-3 text-sm text-muted-foreground transition-colors hover:text-foreground sm:block"
-            >
-              Features
-            </a>
-            <a
-              href="#how"
-              className="hidden px-3 text-sm text-muted-foreground transition-colors hover:text-foreground md:block"
-            >
-              How it works
-            </a>
-            <a
-              href="#pricing"
-              className="hidden px-3 text-sm text-muted-foreground transition-colors hover:text-foreground sm:block"
-            >
-              Pricing
-            </a>
-            <a
-              href="#compare"
-              className="hidden px-3 text-sm text-muted-foreground transition-colors hover:text-foreground sm:block"
-            >
-              Compare
-            </a>
-            <a
-              href="#faq"
-              className="hidden px-3 text-sm text-muted-foreground transition-colors hover:text-foreground sm:block"
-            >
-              FAQ
-            </a>
+          <nav className="hidden items-center gap-1 lg:flex">
+            {NAV.map((item) =>
+              "to" in item ? (
+                <Link
+                  key={item.label}
+                  to={item.to}
+                  className="px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  className="px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {item.label}
+                </a>
+              ),
+            )}
+          </nav>
+          <div className="flex items-center gap-2">
+            <Button size="icon" variant="ghost" asChild className="hidden sm:inline-flex">
+              <a href={GITHUB} target="_blank" rel="noreferrer" aria-label="GitHub">
+                <Github className="h-4 w-4" />
+              </a>
+            </Button>
             <Button size="sm" onClick={goAuth}>
               {signedIn ? "Dashboard" : "Sign in"}
             </Button>
-          </nav>
+          </div>
         </div>
       </header>
 
       <main>
-        <section className="relative overflow-hidden border-b border-border">
-          <div className="grid-noise pointer-events-none absolute inset-0 opacity-40" aria-hidden />
-          <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 py-16 sm:py-24 lg:grid-cols-2 lg:gap-16">
+        <section id="top" className="relative scroll-mt-16 border-b border-border">
+          <div className="pointer-events-none absolute inset-0" aria-hidden>
+            <div className="absolute -top-32 left-1/2 h-96 w-[42rem] -translate-x-1/2 rounded-full bg-foreground/[0.07] blur-3xl" />
+          </div>
+
+          <div className="relative mx-auto grid max-w-6xl gap-14 px-5 pb-20 pt-16 sm:pt-24 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-center lg:gap-16">
             <div>
-              <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-muted-foreground">
-                <span className="h-1.5 w-1.5 rounded-full bg-brand" />
-                Professional is free forever — no card, no trial timer.
+              <span className="hero-enter inline-flex items-center gap-2 rounded-full border border-border bg-card/50 px-3 py-1 text-xs text-muted-foreground">
+                <Globe className="h-3.5 w-3.5" />
+                Built by NxtGenSec
               </span>
-              <h1 className="mt-6 text-balance text-5xl font-semibold tracking-tight sm:text-6xl">
-                Every QR code job, in <span className="text-brand">one place.</span>
+              <h1 className="hero-enter hero-delay-1 mt-6 text-balance text-5xl font-semibold tracking-tight sm:text-6xl">
+                The open platform for{" "}
+                <span className="bg-gradient-to-b from-foreground to-foreground/55 bg-clip-text text-transparent">
+                  everything QR.
+                </span>
               </h1>
-              <p className="mt-5 max-w-md text-pretty text-base text-muted-foreground sm:text-lg">
-                Generate, design, track and manage QR codes without hitting a paywall three clicks
-                in. Type something in the encoder — it becomes a code instantly.
+              <p className="hero-enter hero-delay-2 mt-5 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">
+                Create, customize, manage and track QR codes with enterprise-grade tools —
+                completely free for individuals, open source, privacy-first and built for
+                developers.
               </p>
-              <div className="mt-8 flex flex-wrap items-center gap-3">
-                <Button size="lg" onClick={goAuth}>
-                  {signedIn ? "Open dashboard" : "Sign in with Google"}
-                  <GoogleIcon className="ml-2 h-4 w-4" />
+              <div className="hero-enter hero-delay-3 mt-8 flex flex-wrap items-center gap-3">
+                <Button size="lg" onClick={goGenerate}>
+                  <QrCode className="h-4 w-4" /> Generate QR free
                 </Button>
-                <Button size="lg" variant="secondary" asChild>
-                  <a href="#generator">
-                    Full generator <ArrowRight className="ml-2 h-4 w-4" />
-                  </a>
+                <Button size="lg" variant="secondary" onClick={goAuth}>
+                  Continue with Google <GoogleIcon className="ml-1 h-4 w-4" />
                 </Button>
               </div>
-              <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
-                {["No watermark", "Never expires", "No card required"].map((item) => (
-                  <li key={item} className="flex items-center gap-1.5">
-                    <Check className="h-3.5 w-3.5 text-brand" /> {item}
+              <ul className="hero-enter hero-delay-4 mt-8 flex flex-wrap gap-2">
+                {TRUST.map((item) => (
+                  <li
+                    key={item.label}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card/50 px-3 py-1.5 text-xs text-muted-foreground"
+                  >
+                    <item.icon className="h-3.5 w-3.5" /> {item.label}
                   </li>
                 ))}
               </ul>
             </div>
 
-            <HeroScanner />
-          </div>
-        </section>
-
-        <section className="overflow-hidden border-b border-border py-4" aria-hidden>
-          <div className="animate-marquee flex w-max items-center gap-10 whitespace-nowrap">
-            {[...MARQUEE, ...MARQUEE].map((item, i) => (
-              <span
-                key={i}
-                className="inline-flex items-center gap-3 text-sm text-muted-foreground"
-              >
-                <span className="h-1.5 w-1.5 rounded-full bg-brand" />
-                {item}
-              </span>
-            ))}
-          </div>
-        </section>
-
-        <section id="generator" className="border-b border-border">
-          <div className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
-            <div className="mx-auto max-w-4xl">
-              <span className="font-mono text-xs uppercase tracking-widest text-brand">
-                01 — Try it now
-              </span>
-              <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
-                <div>
-                  <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-                    Make one right now
-                  </h2>
-                  <p className="mt-2 max-w-md text-sm text-muted-foreground">
-                    Links and text, free without login. Sign in for the other seventeen types.
-                  </p>
-                </div>
-                <Button variant="secondary" size="sm" onClick={goAuth}>
-                  Sign in — it's free <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
-              <div className="mt-8 rounded-2xl border border-border bg-card p-5 sm:p-8">
-                <QrStudio mode="free" onLocked={goAuth} />
+            <div className="hero-enter hero-delay-5 relative">
+              <div
+                className="pointer-events-none absolute -inset-10 rounded-[3rem]"
+                style={{
+                  background:
+                    "radial-gradient(ellipse 55% 55% at 50% 40%, rgba(59,130,246,0.10), transparent 62%), radial-gradient(ellipse 45% 45% at 35% 65%, rgba(168,85,247,0.08), transparent 62%), radial-gradient(ellipse 45% 45% at 65% 55%, rgba(34,211,238,0.07), transparent 62%)",
+                  filter: "blur(70px)",
+                }}
+                aria-hidden
+              />
+              <div className="relative">
+                <HeroStudio onLocked={onLocked} />
               </div>
             </div>
           </div>
-        </section>
 
-        <section className="border-b border-border">
-          <div className="mx-auto max-w-6xl px-5 py-12">
-            <dl className="grid grid-cols-1 gap-8 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-border">
-              {STATS.map((s) => (
-                <div key={s.label} className="text-center sm:px-6">
-                  <dd className="text-3xl font-semibold tracking-tight sm:text-4xl">{s.value}</dd>
-                  <dt className="mt-2 text-sm text-muted-foreground">{s.label}</dt>
-                </div>
-              ))}
-            </dl>
-          </div>
-        </section>
-
-        <section id="features" className="border-b border-border">
-          <div className="mx-auto grid max-w-6xl gap-12 px-5 py-16 sm:py-20 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-16">
-            <div className="lg:sticky lg:top-24 lg:self-start">
-              <span className="font-mono text-xs uppercase tracking-widest text-brand">
-                02 — The workspace
-              </span>
-              <h2 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">
-                One workspace instead of five tabs
-              </h2>
-              <p className="mt-3 max-w-md text-sm text-muted-foreground">
-                Free tools first, with transparent limits only where they matter — and nothing that
-                ever breaks a printed code.
-              </p>
-              <Button className="mt-6" variant="secondary" asChild>
-                <a href="#generator">
-                  Make a code <ArrowRight className="ml-2 h-4 w-4" />
-                </a>
-              </Button>
-            </div>
-            <div className="divide-y divide-border">
-              {FEATURES.map((f, i) => (
-                <div
-                  key={f.title}
-                  className="group grid gap-2 py-6 sm:grid-cols-[56px_minmax(0,1fr)] sm:gap-6"
-                >
-                  <span className="font-mono text-xs text-muted-foreground transition-colors group-hover:text-brand">
-                    0{i + 1}
+          <div className="relative mx-auto max-w-6xl px-5 pb-16">
+            <div className="grid gap-4 rounded-2xl border border-border bg-card p-6 sm:grid-cols-2 lg:grid-cols-4">
+              {STATS.map((stat) => (
+                <div key={stat.label} className="flex items-center gap-3">
+                  <span className="flex size-10 items-center justify-center rounded-xl border border-border bg-foreground/[0.04]">
+                    <stat.icon className="size-5" />
                   </span>
                   <div>
-                    <div className="flex items-center gap-2.5">
-                      <f.icon className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-brand" />
-                      <h3 className="text-sm font-medium">{f.title}</h3>
-                      {f.beta && <BetaBadge />}
-                    </div>
-                    <p className="mt-2 text-sm text-muted-foreground">{f.body}</p>
+                    <p className="text-lg font-semibold tracking-tight">{stat.value}</p>
+                    <p className="text-xs text-muted-foreground">{stat.label}</p>
                   </div>
                 </div>
               ))}
             </div>
+            <p className="mt-4 text-center text-xs text-muted-foreground">
+              Growing with the community — every star, issue and pull request shapes the roadmap.
+            </p>
           </div>
         </section>
 
-        <section id="pricing" className="border-b border-border">
-          <div className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
-            <span className="font-mono text-xs uppercase tracking-widest text-brand">
-              03 — Honest pricing
-            </span>
-            <h2 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">
-              Two plans. Zero bait-and-switch.
-            </h2>
-            <p className="mt-3 max-w-lg text-sm text-muted-foreground">
-              The free tier is a real plan, not a 7-day trial in disguise. The paid tier exists for
-              one reason: people who print QR codes for a living.
-            </p>
-            <div className="mt-12 grid gap-6 lg:grid-cols-2">
-              {PRICING.map((plan) => (
-                <div
-                  key={plan.id}
-                  className={cn(
-                    "relative rounded-2xl border bg-card p-7",
-                    plan.featured && "border-brand/60",
-                  )}
-                >
-                  {plan.featured && (
-                    <span className="absolute -top-3 left-7 rounded-full border border-brand/40 bg-background px-3 py-1 text-[11px] font-medium text-brand">
-                      Most popular
-                    </span>
-                  )}
-                  <h3 className="text-base font-semibold">{plan.name}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{plan.tagline}</p>
-                  {plan.terms ? (
-                    <div className="mt-5 grid grid-cols-2 gap-2">
-                      {ENTERPRISE_TERMS.map((term) => (
-                        <div
-                          key={term.id}
-                          className={cn(
-                            "rounded-lg border px-3 py-2",
-                            term.id === "yearly" ? "border-brand/50 bg-brand/5" : "border-border",
-                          )}
+        <section id="types" className="scroll-mt-16 border-b border-border">
+          <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="text-sm font-medium text-muted-foreground">Popular QR types</p>
+              <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+                Every code you'll ever need, none paywalled
+              </h2>
+              <p className="mt-4 text-pretty text-sm text-muted-foreground sm:text-base">
+                Nineteen code types organized the way you think about them — each one free on
+                Professional, forever.
+              </p>
+            </div>
+            <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+              {TYPE_GROUPS.map((group) => (
+                <div key={group.title} className="rounded-2xl border border-border bg-card p-5">
+                  <h3 className="text-sm font-semibold">{group.title}</h3>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{group.blurb}</p>
+                  <div className="mt-4 flex flex-wrap gap-1.5">
+                    {group.kinds.map((kind) => {
+                      const meta = KINDS.find((k) => k.kind === kind)!;
+                      return (
+                        <Link
+                          key={kind}
+                          to="/create"
+                          className="inline-flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground"
                         >
-                          <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                            {term.label}
-                            {term.id === "yearly" && (
-                              <span className="ml-1.5 rounded-full border border-brand/40 px-1.5 py-px text-[10px] font-medium normal-case tracking-normal text-brand">
-                                Best value
-                              </span>
-                            )}
-                          </p>
-                          <p className="mt-0.5 text-lg font-semibold tracking-tight">
-                            {formatPaise(term.paise)}
-                            <span className="text-xs font-normal text-muted-foreground">
-                              {" "}
-                              / {term.per}
-                            </span>
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="mt-5 text-4xl font-semibold tracking-tight">
-                      {plan.price}
-                      <span className="ml-1 text-sm font-normal text-muted-foreground">
-                        {plan.per}
-                      </span>
-                    </p>
-                  )}
-                  <ul className="mt-6 space-y-2.5">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-2.5 text-sm">
-                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                  <Button
-                    className="mt-8 w-full"
-                    size="lg"
-                    variant={plan.featured ? "default" : "secondary"}
-                    onClick={plan.featured ? goUpgrade : goAuth}
-                  >
-                    {plan.cta}
-                    {!plan.featured && <GoogleIcon className="ml-2 h-4 w-4" />}
-                  </Button>
+                          {meta.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
                 </div>
               ))}
             </div>
+            <div className="mt-12">
+              <h3 className="text-center text-sm font-medium text-muted-foreground">
+                The full catalog
+              </h3>
+              <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {KINDS.map((kind) => {
+                  const Icon = ICONS[kind.kind];
+                  const payload = buildPayload(kind.kind, SAMPLES[kind.kind]);
+                  return (
+                    <Link
+                      key={kind.kind}
+                      to="/create"
+                      className="group rounded-2xl border border-border bg-card p-5 transition-colors hover:border-foreground/40"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-center gap-2.5">
+                          <span className="flex size-8 items-center justify-center rounded-lg border border-border bg-background">
+                            <Icon className="size-4 text-muted-foreground transition-colors group-hover:text-foreground" />
+                          </span>
+                          <div>
+                            <h3 className="text-sm font-semibold">{kind.label}</h3>
+                            <p className="text-xs text-muted-foreground">{kind.hint}</p>
+                          </div>
+                        </div>
+                        <QrPreview
+                          payload={payload}
+                          style={defaultStyle}
+                          size={112}
+                          className="w-14 rounded-lg"
+                        />
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </section>
 
-            <div className="mt-12 rounded-2xl border border-border bg-elevated p-6 sm:p-8">
-              <h3 className="text-sm font-medium">The anti-trap guarantee</h3>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Named after the industry's most-complained-about behaviors — the QR companies that
-                hold your codes hostage.
+        <section id="url-qr-code" className="scroll-mt-16 border-b border-border">
+          <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="text-sm font-medium text-muted-foreground">URL to QR code</p>
+              <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+                How to make a URL QR code
+              </h2>
+              <p className="mt-4 text-pretty text-sm text-muted-foreground sm:text-base">
+                Turn any link into a scannable QR code in about a minute — everything below is on
+                the free Professional plan, no credit card, no trial timer.
               </p>
-              <div className="mt-6 grid gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
-                {GUARANTEES.map((g) => (
-                  <div key={g.title}>
-                    <p className="flex items-center gap-1.5 text-sm font-medium">
-                      <Check className="h-3.5 w-3.5 shrink-0 text-brand" /> {g.title}
+            </div>
+            <div className="mt-12 grid gap-4 sm:grid-cols-3">
+              {URL_HOW.map((step, i) => (
+                <div key={step.title} className="rounded-2xl border border-border bg-card p-6">
+                  <span className="flex size-8 items-center justify-center rounded-full border border-border bg-background text-sm font-semibold">
+                    {i + 1}
+                  </span>
+                  <h3 className="mt-4 text-sm font-semibold">{step.title}</h3>
+                  <p className="mt-1.5 text-sm text-muted-foreground">{step.body}</p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-12 space-y-4">
+              {URL_STEPS.map((step, i) => (
+                <div
+                  key={step.title}
+                  className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-6 sm:flex-row sm:items-start sm:gap-5"
+                >
+                  <div className="flex items-center gap-3 sm:flex-col sm:gap-2">
+                    <span className="flex size-8 items-center justify-center rounded-full border border-border bg-background text-sm font-semibold">
+                      {i + 1}
+                    </span>
+                    <span className="flex size-10 items-center justify-center rounded-xl border border-border bg-foreground/[0.04]">
+                      <step.icon className="size-5" />
+                    </span>
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-semibold">{step.title}</h3>
+                    <p className="mt-1.5 text-sm text-muted-foreground">{step.body}</p>
+                  </div>
+                  {i === 2 && (
+                    <div className="hidden shrink-0 sm:block">
+                      <QrPreview
+                        payload="https://example.com"
+                        style={defaultStyle}
+                        size={160}
+                        className="w-24 rounded-lg"
+                      />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="why" className="scroll-mt-16 border-b border-border">
+          <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="text-sm font-medium text-muted-foreground">Why Unified QR</p>
+              <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+                Not another QR generator. A platform you can trust.
+              </h2>
+            </div>
+            <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {WHY.map((item) => (
+                <div
+                  key={item.title}
+                  className="rounded-2xl border border-border bg-card p-6 transition-colors hover:border-foreground/30"
+                >
+                  <div className="flex size-10 items-center justify-center rounded-xl border border-border bg-foreground/[0.04]">
+                    <item.icon className="size-5" />
+                  </div>
+                  <h3 className="mt-4 text-sm font-semibold">{item.title}</h3>
+                  <p className="mt-1.5 text-sm text-muted-foreground">{item.body}</p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-14 grid gap-8 lg:grid-cols-2 lg:gap-12">
+              <div className="lg:sticky lg:top-24 lg:self-start">
+                <div className="rounded-2xl border border-foreground/40 bg-card p-6 sm:p-7">
+                  <p className="flex items-center gap-2 text-sm font-medium">
+                    <ShieldCheck className="h-4 w-4" /> How the trap works
+                  </p>
+                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                    You print a QR code on your menu, your packaging, your trade-show banner. Six
+                    months later you stop paying — and every piece of printed material goes dead.
+                    That's not a QR code. That's a subscription with a barcode.
+                  </p>
+                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                    A QR code is just pixels. Once it's printed, nobody should be able to take it
+                    away from you. We built the platform around that idea.
+                  </p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                {TRAPS.map((trap) => (
+                  <div
+                    key={trap.trap}
+                    className="rounded-2xl border border-border bg-card p-5 sm:p-6"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="flex size-7 items-center justify-center rounded-full border border-border">
+                        <X className="size-3.5 text-muted-foreground" />
+                      </span>
+                      <h3 className="text-sm font-semibold">{trap.trap}</h3>
+                    </div>
+                    <p className="mt-3 text-sm text-muted-foreground">{trap.them}</p>
+                    <p className="mt-3 flex items-start gap-2 text-sm font-medium">
+                      <Check className="mt-0.5 size-4 shrink-0 text-foreground" /> {trap.us}
                     </p>
-                    <p className="mt-1 text-xs text-muted-foreground">{g.body}</p>
                   </div>
                 ))}
               </div>
@@ -632,91 +1063,610 @@ function Landing() {
           </div>
         </section>
 
-        <section id="how" className="border-b border-border">
-          <div className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
-            <span className="font-mono text-xs uppercase tracking-widest text-brand">
-              04 — The workflow
-            </span>
-            <h2 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">
-              Three steps to a working code
-            </h2>
-            <div className="relative mt-12 grid gap-10 sm:grid-cols-3 sm:gap-8">
-              <span
-                className="absolute left-[16%] right-[16%] top-5 hidden border-t border-dashed border-border sm:block"
+        <section id="ecosystem" className="scroll-mt-16 border-b border-border">
+          <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="text-sm font-medium text-muted-foreground">Feature ecosystem</p>
+              <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+                Create · Manage · Analyze · Develop
+              </h2>
+              <p className="mt-4 text-pretty text-sm text-muted-foreground sm:text-base">
+                One platform that covers the whole lifecycle of a QR code — not a single-button
+                generator.
+              </p>
+            </div>
+            <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {PILLARS.map((pillar) => (
+                <div key={pillar.title} className="rounded-2xl border border-border bg-card p-6">
+                  <div className="flex items-center gap-2.5">
+                    <span className="flex size-9 items-center justify-center rounded-xl border border-border bg-foreground/[0.04]">
+                      <pillar.icon className="size-4.5" />
+                    </span>
+                    <h3 className="text-sm font-semibold">{pillar.title}</h3>
+                  </div>
+                  <ul className="mt-4 space-y-2">
+                    {pillar.items.map((item) => (
+                      <li
+                        key={item}
+                        className="flex items-start gap-2 text-sm text-muted-foreground"
+                      >
+                        <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-foreground" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="tour" className="scroll-mt-16 border-b border-border">
+          <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="text-sm font-medium text-muted-foreground">Product tour</p>
+              <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+                Everything, one step away
+              </h2>
+              <p className="mt-4 text-pretty text-sm text-muted-foreground sm:text-base">
+                Sign in with Google and each part of the platform is at your fingertips.
+              </p>
+            </div>
+            <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+              {TOUR.map((item) => (
+                <Link
+                  key={item.title}
+                  to={item.to}
+                  className="group rounded-2xl border border-border bg-card p-5 transition-colors hover:border-foreground/40"
+                >
+                  <div className="flex size-9 items-center justify-center rounded-xl border border-border bg-foreground/[0.04]">
+                    <item.icon className="size-4.5" />
+                  </div>
+                  <h3 className="mt-4 text-sm font-semibold">{item.title}</h3>
+                  <p className="mt-1 text-xs text-muted-foreground">{item.body}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="compare" className="scroll-mt-16 border-b border-border">
+          <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="text-sm font-medium text-muted-foreground">The difference</p>
+              <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+                Every competitor charges for what we give away free.
+              </h2>
+              <p className="mt-4 text-pretty text-sm text-muted-foreground sm:text-base">
+                Dynamic codes, scan analytics, full design control, vector export — the big QR
+                platforms all put these behind $5–$250/month plans. Professional gives you all of
+                them free forever. Here's the receipt.
+              </p>
+            </div>
+
+            <div className="mt-10 rounded-2xl border border-foreground/40 bg-card p-6 sm:p-7">
+              <p className="flex items-center gap-2 text-sm font-medium">
+                <BadgeCheck className="h-4 w-4" /> The short version
+              </p>
+              <ul className="mt-4 grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
+                <li>Free dynamic codes — theirs start at $5–$60/mo.</li>
+                <li>No scan caps — theirs cap free codes at 500 scans.</li>
+                <li>No ads, ever — Bitly puts ads on free scans.</li>
+                <li>Your codes keep working if you cancel — theirs often don't.</li>
+              </ul>
+            </div>
+
+            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {COMPETITORS.map((c) => (
+                <div
+                  key={c.name}
+                  className="flex flex-col rounded-2xl border border-border bg-card p-6"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="text-sm font-semibold">{c.name}</h3>
+                    <span className="whitespace-nowrap rounded-full border border-border px-2.5 py-0.5 text-xs text-muted-foreground">
+                      Entry · {c.entry}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">{c.entryNote}</p>
+                  <div className="mt-5 space-y-3 text-sm">
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                        Free tier
+                      </p>
+                      <p className="mt-1 font-medium">{c.free}</p>
+                      <p className="text-xs text-muted-foreground">{c.freeNote}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                        The catch
+                      </p>
+                      <p className="mt-1 text-muted-foreground">{c.catch}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              <div className="flex flex-col justify-between rounded-2xl border border-foreground/40 bg-elevated p-6">
+                <div>
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="text-sm font-semibold">Unified QR</h3>
+                    <span className="whitespace-nowrap rounded-full bg-foreground px-2.5 py-0.5 text-xs font-medium text-background">
+                      Entry · Free
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">3 dynamic codes, no caps</p>
+                  <div className="mt-5 space-y-3 text-sm">
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                        Free tier
+                      </p>
+                      <p className="mt-1 font-medium">Professional — free forever</p>
+                      <p className="text-xs text-muted-foreground">
+                        All 32 types, 3 dynamic, 30-day analytics, PNG + SVG + PDF + EPS
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                        The catch
+                      </p>
+                      <p className="mt-1 text-muted-foreground">
+                        None. Only the things we actually host cost money.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <Button className="mt-6" onClick={goAuth}>
+                  Start free
+                </Button>
+              </div>
+            </div>
+
+            <h3 className="mt-16 text-center text-2xl font-semibold tracking-tight sm:text-3xl">
+              Feature by feature
+            </h3>
+            <p className="mx-auto mt-3 max-w-2xl text-center text-sm text-muted-foreground">
+              Each cell is what the cheapest tier that includes the feature costs — or what you get
+              free.
+            </p>
+
+            <div className="mt-8 overflow-x-auto rounded-2xl border border-border">
+              <table className="w-full min-w-[760px] border-collapse text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-elevated text-left text-xs uppercase tracking-wider text-muted-foreground">
+                    <th className="px-5 py-3 font-medium">Feature</th>
+                    <th className="bg-foreground px-4 py-3 font-medium text-background">
+                      Unified QR
+                    </th>
+                    {COMPETITORS.map((c) => (
+                      <th key={c.name} className="px-4 py-3 font-medium">
+                        {c.name}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {COMPARE_MATRIX.map((row, i) => (
+                    <tr
+                      key={row.feature}
+                      className={cn(
+                        "border-b border-border last:border-b-0",
+                        i % 2 === 1 && "bg-muted/40",
+                      )}
+                    >
+                      <td className="px-5 py-3.5 font-medium">{row.feature}</td>
+                      <td className="bg-foreground/5 px-4 py-3.5">
+                        <CompareCell value={row.us} highlight />
+                      </td>
+                      {row.cells.map((c, j) => (
+                        <td key={j} className="px-4 py-3.5">
+                          <CompareCell value={c} />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <p className="mt-4 text-xs text-muted-foreground">
+              Prices and limits are taken from public pricing pages, verified July 2026, and change
+              frequently — always check the vendor before buying. "Codes survive cancellation"
+              reflects each platform's published policy that dynamic codes can be deactivated when a
+              subscription ends.
+            </p>
+
+            <div className="mt-14 grid gap-6 rounded-2xl border border-border bg-card p-6 sm:grid-cols-[1fr_auto] sm:items-center sm:p-8">
+              <div>
+                <h3 className="text-lg font-semibold tracking-tight">
+                  Same features. Different business model.
+                </h3>
+                <p className="mt-2 max-w-xl text-sm text-muted-foreground">
+                  We make money the same way they do — from Enterprise. We just don't hide the free
+                  plan behind scan caps, ads, branding or a trial timer.
+                </p>
+              </div>
+              <Button size="lg" onClick={goAuth}>
+                Try Professional free <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        <section id="security" className="scroll-mt-16 border-b border-border">
+          <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
+            <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Security & privacy</p>
+                <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+                  Built by NxtGenSec. Security isn't a feature, it's the baseline.
+                </h2>
+                <p className="mt-4 text-pretty text-sm text-muted-foreground sm:text-base">
+                  A QR platform handles links your customers scan — that deserves the same
+                  engineering standards as the security tools we build.
+                </p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {SECURITY.map((item) => (
+                  <div key={item.title} className="rounded-2xl border border-border bg-card p-5">
+                    <div className="flex size-8 items-center justify-center rounded-lg border border-border bg-foreground/[0.04]">
+                      <ShieldCheck className="size-4" />
+                    </div>
+                    <h3 className="mt-3 text-sm font-semibold">{item.title}</h3>
+                    <p className="mt-1 text-xs text-muted-foreground">{item.body}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="developers" className="scroll-mt-16 border-b border-border">
+          <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="text-sm font-medium text-muted-foreground">Developer platform</p>
+              <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+                Build on Unified QR
+              </h2>
+            </div>
+            <div className="mt-12 rounded-2xl border border-border bg-card p-6">
+              <div className="flex items-center gap-2.5">
+                <span className="flex size-9 items-center justify-center rounded-xl border border-border bg-foreground/[0.04]">
+                  <Zap className="size-4.5" />
+                </span>
+                <h3 className="text-sm font-semibold">Available today</h3>
+              </div>
+              <ul className="mt-5 grid gap-4 sm:grid-cols-2">
+                {DEV_READY.map((item) => (
+                  <li key={item.title} className="flex items-start gap-2.5">
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">{item.title}</p>
+                      <p className="text-xs text-muted-foreground">{item.body}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-border pt-5">
+                <p className="text-xs text-muted-foreground">
+                  Every line of the platform is public — extend it, self-host it, or build on top of
+                  it.
+                </p>
+                <Button variant="ghost" size="sm" className="ml-auto" asChild>
+                  <a href={GITHUB} target="_blank" rel="noreferrer">
+                    <Github className="h-4 w-4" /> Explore on GitHub
+                  </a>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="open-source" className="scroll-mt-16 border-b border-border">
+          <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
+            <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-8 text-center sm:p-12">
+              <div
+                className="pointer-events-none absolute -top-24 left-1/2 h-64 w-[36rem] -translate-x-1/2 rounded-full bg-foreground/[0.06] blur-3xl"
                 aria-hidden
               />
-              {STEPS.map((step, i) => (
-                <div key={step.title} className="relative text-center sm:px-2">
-                  <div className="relative z-10 mx-auto flex size-10 items-center justify-center rounded-full border border-border bg-card">
-                    <step.icon className="h-4 w-4" />
-                  </div>
-                  <span className="mt-3 block font-mono text-xs text-muted-foreground">
-                    0{i + 1}
-                  </span>
-                  <h3 className="mt-1 text-sm font-medium">{step.title}</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">{step.body}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="compare" className="border-b border-border">
-          <div className="mx-auto max-w-4xl px-5 py-16 sm:py-20">
-            <span className="font-mono text-xs uppercase tracking-widest text-brand">
-              05 — The difference
-            </span>
-            <h2 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">
-              What the big three charge for
-            </h2>
-            <p className="mt-3 text-sm text-muted-foreground">
-              Checked against the free tiers of QRCode Monkey, Bitly and Uniqode — the three
-              most-used QR platforms in 2026.
-            </p>
-            <div className="mt-10 overflow-hidden rounded-2xl border border-border">
-              <div className="grid grid-cols-[1fr_auto_auto] gap-4 border-b border-border bg-elevated px-5 py-3 text-xs uppercase tracking-wider text-muted-foreground">
-                <span>Capability</span>
-                <span className="w-28 text-right">Typical tool</span>
-                <span className="flex w-24 items-center justify-end gap-1.5">
-                  <span className="h-1 w-1 rounded-full bg-brand" />
-                  Unified QR
+              <div className="relative">
+                <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-muted-foreground">
+                  <Star className="h-3.5 w-3.5" /> Open source
                 </span>
+                <h2 className="mt-6 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+                  Built in public. Built to last.
+                </h2>
+                <p className="mx-auto mt-4 max-w-xl text-pretty text-sm text-muted-foreground sm:text-base">
+                  The entire platform is open on GitHub. Read the code, follow the roadmap, file
+                  issues, or contribute — this project grows with its community.
+                </p>
+                <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+                  <Button size="lg" asChild>
+                    <a href={GITHUB} target="_blank" rel="noreferrer">
+                      <Star className="h-4 w-4" /> Star on GitHub
+                    </a>
+                  </Button>
+                  <Button size="lg" variant="secondary" asChild>
+                    <a href={`${GITHUB}/issues`} target="_blank" rel="noreferrer">
+                      <Terminal className="h-4 w-4" /> Open an issue
+                    </a>
+                  </Button>
+                </div>
+                <p className="mt-6 font-mono text-xs text-muted-foreground">
+                  github.com/nxtgensec/unified-qr
+                </p>
               </div>
-              {COMPARISON.map((row) => (
+            </div>
+          </div>
+        </section>
+
+        <section id="use-cases" className="scroll-mt-16 border-b border-border">
+          <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="text-sm font-medium text-muted-foreground">Built for your world</p>
+              <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+                QR codes, where you work
+              </h2>
+            </div>
+            <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {USE_CASES.map((item) => (
+                <div key={item.title} className="rounded-2xl border border-border bg-card p-6">
+                  <div className="flex size-10 items-center justify-center rounded-xl border border-border bg-foreground/[0.04]">
+                    <item.icon className="size-5" />
+                  </div>
+                  <h3 className="mt-4 text-sm font-semibold">{item.title}</h3>
+                  <p className="mt-1.5 text-sm text-muted-foreground">{item.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="enterprise" className="scroll-mt-16 border-b border-border">
+          <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
+            <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Enterprise</p>
+                <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+                  For teams printing at volume
+                </h2>
+                <p className="mt-4 text-pretty text-sm text-muted-foreground sm:text-base">
+                  When QR codes carry your brand into the world, you need volume, history and
+                  support behind them.
+                </p>
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <Button size="lg" asChild>
+                    <a href="#pricing">See Enterprise pricing</a>
+                  </Button>
+                  <Button size="lg" variant="secondary" asChild>
+                    <a href="#compare">
+                      Compare with alternatives <ArrowRight className="ml-2 h-4 w-4" />
+                    </a>
+                  </Button>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-border bg-card p-6">
+                <ul className="space-y-4">
+                  {[
+                    "Unlimited dynamic codes",
+                    "Full scan history, never truncated",
+                    "Bulk generation from CSV",
+                    "Own-domain short links",
+                    "Priority support",
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-2.5 text-sm">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="pricing" className="scroll-mt-16 border-b border-border">
+          <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="text-sm font-medium text-muted-foreground">Honest pricing</p>
+              <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+                Two plans. Zero bait-and-switch.
+              </h2>
+              <p className="mt-4 text-pretty text-sm text-muted-foreground sm:text-base">
+                The free tier is a real plan, not a 7-day trial in disguise. The paid tier exists
+                for one reason: people who print QR codes for a living.
+              </p>
+            </div>
+
+            <div className="mx-auto mt-12 grid max-w-4xl gap-6 lg:grid-cols-2">
+              <div className="rounded-2xl border border-border bg-card p-7">
+                <h3 className="text-base font-semibold">Professional</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  For a QR code that just works — free, forever.
+                </p>
+                <p className="mt-5 text-4xl font-semibold tracking-tight">
+                  Free
+                  <span className="ml-1 text-sm font-normal text-muted-foreground">forever</span>
+                </p>
+                <ul className="mt-6 space-y-2.5">
+                  {[
+                    `All ${KINDS.length} code types, none paywalled`,
+                    "3 dynamic codes",
+                    "Unlimited static codes",
+                    "30-day scan analytics",
+                    "Watermark-free PNG + SVG export",
+                  ].map((feature) => (
+                    <li key={feature} className="flex items-start gap-2.5 text-sm">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+                <Button className="mt-8 w-full" size="lg" variant="secondary" onClick={goAuth}>
+                  Sign in with Google <GoogleIcon className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+
+              <div className="relative rounded-2xl border border-foreground/40 bg-card p-7">
+                <span className="absolute -top-3 left-7 rounded-full border border-foreground/30 bg-background px-3 py-1 text-[11px] font-medium text-foreground">
+                  Most popular
+                </span>
+                <h3 className="text-base font-semibold">Enterprise</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  For teams printing at volume and tracking everything.
+                </p>
+                <div className="mt-5 grid grid-cols-2 gap-2">
+                  {ENTERPRISE_TERMS.map((term) => (
+                    <div
+                      key={term.id}
+                      className={cn(
+                        "rounded-lg border px-3 py-2",
+                        term.id === "yearly"
+                          ? "border-foreground/40 bg-foreground/5"
+                          : "border-border",
+                      )}
+                    >
+                      <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                        {term.label}
+                        {term.id === "yearly" && (
+                          <span className="ml-1.5 rounded-full border border-foreground/40 px-1.5 py-px text-[10px] font-medium normal-case tracking-normal text-foreground">
+                            Best value
+                          </span>
+                        )}
+                      </p>
+                      <p className="mt-0.5 text-lg font-semibold tracking-tight">
+                        {formatPaise(term.paise)}
+                        <span className="text-xs font-normal text-muted-foreground">
+                          {" "}
+                          / {term.per}
+                        </span>
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <ul className="mt-6 space-y-2.5">
+                  {[
+                    "Unlimited dynamic codes",
+                    "Full scan history, never truncated",
+                    "Bulk generation from CSV",
+                    "Priority support",
+                  ].map((feature) => (
+                    <li key={feature} className="flex items-start gap-2.5 text-sm">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+                <Button className="mt-8 w-full" size="lg" onClick={goUpgrade}>
+                  Upgrade <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="mt-14 rounded-2xl border border-border bg-card">
+              <div className="grid grid-cols-[minmax(0,1fr)_88px_88px] gap-3 border-b border-border px-5 py-3 text-xs uppercase tracking-wider text-muted-foreground sm:px-7">
+                <span>Feature</span>
+                <span className="text-center">Professional</span>
+                <span className="text-center">Enterprise</span>
+              </div>
+              {PLAN_MATRIX.map((row) => (
                 <div
-                  key={row.label}
-                  className="grid grid-cols-[1fr_auto_auto] items-center gap-4 border-b border-border px-5 py-3 text-sm last:border-b-0"
+                  key={row.feature}
+                  className="grid grid-cols-[minmax(0,1fr)_88px_88px] items-center gap-3 border-b border-border px-5 py-3.5 text-sm last:border-b-0 sm:px-7"
                 >
-                  <span>{row.label}</span>
-                  <span className="flex w-28 items-center justify-end gap-1.5 text-muted-foreground">
-                    <X className="h-3.5 w-3.5" />
-                    {row.them}
+                  <span className="font-medium">{row.feature}</span>
+                  <span className="flex justify-center">
+                    <PricingCell value={row.free} />
                   </span>
-                  <span className="flex w-24 items-center justify-end gap-1.5 font-medium">
-                    <Check className="h-3.5 w-3.5 text-brand" />
-                    {row.us}
+                  <span className="flex justify-center">
+                    <PricingCell value={row.pro} />
                   </span>
                 </div>
               ))}
             </div>
-            <p className="mt-4 text-xs text-muted-foreground">
-              Free-tier terms as published by each platform. QRCode Monkey is free but static-only —
-              no editing or tracking. Bitly and Uniqode put dynamic codes, analytics and design
-              behind paid plans, and some deactivate your codes entirely when you cancel.
-            </p>
+
+            <div className="mt-10 rounded-2xl border border-border bg-elevated p-6 sm:p-8">
+              <h3 className="text-sm font-medium">The anti-trap guarantee</h3>
+              <div className="mt-5 grid gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
+                {[
+                  ["No expiry", "Codes stay live forever, on every plan."],
+                  ["No scan caps", "Any number of people can scan — always."],
+                  ["No deactivation", "Cancel or downgrade and printed codes keep working."],
+                  ["No reprints on upgrade", "Moving to Enterprise keeps every code and slug."],
+                  ["No ads or watermarks", "The free plan stays clean — even on downloads."],
+                  ["No card-required trials", "Professional is free without a card or a timer."],
+                ].map(([title, body]) => (
+                  <div key={title}>
+                    <p className="flex items-center gap-1.5 text-sm font-medium">
+                      <Check className="h-3.5 w-3.5 shrink-0 text-foreground" /> {title}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">{body}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <h3 className="mt-16 text-center text-2xl font-semibold tracking-tight sm:text-3xl">
+              Questions, answered
+            </h3>
+            <div className="mt-8 divide-y divide-border rounded-2xl border border-border bg-card">
+              {PRICING_FAQ.map((item) => (
+                <details key={item.q} className="group px-5 py-4">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-medium [&::-webkit-details-marker]:hidden">
+                    {item.q}
+                    <span className="shrink-0 text-muted-foreground transition-transform group-open:rotate-45">
+                      +
+                    </span>
+                  </summary>
+                  <p className="mt-3 text-sm text-muted-foreground">{item.a}</p>
+                </details>
+              ))}
+            </div>
+
+            <div className="mt-12 grid gap-6 rounded-2xl border border-border bg-card p-6 sm:grid-cols-[1fr_auto] sm:items-center sm:p-8">
+              <div>
+                <h3 className="text-lg font-semibold tracking-tight">Still not sure?</h3>
+                <p className="mt-2 max-w-xl text-sm text-muted-foreground">
+                  Compare us side by side against QR TIGER, Bitly, Uniqode, Flowcode and QRCode
+                  Monkey — the full receipt is public.
+                </p>
+              </div>
+              <Button size="lg" variant="secondary" asChild>
+                <a href="#compare">
+                  See the comparison <ArrowRight className="ml-2 h-4 w-4" />
+                </a>
+              </Button>
+            </div>
           </div>
         </section>
 
-        <section id="faq" className="border-b border-border">
-          <div className="mx-auto max-w-3xl px-5 py-16 sm:py-20">
-            <span className="font-mono text-xs uppercase tracking-widest text-brand">
-              06 — Good to know
-            </span>
-            <h2 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">
-              Questions, answered
-            </h2>
-            <div className="mt-10 divide-y divide-border rounded-2xl border border-border bg-card">
-              {FAQ.map((item) => (
+        <section id="faq" className="scroll-mt-16 border-b border-border">
+          <div className="mx-auto max-w-2xl px-5 py-20 sm:py-24">
+            <div className="text-center">
+              <p className="text-sm font-medium text-muted-foreground">Good to know</p>
+              <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+                Questions, answered
+              </h2>
+            </div>
+            <div className="mt-8 flex justify-center gap-1 rounded-full border border-border bg-card p-1">
+              {FAQ_TABS.map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setFaqTab(tab.id)}
+                  className={cn(
+                    "flex-1 rounded-full px-4 py-1.5 text-xs font-medium transition-colors sm:flex-none sm:px-5",
+                    faqTab === tab.id
+                      ? "bg-foreground text-background"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+            <div className="mt-8 divide-y divide-border rounded-2xl border border-border bg-card">
+              {FAQS[faqTab].map((item) => (
                 <details key={item.q} className="group px-5 py-4">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-medium [&::-webkit-details-marker]:hidden">
                     {item.q}
@@ -731,77 +1681,151 @@ function Landing() {
           </div>
         </section>
 
-        <section className="relative overflow-hidden border-b border-border">
-          <div className="grid-noise pointer-events-none absolute inset-0 opacity-30" aria-hidden />
-          <div className="relative mx-auto max-w-3xl px-5 py-20 text-center">
-            <span className="font-mono text-xs uppercase tracking-widest text-brand">
-              07 — No trial timer
-            </span>
-            <h2 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">
-              Sign in once with Google
+        <section className="relative overflow-hidden">
+          <div className="pointer-events-none absolute inset-0" aria-hidden>
+            <div className="absolute -bottom-24 left-1/2 h-72 w-[36rem] -translate-x-1/2 rounded-full bg-foreground/[0.06] blur-3xl" />
+          </div>
+          <div className="relative mx-auto max-w-3xl px-5 py-20 text-center sm:py-24">
+            <Sparkles className="mx-auto h-6 w-6 text-muted-foreground" />
+            <h2 className="mt-4 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+              Start creating — it's free forever
             </h2>
-            <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">
-              No passwords, no credit card, no trial timer. Professional stays free forever — your
-              codes and their scan history live in your account.
+            <p className="mx-auto mt-4 max-w-md text-pretty text-sm text-muted-foreground sm:text-base">
+              Sign in with Google. No passwords, no credit card, no trial timer. Your codes and scan
+              history live in your account.
             </p>
             <Button className="mt-8" size="lg" onClick={goAuth}>
               {signedIn ? "Open dashboard" : "Sign in with Google"}
               <GoogleIcon className="ml-2 h-4 w-4" />
             </Button>
+            <p className="mt-4 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+              <Github className="h-3.5 w-3.5" /> Open source on GitHub — star, fork, or contribute.
+            </p>
           </div>
         </section>
       </main>
 
       <footer className="mx-auto max-w-6xl px-5">
-        <div className="flex flex-col gap-6 border-b border-border py-10 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-10 border-t border-border py-12 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex max-w-xs flex-col gap-3">
             <span className="flex items-center gap-2.5 text-sm font-semibold tracking-tight">
               <Logo className="size-7" />
               Unified QR
             </span>
-            <span className="max-w-xs text-xs text-muted-foreground">
-              Every QR code job, in one place. Professional is free forever — no watermarks, no
-              expiry, no trial traps.
+            <span className="text-xs text-muted-foreground">
+              The open platform for everything QR. Free forever, built in public by NxtGenSec.
             </span>
+            <div className="flex gap-2">
+              <Button size="icon" variant="outline" asChild>
+                <a href={GITHUB} target="_blank" rel="noreferrer" aria-label="GitHub">
+                  <Github className="h-4 w-4" />
+                </a>
+              </Button>
+              <Button size="icon" variant="outline" asChild>
+                <a href={`${GITHUB}/issues`} target="_blank" rel="noreferrer" aria-label="Issues">
+                  <Star className="h-4 w-4" />
+                </a>
+              </Button>
+            </div>
           </div>
-          <nav className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground">
-            <a href="#generator" className="transition-colors hover:text-foreground">
-              Generator
-            </a>
-            <a href="#features" className="transition-colors hover:text-foreground">
-              Features
-            </a>
-            <a href="#pricing" className="transition-colors hover:text-foreground">
-              Pricing
-            </a>
-            <a href="#how" className="transition-colors hover:text-foreground">
-              How it works
-            </a>
-            <a href="#compare" className="transition-colors hover:text-foreground">
-              Compare
-            </a>
-            <a href="#faq" className="transition-colors hover:text-foreground">
-              FAQ
-            </a>
-            <Link to="/privacy" className="transition-colors hover:text-foreground">
-              Privacy
-            </Link>
-            <Link to="/terms" className="transition-colors hover:text-foreground">
-              Terms
-            </Link>
-            <Link to="/payment" className="transition-colors hover:text-foreground">
-              Payment
-            </Link>
-            <Link to="/refunds" className="transition-colors hover:text-foreground">
-              Refunds
-            </Link>
-          </nav>
+          <div className="grid flex-1 grid-cols-2 gap-8 text-xs sm:grid-cols-3 lg:grid-cols-5">
+            <nav className="flex flex-col gap-2">
+              <span className="font-medium text-muted-foreground">Product</span>
+              <Link to="/create" className="transition-colors hover:text-foreground">
+                Generator
+              </Link>
+              <a href="/#url-qr-code" className="transition-colors hover:text-foreground">
+                URL QR code
+              </a>
+              <a href="/#types" className="transition-colors hover:text-foreground">
+                Code types
+              </a>
+              <a href="/#compare" className="transition-colors hover:text-foreground">
+                Compare
+              </a>
+            </nav>
+            <nav className="flex flex-col gap-2">
+              <span className="font-medium text-muted-foreground">Developers</span>
+              <a
+                href={GITHUB}
+                target="_blank"
+                rel="noreferrer"
+                className="transition-colors hover:text-foreground"
+              >
+                GitHub
+              </a>
+              <a
+                href={`${GITHUB}/issues`}
+                target="_blank"
+                rel="noreferrer"
+                className="transition-colors hover:text-foreground"
+              >
+                Roadmap & issues
+              </a>
+              <a href="/#why" className="transition-colors hover:text-foreground">
+                Why us
+              </a>
+              <a href="/#pricing" className="transition-colors hover:text-foreground">
+                Pricing
+              </a>
+            </nav>
+            <nav className="flex flex-col gap-2">
+              <span className="font-medium text-muted-foreground">Community</span>
+              <a
+                href={GITHUB}
+                target="_blank"
+                rel="noreferrer"
+                className="transition-colors hover:text-foreground"
+              >
+                Discussions
+              </a>
+              <a
+                href={`${GITHUB}/issues`}
+                target="_blank"
+                rel="noreferrer"
+                className="transition-colors hover:text-foreground"
+              >
+                Feature requests
+              </a>
+              <a
+                href={`${GITHUB}/issues`}
+                target="_blank"
+                rel="noreferrer"
+                className="transition-colors hover:text-foreground"
+              >
+                Become a contributor
+              </a>
+            </nav>
+            <nav className="flex flex-col gap-2">
+              <span className="font-medium text-muted-foreground">Legal</span>
+              <Link to="/privacy" className="transition-colors hover:text-foreground">
+                Privacy
+              </Link>
+              <Link to="/terms" className="transition-colors hover:text-foreground">
+                Terms
+              </Link>
+              <Link to="/payment" className="transition-colors hover:text-foreground">
+                Payment
+              </Link>
+              <Link to="/refunds" className="transition-colors hover:text-foreground">
+                Refunds
+              </Link>
+              <Link to="/contact" className="transition-colors hover:text-foreground">
+                Contact
+              </Link>
+            </nav>
+          </div>
         </div>
         <div className="flex flex-col items-center justify-between gap-2 py-6 text-xs text-muted-foreground sm:flex-row">
-          <span>Made by NxtGenSec Interns, for Everyone on the Internet.</span>
           <span>© {new Date().getFullYear()} Unified QR</span>
+          <span className="flex items-center gap-1.5">
+            <Globe className="h-3.5 w-3.5" /> Built by NxtGenSec, with contributions from the
+            community.
+          </span>
         </div>
       </footer>
+
+      <MobileNav />
     </div>
   );
 }
