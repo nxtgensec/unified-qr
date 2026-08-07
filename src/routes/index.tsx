@@ -617,26 +617,27 @@ function MobileNav() {
   }, []);
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/90 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
-      <div className="mx-auto grid h-14 max-w-md grid-cols-5">
+    <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
+      <div className="mx-auto grid h-16 max-w-md grid-cols-5">
         {MOBILE_NAV.map((item) => {
           const isActive = active === item.href;
           return (
             <a
               key={item.href}
               href={item.href}
+              aria-current={isActive ? "page" : undefined}
               className={cn(
-                "flex flex-col items-center justify-center gap-0.5 text-[10px] font-medium tracking-wide leading-none transition-colors",
+                "flex flex-col items-center justify-center gap-1 text-[10px] font-medium leading-none transition-colors",
                 isActive ? "text-foreground" : "text-muted-foreground",
               )}
             >
               <span
                 className={cn(
-                  "flex h-6 w-12 items-center justify-center rounded-full transition-colors",
-                  isActive && "bg-foreground text-background",
+                  "flex h-8 w-12 items-center justify-center rounded-full transition-colors",
+                  isActive ? "bg-foreground text-background" : "text-muted-foreground",
                 )}
               >
-                <item.icon className="size-4" />
+                <item.icon size={24} strokeWidth={2} />
               </span>
               {item.label}
             </a>
@@ -689,9 +690,9 @@ function Landing() {
             )}
           </nav>
           <div className="flex items-center gap-2">
-            <Button size="icon" variant="ghost" asChild className="hidden sm:inline-flex">
-              <a href={GITHUB} target="_blank" rel="noreferrer" aria-label="GitHub">
-                <Github className="h-4 w-4" />
+            <Button size="icon" variant="ghost" asChild aria-label="GitHub">
+              <a href={GITHUB} target="_blank" rel="noreferrer">
+                <Github size={20} />
               </a>
             </Button>
             <Button size="sm" onClick={goAuth}>
