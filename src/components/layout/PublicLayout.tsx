@@ -1,5 +1,5 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { House, QrCode, Scale, ShieldCheck, Tag } from "lucide-react";
+import { Github, House, QrCode, Scale, ShieldCheck, Tag } from "lucide-react";
 import { type ReactNode } from "react";
 
 import { Logo } from "@/components/brand/Logo";
@@ -44,7 +44,7 @@ export function PublicLayout({
   return (
     <div className="min-h-screen bg-background pb-16 lg:pb-0">
       <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5">
+        <div className="mx-auto flex h-header max-w-6xl items-center justify-between gap-4 px-5">
           <Link to="/" className="flex shrink-0 items-center gap-2.5 font-semibold tracking-tight">
             <Logo className="size-7" />
             <span className="hidden sm:inline">Unified QR</span>
@@ -65,9 +65,16 @@ export function PublicLayout({
               </a>
             ))}
           </nav>
-          <Button size="sm" onClick={goAuth}>
-            {signedIn ? "Dashboard" : "Sign in"}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button size="icon" variant="ghost" asChild aria-label="GitHub">
+              <a href="https://github.com/nxtgensec/unified-qr" target="_blank" rel="noreferrer">
+                <Github size={20} />
+              </a>
+            </Button>
+            <Button size="sm" onClick={goAuth}>
+              {signedIn ? "Dashboard" : "Sign in"}
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -138,26 +145,27 @@ export function PublicLayout({
         </div>
       </footer>
 
-      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/90 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
-        <div className="mx-auto grid max-w-md grid-cols-5">
+      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
+        <div className="mx-auto grid h-tabbar max-w-md grid-cols-5">
           {BOTTOM_NAV.map((item) => {
             const isActive = item.href === activeHref;
             return (
               <a
                 key={item.href}
                 href={item.href}
+                aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "flex flex-col items-center gap-1 py-2 text-[10px] font-medium tracking-wide transition-colors",
+                  "flex flex-col items-center justify-center gap-1 text-[10px] font-medium leading-none transition-colors",
                   isActive ? "text-foreground" : "text-muted-foreground",
                 )}
               >
                 <span
                   className={cn(
-                    "flex h-7 w-12 items-center justify-center rounded-full transition-colors",
-                    isActive && "bg-foreground text-background",
+                    "flex h-8 w-12 items-center justify-center rounded-full transition-colors",
+                    isActive ? "bg-foreground text-background" : "text-muted-foreground",
                   )}
                 >
-                  <item.icon className="size-4" />
+                  <item.icon size={24} strokeWidth={2} />
                 </span>
                 {item.label}
               </a>

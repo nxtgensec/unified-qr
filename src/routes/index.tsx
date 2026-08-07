@@ -618,7 +618,7 @@ function MobileNav() {
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
-      <div className="mx-auto grid h-16 max-w-md grid-cols-5">
+      <div className="mx-auto grid h-tabbar max-w-md grid-cols-5">
         {MOBILE_NAV.map((item) => {
           const isActive = active === item.href;
           return (
@@ -663,7 +663,7 @@ function Landing() {
   return (
     <div className="min-h-screen scroll-smooth bg-background pb-16 lg:pb-0">
       <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
+        <div className="mx-auto flex h-header max-w-6xl items-center justify-between px-5">
           <Link to="/" className="flex items-center gap-2.5 font-semibold tracking-tight">
             <Logo className="size-7" />
             <span>Unified QR</span>
@@ -975,8 +975,8 @@ function Landing() {
               {PILLARS.map((pillar) => (
                 <div key={pillar.title} className="rounded-2xl border border-border bg-card p-6">
                   <div className="flex items-center gap-2.5">
-                    <span className="flex size-9 items-center justify-center rounded-xl border border-border bg-foreground/[0.04]">
-                      <pillar.icon className="size-4.5" />
+                    <span className="flex size-10 items-center justify-center rounded-xl border border-border bg-foreground/[0.04]">
+                      <pillar.icon className="size-5" />
                     </span>
                     <h3 className="text-sm font-semibold">{pillar.title}</h3>
                   </div>
@@ -986,7 +986,7 @@ function Landing() {
                         key={item}
                         className="flex items-start gap-2 text-sm text-muted-foreground"
                       >
-                        <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-foreground" />
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
                         {item}
                       </li>
                     ))}
@@ -1117,8 +1117,8 @@ function Landing() {
             </div>
             <div className="mt-12 rounded-2xl border border-border bg-card p-6">
               <div className="flex items-center gap-2.5">
-                <span className="flex size-9 items-center justify-center rounded-xl border border-border bg-foreground/[0.04]">
-                  <Zap className="size-4.5" />
+                <span className="flex size-10 items-center justify-center rounded-xl border border-border bg-foreground/[0.04]">
+                  <Zap className="size-5" />
                 </span>
                 <h3 className="text-sm font-semibold">Available today</h3>
               </div>
@@ -1348,7 +1348,7 @@ function Landing() {
                 ].map(([title, body]) => (
                   <div key={title}>
                     <p className="flex items-center gap-1.5 text-sm font-medium">
-                      <Check className="h-3.5 w-3.5 shrink-0 text-foreground" /> {title}
+                      <Check className="h-4 w-4 shrink-0 text-foreground" /> {title}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">{body}</p>
                   </div>

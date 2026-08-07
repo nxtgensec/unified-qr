@@ -120,8 +120,12 @@ export function AdminShell({
               <span className="flex items-center gap-2 font-semibold">
                 <Logo className="size-5" /> Unified QR
               </span>
-              <button onClick={() => setOpen(false)} aria-label="Close menu">
-                <X className="h-4 w-4" />
+              <button
+                className="flex size-10 items-center justify-center rounded-md transition-colors hover:bg-muted"
+                onClick={() => setOpen(false)}
+                aria-label="Close menu"
+              >
+                <X className="size-4" />
               </button>
             </div>
             {nav}
@@ -140,10 +144,14 @@ export function AdminShell({
       )}
 
       <div className="lg:pl-60">
-        <header className="sticky top-0 z-30 border-b border-border bg-background/85 px-5 py-4 backdrop-blur">
-          <div className="mx-auto flex max-w-6xl items-center gap-3">
-            <button className="lg:hidden" onClick={() => setOpen(true)} aria-label="Open menu">
-              <Menu className="h-5 w-5" />
+        <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
+          <div className="mx-auto flex h-header max-w-6xl items-center gap-3 px-5">
+            <button
+              className="flex size-10 items-center justify-center rounded-md transition-colors hover:bg-muted lg:hidden"
+              onClick={() => setOpen(true)}
+              aria-label="Open menu"
+            >
+              <Menu className="size-5" />
             </button>
             <div className="flex-1">
               <div className="flex items-center gap-2">

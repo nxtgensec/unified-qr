@@ -58,6 +58,8 @@
   --color-sidebar-ring: var(--sidebar-ring);
   --font-sans: "Inter Tight", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --spacing-header: 4rem;
+  --spacing-tabbar: 4rem;
 }
 
 :root {
