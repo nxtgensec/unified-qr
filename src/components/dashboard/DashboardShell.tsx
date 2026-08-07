@@ -21,6 +21,7 @@ import { PlanBadge } from "@/components/plan/PlanBadge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { getAdminStatus } from "@/lib/admin.functions";
+import { getMyPlan } from "@/lib/plans.functions";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -56,6 +57,14 @@ export function DashboardShell({
     queryFn: () => fetchAdminStatus(),
     staleTime: 120_000,
   });
+
+  const fetchPlan = useServerFn(getMyPlan);
+  const { data: plan } = useQuery({
+    queryKey: ["plan"],
+    queryFn: () => fetchPlan(),
+    staleTime: 60_000,
+  });
+  const isPro = plan?.plan === "enterprise";
 
   useEffect(() => {
     void supabase.auth.getSession().then(({ data }) => setEmail(data.session?.user.email ?? ""));
@@ -112,7 +121,14 @@ export function DashboardShell({
             </Link>
           )}
           <PlanBadge className="w-full justify-center" />
-          <p className="truncate px-3 text-xs text-muted-foreground">{email}</p>
+          <p className="truncate px-3 text-xs text-muted-foreground">
+            {email}
+            {isPro && (
+              <span className="ml-1 align-super text-[10px] font-bold uppercase leading-none text-brand">
+                Pro
+              </span>
+            )}
+          </p>
           <Button
             variant="ghost"
             size="sm"
@@ -148,6 +164,14 @@ export function DashboardShell({
                 </Link>
               )}
               <PlanBadge className="w-full justify-center" />
+              <p className="truncate px-3 text-xs text-muted-foreground">
+                {email}
+                {isPro && (
+                  <span className="ml-1 align-super text-[10px] font-bold uppercase leading-none text-brand">
+                    Pro
+                  </span>
+                )}
+              </p>
               <Button
                 variant="ghost"
                 size="sm"

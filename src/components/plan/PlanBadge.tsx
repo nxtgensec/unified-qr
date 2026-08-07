@@ -1,18 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { Sparkles } from "lucide-react";
 
-import { fetchMyPlan } from "@/lib/client-queries";
+import { getMyPlan } from "@/lib/plans.functions";
 import { cn } from "@/lib/utils";
 
 export function PlanBadge({ className }: { className?: string }) {
+  const fetchPlan = useServerFn(getMyPlan);
   const { data } = useQuery({
     queryKey: ["plan"],
-    queryFn: fetchMyPlan,
+    queryFn: () => fetchPlan(),
     staleTime: 60_000,
   });
 
-  const enterprise = data === "enterprise";
+  const enterprise = data?.plan === "enterprise";
 
   return (
     <Link
@@ -26,7 +28,7 @@ export function PlanBadge({ className }: { className?: string }) {
       )}
     >
       {enterprise && <Sparkles className="h-3 w-3" />}
-      {enterprise ? "Enterprise" : "Professional · Free"}
+      {enterprise ? "Pro · Enterprise" : "Professional · Free"}
     </Link>
   );
 }
