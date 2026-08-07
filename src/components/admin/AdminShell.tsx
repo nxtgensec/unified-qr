@@ -70,7 +70,7 @@ export function AdminShell({
                 : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-foreground",
             )}
           >
-            <item.icon className="h-4 w-4" />
+            <item.icon className="size-icon-sm" />
             <span className="flex-1">{item.label}</span>
           </Link>
         );
@@ -97,7 +97,7 @@ export function AdminShell({
             to="/dashboard"
             className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-foreground"
           >
-            <ExternalLink className="h-4 w-4" />
+            <ExternalLink className="size-icon-sm" />
             View app
           </Link>
           <p className="truncate px-3 text-xs text-muted-foreground">{email}</p>
@@ -107,7 +107,7 @@ export function AdminShell({
             className="w-full justify-start"
             onClick={() => void signOut()}
           >
-            <LogOut className="mr-2 h-4 w-4" /> Sign out
+            <LogOut className="mr-2 size-icon-sm" /> Sign out
           </Button>
         </div>
       </aside>
@@ -125,7 +125,7 @@ export function AdminShell({
                 onClick={() => setOpen(false)}
                 aria-label="Close menu"
               >
-                <X className="size-4" />
+                <X className="size-icon-sm" />
               </button>
             </div>
             {nav}
@@ -136,7 +136,7 @@ export function AdminShell({
                 className="w-full justify-start"
                 onClick={() => void signOut()}
               >
-                <LogOut className="mr-2 h-4 w-4" /> Sign out
+                <LogOut className="mr-2 size-icon-sm" /> Sign out
               </Button>
             </div>
           </div>
@@ -145,7 +145,7 @@ export function AdminShell({
 
       <div className="lg:pl-60">
         <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
-          <div className="mx-auto flex h-header max-w-6xl items-center gap-3 px-gutter">
+          <div className="mx-auto flex h-header max-w-main items-center gap-3 px-gutter">
             <button
               className="flex size-10 items-center justify-center rounded-md transition-colors hover:bg-muted lg:hidden"
               onClick={() => setOpen(true)}
@@ -155,7 +155,7 @@ export function AdminShell({
             </button>
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <Shield className="h-4 w-4 text-red-400" />
+                <Shield className="size-icon-sm text-red-400" />
                 <h1 className="text-lg font-semibold tracking-tight">{title}</h1>
               </div>
               {description && <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>}
@@ -163,7 +163,7 @@ export function AdminShell({
             {actions}
           </div>
         </header>
-        <main className="mx-auto max-w-6xl px-5 py-8">{children}</main>
+        <main className="mx-auto max-w-main px-gutter py-8">{children}</main>
       </div>
     </div>
   );

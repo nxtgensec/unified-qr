@@ -66,14 +66,14 @@ function AuthPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-background px-5">
+    <div className="relative flex min-h-screen items-center justify-center bg-background px-gutter">
       <div className="grid-noise pointer-events-none absolute inset-0 opacity-30" aria-hidden />
       <div className="relative w-full max-w-md">
         <Link
           to="/"
           className="mb-8 inline-flex items-center gap-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
-          <ArrowLeft className="h-3.5 w-3.5" /> Back to generator
+          <ArrowLeft className="size-icon-xs" /> Back to generator
         </Link>
 
         <div className="rounded-2xl border border-border bg-card p-8 sm:p-10">
@@ -96,9 +96,9 @@ function AuthPage() {
             onClick={() => void signIn()}
           >
             {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="size-icon-sm animate-spin" />
             ) : (
-              <GoogleIcon className="h-4 w-4" />
+              <GoogleIcon className="size-icon-sm" />
             )}
             {loading ? "Connecting to Google…" : "Continue with Google"}
           </Button>
@@ -114,7 +114,7 @@ function AuthPage() {
           <ul className="space-y-3">
             {BENEFITS.map((benefit) => (
               <li key={benefit} className="flex items-start gap-2.5 text-sm">
-                <Check className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                <Check className="mt-0.5 size-icon-sm shrink-0 text-muted-foreground" />
                 {benefit}
               </li>
             ))}

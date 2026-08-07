@@ -569,8 +569,8 @@ const PRICING_FAQ = [
 ];
 
 function PricingCell({ value }: { value: boolean | string }) {
-  if (value === true) return <Check className="mx-auto h-4 w-4 text-foreground" />;
-  if (value === false) return <Minus className="mx-auto h-4 w-4 text-muted-foreground" />;
+  if (value === true) return <Check className="mx-auto size-icon-sm text-foreground" />;
+  if (value === false) return <Minus className="mx-auto size-icon-sm text-muted-foreground" />;
   return <span className="text-sm">{value}</span>;
 }
 
@@ -588,8 +588,8 @@ function CompareCell({ value, highlight }: { value: string; highlight?: boolean 
             : "text-muted-foreground",
       )}
     >
-      {highlight && <Check className="h-3.5 w-3.5 text-foreground" />}
-      {bad && <X className="h-3.5 w-3.5 text-muted-foreground" />}
+      {highlight && <Check className="size-icon-xs text-foreground" />}
+      {bad && <X className="size-icon-xs text-muted-foreground" />}
       {value}
     </span>
   );
@@ -618,7 +618,7 @@ function MobileNav() {
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
-      <div className="mx-auto grid h-tabbar max-w-md grid-cols-5">
+      <div className="mx-auto grid h-tabbar max-w-nav grid-cols-5">
         {MOBILE_NAV.map((item) => {
           const isActive = active === item.href;
           return (
@@ -668,9 +668,9 @@ function Landing() {
   const selectHeroKind = (kind: QrKind) => setHeroKind(kind);
 
   return (
-    <div className="min-h-screen scroll-smooth bg-background pb-16 lg:pb-0">
+    <div className="min-h-screen scroll-smooth bg-background pb-tabbar lg:pb-0">
       <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur">
-        <div className="mx-auto flex h-header max-w-6xl items-center justify-between px-gutter">
+        <div className="mx-auto flex h-header max-w-main items-center justify-between px-gutter">
           <Link to="/" className="flex items-center gap-2.5 font-semibold tracking-tight">
             <Logo className="size-7" />
             <span>Unified QR</span>
@@ -704,7 +704,7 @@ function Landing() {
               aria-label="GitHub"
               className="flex size-10 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
-              <Github className="size-icon-md" />
+              <Github className="size-icon-sm" />
             </a>
             <Button onClick={goAuth}>{signedIn ? "Dashboard" : "Sign in"}</Button>
           </div>
@@ -712,12 +712,12 @@ function Landing() {
       </header>
 
       <main>
-        <section id="top" className="relative scroll-mt-16 border-b border-border">
+        <section id="top" className="relative scroll-mt-header border-b border-border">
           <div className="pointer-events-none absolute inset-0" aria-hidden>
             <div className="absolute -top-32 left-1/2 h-96 w-[42rem] -translate-x-1/2 rounded-full bg-foreground/[0.07] blur-3xl" />
           </div>
 
-          <div className="hero-enter relative mx-auto max-w-6xl px-5 pt-10 sm:pt-14">
+          <div className="hero-enter relative mx-auto max-w-main px-gutter pt-10 sm:pt-14">
             <div className="flex flex-wrap items-center gap-2">
               {TOP_TYPES.map((chip) => {
                 const chipMeta = KINDS.find((k) => k.kind === chip)!;
@@ -736,7 +736,7 @@ function Landing() {
                         : "border-border bg-card/60 text-muted-foreground hover:border-foreground/40 hover:text-foreground",
                     )}
                   >
-                    <Icon className="size-4" />
+                    <Icon className="size-icon-sm" />
                     {chipMeta.label}
                     {chipLocked && <Lock className="size-3 opacity-60" />}
                   </button>
@@ -746,15 +746,15 @@ function Landing() {
                 to="/create"
                 className="inline-flex h-chip items-center gap-1.5 rounded-full border border-dashed border-border px-3.5 text-sm font-medium text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground"
               >
-                All {KINDS.length} types <ArrowRight className="size-4" />
+                All {KINDS.length} types <ArrowRight className="size-icon-sm" />
               </Link>
             </div>
           </div>
 
-          <div className="relative mx-auto grid max-w-6xl gap-14 px-5 pb-20 pt-8 sm:pt-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-center lg:gap-16">
+          <div className="relative mx-auto grid max-w-main gap-14 px-gutter pb-20 pt-8 sm:pt-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-center lg:gap-16">
             <div>
               <span className="hero-enter inline-flex h-chip items-center gap-1.5 rounded-full border border-border bg-card/50 px-3.5 text-sm text-muted-foreground">
-                <Globe className="size-4" />
+                <Globe className="size-icon-sm" />
                 Built by NxtGenSec
               </span>
               <h1 className="hero-enter hero-delay-1 mt-6 text-balance text-4xl font-semibold tracking-tight sm:text-6xl">
@@ -770,10 +770,10 @@ function Landing() {
               </p>
               <div className="hero-enter hero-delay-3 mt-8 flex flex-wrap items-center gap-3">
                 <Button size="lg" onClick={goGenerate}>
-                  <QrCode className="h-4 w-4" /> Generate QR free
+                  <QrCode className="size-icon-sm" /> Generate QR free
                 </Button>
                 <Button size="lg" variant="secondary" onClick={goAuth}>
-                  Continue with Google <GoogleIcon className="ml-1 h-4 w-4" />
+                  Continue with Google <GoogleIcon className="ml-1 size-icon-sm" />
                 </Button>
               </div>
               <ul className="hero-enter hero-delay-4 mt-8 flex flex-wrap gap-2">
@@ -782,7 +782,7 @@ function Landing() {
                     key={item.label}
                     className="inline-flex h-chip items-center gap-1.5 rounded-full border border-border bg-card/50 px-3.5 text-sm text-muted-foreground"
                   >
-                    <item.icon className="size-4" /> {item.label}
+                    <item.icon className="size-icon-sm" /> {item.label}
                   </li>
                 ))}
               </ul>
@@ -804,12 +804,12 @@ function Landing() {
             </div>
           </div>
 
-          <div className="relative mx-auto max-w-6xl px-5 pb-16">
+          <div className="relative mx-auto max-w-main px-gutter pb-16">
             <div className="grid gap-4 rounded-2xl border border-border bg-card p-6 sm:grid-cols-2 lg:grid-cols-4">
               {STATS.map((stat) => (
                 <div key={stat.label} className="flex items-center gap-3">
                   <span className="flex size-10 items-center justify-center rounded-xl border border-border bg-foreground/[0.04]">
-                    <stat.icon className="size-5" />
+                    <stat.icon className="size-icon-md" />
                   </span>
                   <div>
                     <p className="text-lg font-semibold tracking-tight">{stat.value}</p>
@@ -824,8 +824,8 @@ function Landing() {
           </div>
         </section>
 
-        <section id="types" className="scroll-mt-16 border-b border-border">
-          <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
+        <section id="types" className="scroll-mt-header border-b border-border">
+          <div className="mx-auto max-w-main px-gutter py-section sm:py-section-lg">
             <div className="mx-auto max-w-2xl text-center">
               <h2 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
                 Every code you'll ever need, none paywalled
@@ -851,7 +851,7 @@ function Landing() {
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex items-center gap-2.5">
                           <span className="flex size-8 items-center justify-center rounded-lg border border-border bg-background">
-                            <Icon className="size-4 text-muted-foreground transition-colors group-hover:text-foreground" />
+                            <Icon className="size-icon-sm text-muted-foreground transition-colors group-hover:text-foreground" />
                           </span>
                           <div>
                             <h3 className="text-sm font-semibold">{kind.label}</h3>
@@ -873,15 +873,15 @@ function Landing() {
                   className="flex items-center justify-center gap-1.5 rounded-2xl border border-dashed border-border p-5 text-sm text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground"
                 >
                   +{KINDS.length - 8} more
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="size-icon-sm" />
                 </Link>
               </div>
             </div>
           </div>
         </section>
 
-        <section id="url-qr-code" className="scroll-mt-16 border-b border-border">
-          <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
+        <section id="url-qr-code" className="scroll-mt-header border-b border-border">
+          <div className="mx-auto max-w-main px-gutter py-section sm:py-section-lg">
             <div className="mx-auto max-w-2xl text-center">
               <p className="text-sm font-medium text-muted-foreground">URL to QR code</p>
               <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -906,8 +906,8 @@ function Landing() {
           </div>
         </section>
 
-        <section id="why" className="scroll-mt-16 border-b border-border">
-          <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
+        <section id="why" className="scroll-mt-header border-b border-border">
+          <div className="mx-auto max-w-main px-gutter py-section sm:py-section-lg">
             <div className="mx-auto max-w-2xl text-center">
               <p className="text-sm font-medium text-muted-foreground">Why Unified QR</p>
               <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -921,7 +921,7 @@ function Landing() {
                   className="rounded-2xl border border-border bg-card p-6 transition-colors hover:border-foreground/30"
                 >
                   <div className="flex size-10 items-center justify-center rounded-xl border border-border bg-foreground/[0.04]">
-                    <item.icon className="size-5" />
+                    <item.icon className="size-icon-md" />
                   </div>
                   <h3 className="mt-4 text-sm font-semibold">{item.title}</h3>
                   <p className="mt-1.5 text-sm text-muted-foreground">{item.body}</p>
@@ -932,7 +932,7 @@ function Landing() {
               <div className="lg:sticky lg:top-24 lg:self-start">
                 <div className="rounded-2xl border border-foreground/40 bg-card p-6 sm:p-7">
                   <p className="flex items-center gap-2 text-sm font-medium">
-                    <ShieldCheck className="h-4 w-4" /> How the trap works
+                    <ShieldCheck className="size-icon-sm" /> How the trap works
                   </p>
                   <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                     You print a QR code on your menu, your packaging, your trade-show banner. Six
@@ -952,14 +952,14 @@ function Landing() {
                     className="rounded-2xl border border-border bg-card p-5 sm:p-6"
                   >
                     <div className="flex items-center gap-2.5">
-                      <span className="flex size-7 items-center justify-center rounded-full border border-border">
-                        <X className="size-3.5 text-muted-foreground" />
+                      <span className="flex size-8 items-center justify-center rounded-full border border-border">
+                        <X className="size-icon-xs text-muted-foreground" />
                       </span>
                       <h3 className="text-sm font-semibold">{trap.trap}</h3>
                     </div>
                     <p className="mt-3 text-sm text-muted-foreground">{trap.them}</p>
                     <p className="mt-3 flex items-start gap-2 text-sm font-medium">
-                      <Check className="mt-0.5 size-4 shrink-0 text-foreground" /> {trap.us}
+                      <Check className="mt-0.5 size-icon-sm shrink-0 text-foreground" /> {trap.us}
                     </p>
                   </div>
                 ))}
@@ -968,8 +968,8 @@ function Landing() {
           </div>
         </section>
 
-        <section id="ecosystem" className="scroll-mt-16 border-b border-border">
-          <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
+        <section id="ecosystem" className="scroll-mt-header border-b border-border">
+          <div className="mx-auto max-w-main px-gutter py-section sm:py-section-lg">
             <div className="mx-auto max-w-2xl text-center">
               <p className="text-sm font-medium text-muted-foreground">Feature ecosystem</p>
               <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -985,7 +985,7 @@ function Landing() {
                 <div key={pillar.title} className="rounded-2xl border border-border bg-card p-6">
                   <div className="flex items-center gap-2.5">
                     <span className="flex size-10 items-center justify-center rounded-xl border border-border bg-foreground/[0.04]">
-                      <pillar.icon className="size-5" />
+                      <pillar.icon className="size-icon-md" />
                     </span>
                     <h3 className="text-sm font-semibold">{pillar.title}</h3>
                   </div>
@@ -995,7 +995,7 @@ function Landing() {
                         key={item}
                         className="flex items-start gap-2 text-sm text-muted-foreground"
                       >
-                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
+                        <Check className="mt-0.5 size-icon-sm shrink-0 text-foreground" />
                         {item}
                       </li>
                     ))}
@@ -1006,8 +1006,8 @@ function Landing() {
           </div>
         </section>
 
-        <section id="compare" className="scroll-mt-16 border-b border-border">
-          <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
+        <section id="compare" className="scroll-mt-header border-b border-border">
+          <div className="mx-auto max-w-main px-gutter py-section sm:py-section-lg">
             <div className="mx-auto max-w-2xl text-center">
               <p className="text-sm font-medium text-muted-foreground">The difference</p>
               <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -1022,7 +1022,7 @@ function Landing() {
 
             <div className="mt-8 rounded-2xl border border-foreground/40 bg-card p-6 sm:p-7">
               <p className="flex items-center gap-2 text-sm font-medium">
-                <BadgeCheck className="h-4 w-4" /> The short version
+                <BadgeCheck className="size-icon-sm" /> The short version
               </p>
               <ul className="mt-4 grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
                 <li>Free dynamic codes — theirs start at $5–$60/mo.</li>
@@ -1088,8 +1088,8 @@ function Landing() {
           </div>
         </section>
 
-        <section id="security" className="scroll-mt-16 border-b border-border">
-          <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
+        <section id="security" className="scroll-mt-header border-b border-border">
+          <div className="mx-auto max-w-main px-gutter py-section sm:py-section-lg">
             <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Security & privacy</p>
@@ -1105,7 +1105,7 @@ function Landing() {
                 {SECURITY.map((item) => (
                   <div key={item.title} className="rounded-2xl border border-border bg-card p-5">
                     <div className="flex size-8 items-center justify-center rounded-lg border border-border bg-foreground/[0.04]">
-                      <ShieldCheck className="size-4" />
+                      <ShieldCheck className="size-icon-sm" />
                     </div>
                     <h3 className="mt-3 text-sm font-semibold">{item.title}</h3>
                     <p className="mt-1 text-xs text-muted-foreground">{item.body}</p>
@@ -1116,8 +1116,8 @@ function Landing() {
           </div>
         </section>
 
-        <section id="developers" className="scroll-mt-16 border-b border-border">
-          <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
+        <section id="developers" className="scroll-mt-header border-b border-border">
+          <div className="mx-auto max-w-main px-gutter py-section sm:py-section-lg">
             <div className="mx-auto max-w-2xl text-center">
               <p className="text-sm font-medium text-muted-foreground">Developer platform</p>
               <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -1127,14 +1127,14 @@ function Landing() {
             <div className="mt-12 rounded-2xl border border-border bg-card p-6">
               <div className="flex items-center gap-2.5">
                 <span className="flex size-10 items-center justify-center rounded-xl border border-border bg-foreground/[0.04]">
-                  <Zap className="size-5" />
+                  <Zap className="size-icon-md" />
                 </span>
                 <h3 className="text-sm font-semibold">Available today</h3>
               </div>
               <ul className="mt-5 grid gap-4 sm:grid-cols-2">
                 {DEV_READY.map((item) => (
                   <li key={item.title} className="flex items-start gap-2.5">
-                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
+                    <Check className="mt-0.5 size-icon-sm shrink-0 text-foreground" />
                     <div>
                       <p className="text-sm font-medium">{item.title}</p>
                       <p className="text-xs text-muted-foreground">{item.body}</p>
@@ -1149,7 +1149,7 @@ function Landing() {
                 </p>
                 <Button variant="ghost" size="sm" className="ml-auto" asChild>
                   <a href={GITHUB} target="_blank" rel="noreferrer">
-                    <Github className="h-4 w-4" /> Explore on GitHub
+                    <Github className="size-icon-sm" /> Explore on GitHub
                   </a>
                 </Button>
               </div>
@@ -1157,8 +1157,8 @@ function Landing() {
           </div>
         </section>
 
-        <section id="use-cases" className="scroll-mt-16 border-b border-border">
-          <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
+        <section id="use-cases" className="scroll-mt-header border-b border-border">
+          <div className="mx-auto max-w-main px-gutter py-section sm:py-section-lg">
             <div className="mx-auto max-w-2xl text-center">
               <p className="text-sm font-medium text-muted-foreground">Built for your world</p>
               <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -1169,7 +1169,7 @@ function Landing() {
               {USE_CASES.map((item) => (
                 <div key={item.title} className="rounded-2xl border border-border bg-card p-6">
                   <div className="flex size-10 items-center justify-center rounded-xl border border-border bg-foreground/[0.04]">
-                    <item.icon className="size-5" />
+                    <item.icon className="size-icon-md" />
                   </div>
                   <h3 className="mt-4 text-sm font-semibold">{item.title}</h3>
                   <p className="mt-1.5 text-sm text-muted-foreground">{item.body}</p>
@@ -1179,8 +1179,8 @@ function Landing() {
           </div>
         </section>
 
-        <section id="enterprise" className="scroll-mt-16 border-b border-border">
-          <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
+        <section id="enterprise" className="scroll-mt-header border-b border-border">
+          <div className="mx-auto max-w-main px-gutter py-section sm:py-section-lg">
             <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Enterprise</p>
@@ -1197,7 +1197,7 @@ function Landing() {
                   </Button>
                   <Button size="lg" variant="secondary" asChild>
                     <a href="#compare">
-                      Compare with alternatives <ArrowRight className="ml-2 h-4 w-4" />
+                      Compare with alternatives <ArrowRight className="ml-2 size-icon-sm" />
                     </a>
                   </Button>
                 </div>
@@ -1212,7 +1212,7 @@ function Landing() {
                     "Priority support",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-2.5 text-sm">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
+                      <Check className="mt-0.5 size-icon-sm shrink-0 text-foreground" />
                       {item}
                     </li>
                   ))}
@@ -1222,8 +1222,8 @@ function Landing() {
           </div>
         </section>
 
-        <section id="pricing" className="scroll-mt-16 border-b border-border">
-          <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
+        <section id="pricing" className="scroll-mt-header border-b border-border">
+          <div className="mx-auto max-w-main px-gutter py-section sm:py-section-lg">
             <div className="mx-auto max-w-2xl text-center">
               <p className="text-sm font-medium text-muted-foreground">Honest pricing</p>
               <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -1254,13 +1254,13 @@ function Landing() {
                     "Watermark-free PNG + SVG export",
                   ].map((feature) => (
                     <li key={feature} className="flex items-start gap-2.5 text-sm">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
+                      <Check className="mt-0.5 size-icon-sm shrink-0 text-foreground" />
                       {feature}
                     </li>
                   ))}
                 </ul>
                 <Button className="mt-8 w-full" size="lg" variant="secondary" onClick={goAuth}>
-                  Sign in with Google <GoogleIcon className="ml-2 h-4 w-4" />
+                  Sign in with Google <GoogleIcon className="ml-2 size-icon-sm" />
                 </Button>
               </div>
 
@@ -1309,13 +1309,13 @@ function Landing() {
                     "Priority support",
                   ].map((feature) => (
                     <li key={feature} className="flex items-start gap-2.5 text-sm">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
+                      <Check className="mt-0.5 size-icon-sm shrink-0 text-foreground" />
                       {feature}
                     </li>
                   ))}
                 </ul>
                 <Button className="mt-8 w-full" size="lg" onClick={goUpgrade}>
-                  Upgrade <ArrowRight className="ml-2 h-4 w-4" />
+                  Upgrade <ArrowRight className="ml-2 size-icon-sm" />
                 </Button>
               </div>
             </div>
@@ -1357,7 +1357,7 @@ function Landing() {
                 ].map(([title, body]) => (
                   <div key={title}>
                     <p className="flex items-center gap-1.5 text-sm font-medium">
-                      <Check className="h-4 w-4 shrink-0 text-foreground" /> {title}
+                      <Check className="size-icon-sm shrink-0 text-foreground" /> {title}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">{body}</p>
                   </div>
@@ -1392,14 +1392,14 @@ function Landing() {
               </div>
               <Button size="lg" variant="secondary" asChild>
                 <a href="#compare">
-                  See the comparison <ArrowRight className="ml-2 h-4 w-4" />
+                  See the comparison <ArrowRight className="ml-2 size-icon-sm" />
                 </a>
               </Button>
             </div>
           </div>
         </section>
 
-        <section id="faq" className="scroll-mt-16 border-b border-border">
+        <section id="faq" className="scroll-mt-header border-b border-border">
           <div className="mx-auto max-w-2xl px-5 py-20 sm:py-24">
             <div className="text-center">
               <p className="text-sm font-medium text-muted-foreground">Good to know</p>
@@ -1445,7 +1445,7 @@ function Landing() {
             <div className="absolute -bottom-24 left-1/2 h-72 w-[36rem] -translate-x-1/2 rounded-full bg-foreground/[0.06] blur-3xl" />
           </div>
           <div className="relative mx-auto max-w-3xl px-5 py-20 text-center sm:py-24">
-            <Sparkles className="mx-auto h-6 w-6 text-muted-foreground" />
+            <Sparkles className="mx-auto size-icon-md text-muted-foreground" />
             <h2 className="mt-4 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
               Start creating — it's free forever
             </h2>
@@ -1455,16 +1455,16 @@ function Landing() {
             </p>
             <Button className="mt-8" size="lg" onClick={goAuth}>
               {signedIn ? "Open dashboard" : "Sign in with Google"}
-              <GoogleIcon className="ml-2 h-4 w-4" />
+              <GoogleIcon className="ml-2 size-icon-sm" />
             </Button>
             <p className="mt-4 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
-              <Github className="h-3.5 w-3.5" /> Open source on GitHub — star, fork, or contribute.
+              <Github className="size-icon-xs" /> Open source on GitHub — star, fork, or contribute.
             </p>
           </div>
         </section>
       </main>
 
-      <footer className="mx-auto max-w-6xl px-5">
+      <footer className="mx-auto max-w-main px-gutter">
         <div className="flex flex-col gap-10 border-t border-border py-12 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex max-w-xs flex-col gap-3">
             <span className="flex items-center gap-2.5 text-sm font-semibold tracking-tight">
@@ -1477,12 +1477,12 @@ function Landing() {
             <div className="flex gap-2">
               <Button size="icon" variant="outline" asChild>
                 <a href={GITHUB} target="_blank" rel="noreferrer" aria-label="GitHub">
-                  <Github className="h-4 w-4" />
+                  <Github className="size-icon-sm" />
                 </a>
               </Button>
               <Button size="icon" variant="outline" asChild>
                 <a href={`${GITHUB}/issues`} target="_blank" rel="noreferrer" aria-label="Issues">
-                  <Star className="h-4 w-4" />
+                  <Star className="size-icon-sm" />
                 </a>
               </Button>
             </div>
@@ -1578,7 +1578,7 @@ function Landing() {
         <div className="flex flex-col items-center justify-between gap-2 py-6 text-xs text-muted-foreground sm:flex-row">
           <span>© {new Date().getFullYear()} Unified QR</span>
           <span className="flex items-center gap-1.5">
-            <Globe className="h-3.5 w-3.5" /> Built by NxtGenSec, with contributions from the
+            <Globe className="size-icon-xs" /> Built by NxtGenSec, with contributions from the
             community.
           </span>
         </div>

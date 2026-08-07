@@ -164,13 +164,14 @@ export function HeroStudio({ kind, onLocked }: HeroStudioProps) {
 
           <div className="grid grid-cols-3 gap-2">
             <Button type="button" size="sm" onClick={() => void onPng()}>
-              {locked ? <Lock className="h-3.5 w-3.5" /> : <Download className="h-3.5 w-3.5" />} PNG
+              {locked ? <Lock className="size-icon-sm" /> : <Download className="size-icon-sm" />}{" "}
+              PNG
             </Button>
             <Button type="button" size="sm" variant="secondary" onClick={onLocked}>
-              <Lock className="h-3.5 w-3.5" /> SVG
+              <Lock className="size-icon-sm" /> SVG
             </Button>
             <Button type="button" size="sm" variant="secondary" onClick={() => void onCopy()}>
-              {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+              {copied ? <Check className="size-icon-sm" /> : <Copy className="size-icon-sm" />}
               {copied ? "Copied" : "Copy"}
             </Button>
           </div>

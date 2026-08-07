@@ -23,7 +23,7 @@ export function LegalLayout({
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
-        <div className="mx-auto flex h-header max-w-6xl items-center justify-between px-gutter">
+        <div className="mx-auto flex h-header max-w-main items-center justify-between px-gutter">
           <Link to="/" className="flex items-center gap-2.5 font-semibold tracking-tight">
             <Logo className="size-7" />
             Unified QR
@@ -45,7 +45,7 @@ export function LegalLayout({
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-5 py-14 sm:py-16">
+      <main className="mx-auto max-w-narrow px-gutter py-14 sm:py-16">
         <p className="font-mono text-xs uppercase tracking-widest text-brand">Legal</p>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h1>
         <p className="mt-2 text-xs text-muted-foreground">Last updated: {updated}</p>
@@ -53,7 +53,7 @@ export function LegalLayout({
       </main>
 
       <footer className="border-t border-border">
-        <div className="mx-auto max-w-6xl px-5 py-10">
+        <div className="mx-auto max-w-main px-gutter py-10">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <span className="flex items-center gap-2 text-sm font-semibold tracking-tight">
               <Logo className="size-6" />

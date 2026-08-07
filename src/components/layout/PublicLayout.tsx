@@ -44,7 +44,7 @@ export function PublicLayout({
   return (
     <div className="min-h-screen bg-background pb-16 lg:pb-0">
       <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
-        <div className="mx-auto flex h-header max-w-6xl items-center justify-between gap-4 px-gutter">
+        <div className="mx-auto flex h-header max-w-main items-center justify-between gap-4 px-gutter">
           <Link to="/" className="flex shrink-0 items-center gap-2.5 font-semibold tracking-tight">
             <Logo className="size-7" />
             <span className="hidden sm:inline">Unified QR</span>
@@ -73,7 +73,7 @@ export function PublicLayout({
               aria-label="GitHub"
               className="flex size-10 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
-              <Github className="size-icon-md" />
+              <Github className="size-icon-sm" />
             </a>
             <Button onClick={goAuth}>{signedIn ? "Dashboard" : "Sign in"}</Button>
           </div>
@@ -81,7 +81,7 @@ export function PublicLayout({
       </header>
 
       <main>
-        <div className="mx-auto max-w-6xl px-5 py-14 sm:py-16">
+        <div className="mx-auto max-w-main px-gutter py-14 sm:py-16">
           {kicker && (
             <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
               {kicker}
@@ -102,7 +102,7 @@ export function PublicLayout({
       </main>
 
       <footer className="border-t border-border">
-        <div className="mx-auto max-w-6xl px-5 py-10">
+        <div className="mx-auto max-w-main px-gutter py-10">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex flex-col gap-2">
               <span className="flex items-center gap-2.5 text-sm font-semibold tracking-tight">
@@ -148,7 +148,7 @@ export function PublicLayout({
       </footer>
 
       <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
-        <div className="mx-auto grid h-tabbar max-w-md grid-cols-5">
+        <div className="mx-auto grid h-tabbar max-w-nav grid-cols-5">
           {BOTTOM_NAV.map((item) => {
             const isActive = item.href === activeHref;
             return (

@@ -59,7 +59,7 @@ function Dashboard() {
       actions={
         <Button size="sm" asChild>
           <Link to="/create">
-            <Plus className="mr-2 h-4 w-4" /> New code
+            <Plus className="mr-2 size-icon-sm" /> New code
           </Link>
         </Button>
       }
@@ -96,7 +96,7 @@ function Dashboard() {
         {!planLoading && plan?.plan !== "enterprise" && (
           <Button size="sm" asChild>
             <Link to="/settings">
-              <Sparkles className="mr-2 h-4 w-4" /> Upgrade to Enterprise
+              <Sparkles className="mr-2 size-icon-sm" /> Upgrade to Enterprise
             </Link>
           </Button>
         )}
@@ -117,14 +117,14 @@ function Dashboard() {
             </div>
           ) : codes.length === 0 ? (
             <div className="p-10 text-center">
-              <QrCode className="mx-auto h-6 w-6 text-muted-foreground" />
+              <QrCode className="mx-auto size-icon-md text-muted-foreground" />
               <p className="mt-4 text-sm">No codes yet</p>
               <p className="mt-1 text-xs text-muted-foreground">
                 Create your first one — it takes about ten seconds.
               </p>
               <Button className="mt-6" size="sm" asChild>
                 <Link to="/create">
-                  Create a code <ArrowRight className="ml-2 h-4 w-4" />
+                  Create a code <ArrowRight className="ml-2 size-icon-sm" />
                 </Link>
               </Button>
             </div>
@@ -159,9 +159,9 @@ function Dashboard() {
                         }}
                       >
                         {copied === c.id ? (
-                          <Check className="h-3.5 w-3.5" />
+                          <Check className="size-icon-xs" />
                         ) : (
-                          <Copy className="h-3.5 w-3.5" />
+                          <Copy className="size-icon-xs" />
                         )}
                         Share
                       </button>
@@ -229,7 +229,7 @@ function ToolCard({
       to={to}
       className="rounded-xl border border-border bg-card p-5 transition-colors hover:border-ring"
     >
-      <Icon className="h-5 w-5 text-muted-foreground" />
+      <Icon className="size-icon-md text-muted-foreground" />
       <div className="mt-4 flex items-center gap-2">
         <p className="text-sm font-medium">{title}</p>
       </div>

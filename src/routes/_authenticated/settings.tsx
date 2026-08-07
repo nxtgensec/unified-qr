@@ -149,7 +149,7 @@ function SettingsPage() {
           </div>
           {!enterprise && (
             <Button size="sm" onClick={() => setUpgradeOpen(true)}>
-              <Sparkles className="mr-2 h-4 w-4" /> Upgrade to Enterprise
+              <Sparkles className="mr-2 size-icon-sm" /> Upgrade to Enterprise
             </Button>
           )}
         </div>
@@ -218,9 +218,9 @@ function SettingsPage() {
             onClick={() => void onExport("json")}
           >
             {backupBusy === "json" ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="mr-2 size-icon-sm animate-spin" />
             ) : (
-              <Download className="mr-2 h-4 w-4" />
+              <Download className="mr-2 size-icon-sm" />
             )}
             JSON
           </Button>
@@ -231,9 +231,9 @@ function SettingsPage() {
             onClick={() => void onExport("csv")}
           >
             {backupBusy === "csv" ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="mr-2 size-icon-sm animate-spin" />
             ) : (
-              <Download className="mr-2 h-4 w-4" />
+              <Download className="mr-2 size-icon-sm" />
             )}
             CSV
           </Button>
@@ -244,9 +244,9 @@ function SettingsPage() {
             onClick={() => void onExport("zip")}
           >
             {backupBusy === "zip" ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="mr-2 size-icon-sm animate-spin" />
             ) : (
-              <Download className="mr-2 h-4 w-4" />
+              <Download className="mr-2 size-icon-sm" />
             )}
             ZIP + images
           </Button>
@@ -257,9 +257,9 @@ function SettingsPage() {
             onClick={() => importRef.current?.click()}
           >
             {importMutation.isPending ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="mr-2 size-icon-sm animate-spin" />
             ) : (
-              <Upload className="mr-2 h-4 w-4" />
+              <Upload className="mr-2 size-icon-sm" />
             )}
             Restore from JSON
           </Button>
@@ -277,7 +277,7 @@ function SettingsPage() {
       </div>
 
       <Button className="mt-6" variant="secondary" size="sm" onClick={() => void signOut()}>
-        <LogOut className="mr-2 h-4 w-4" /> Sign out
+        <LogOut className="mr-2 size-icon-sm" /> Sign out
       </Button>
 
       <div className="mt-6 flex items-center gap-4 text-xs text-muted-foreground">

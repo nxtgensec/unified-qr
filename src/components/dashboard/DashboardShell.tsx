@@ -94,7 +94,7 @@ export function DashboardShell({
                 : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-foreground",
             )}
           >
-            <item.icon className="h-4 w-4" />
+            <item.icon className="size-icon-sm" />
             <span className="flex-1">{item.label}</span>
           </Link>
         );
@@ -116,7 +116,7 @@ export function DashboardShell({
               to="/admin"
               className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-foreground"
             >
-              <Shield className="h-4 w-4" />
+              <Shield className="size-icon-sm" />
               Admin panel
             </Link>
           )}
@@ -135,7 +135,7 @@ export function DashboardShell({
             className="w-full justify-start"
             onClick={() => void signOut()}
           >
-            <LogOut className="mr-2 h-4 w-4" /> Sign out
+            <LogOut className="mr-2 size-icon-sm" /> Sign out
           </Button>
         </div>
       </aside>
@@ -153,7 +153,7 @@ export function DashboardShell({
                 onClick={() => setOpen(false)}
                 aria-label="Close menu"
               >
-                <X className="size-4" />
+                <X className="size-icon-sm" />
               </button>
             </div>
             {nav}
@@ -163,7 +163,7 @@ export function DashboardShell({
                   to="/admin"
                   className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-foreground"
                 >
-                  <Shield className="h-4 w-4" />
+                  <Shield className="size-icon-sm" />
                   Admin panel
                 </Link>
               )}
@@ -182,7 +182,7 @@ export function DashboardShell({
                 className="w-full justify-start"
                 onClick={() => void signOut()}
               >
-                <LogOut className="mr-2 h-4 w-4" /> Sign out
+                <LogOut className="mr-2 size-icon-sm" /> Sign out
               </Button>
             </div>
           </div>
@@ -191,7 +191,7 @@ export function DashboardShell({
 
       <div className="lg:pl-60">
         <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
-          <div className="mx-auto flex h-header max-w-5xl items-center gap-3 px-gutter">
+          <div className="mx-auto flex h-header max-w-app items-center gap-3 px-gutter">
             <button
               className="flex size-10 items-center justify-center rounded-md transition-colors hover:bg-muted lg:hidden"
               onClick={() => setOpen(true)}
@@ -208,7 +208,7 @@ export function DashboardShell({
             {actions}
           </div>
         </header>
-        <main className="mx-auto max-w-5xl px-5 py-8">{children}</main>
+        <main className="mx-auto max-w-app px-gutter py-8">{children}</main>
       </div>
     </div>
   );

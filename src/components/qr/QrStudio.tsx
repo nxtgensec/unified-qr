@@ -282,7 +282,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
                     locked && "opacity-60",
                   )}
                 >
-                  {locked && <Lock className="h-3 w-3" />}
+                  {locked && <Lock className="size-icon-2xs" />}
                   {k.label}
                 </button>
               );
@@ -340,7 +340,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
                           size="sm"
                           onClick={() => setContent((c) => ({ ...c, photo: "" }))}
                         >
-                          <X className="mr-2 h-3.5 w-3.5" /> Remove
+                          <X className="mr-2 size-icon-xs" /> Remove
                         </Button>
                       )}
                       <input
@@ -416,7 +416,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
 
             <OptionRow label="My designs">
               <Button type="button" variant="secondary" size="sm" onClick={saveDesign}>
-                <Save className="mr-1.5 h-3.5 w-3.5" />
+                <Save className="mr-1.5 size-icon-xs" />
                 Save current
               </Button>
             </OptionRow>
@@ -441,7 +441,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
                       onClick={() => deleteDesign(d.id)}
                       className="rounded p-0.5 opacity-60 transition-opacity hover:opacity-100"
                     >
-                      <X className="h-3 w-3" />
+                      <X className="size-icon-2xs" />
                     </button>
                   </span>
                 ))}
@@ -652,7 +652,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
                 size="sm"
                 onClick={() => fileRef.current?.click()}
               >
-                <ImageIcon className="mr-2 h-4 w-4" />
+                <ImageIcon className="mr-2 size-icon-sm" />
                 {style.logo ? "Replace logo" : "Add logo"}
               </Button>
               {style.logo && (
@@ -662,7 +662,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
                   size="sm"
                   onClick={() => setStyle((s) => ({ ...s, logo: null }))}
                 >
-                  <X className="mr-2 h-4 w-4" />
+                  <X className="mr-2 size-icon-sm" />
                   Remove
                 </Button>
               )}
@@ -672,7 +672,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
                 size="sm"
                 onClick={() => setStyle({ ...defaultStyle })}
               >
-                <RefreshCw className="mr-2 h-4 w-4" />
+                <RefreshCw className="mr-2 size-icon-sm" />
                 Reset design
               </Button>
             </div>
@@ -689,7 +689,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
                 Free forever — just sign in with Google to unlock.
               </p>
             </div>
-            <Lock className="h-4 w-4 text-muted-foreground" />
+            <Lock className="size-icon-sm text-muted-foreground" />
           </button>
         )}
       </div>
@@ -719,14 +719,18 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
         )}
         <div className="grid grid-cols-2 gap-2">
           <Button type="button" onClick={() => void download("png")}>
-            <Download className="mr-2 h-4 w-4" /> PNG
+            <Download className="mr-2 size-icon-sm" /> PNG
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button type="button" variant="secondary">
-                {full ? <Download className="mr-2 h-4 w-4" /> : <Lock className="mr-2 h-4 w-4" />}
+                {full ? (
+                  <Download className="mr-2 size-icon-sm" />
+                ) : (
+                  <Lock className="mr-2 size-icon-sm" />
+                )}
                 Export
-                <ChevronDown className="ml-1 h-3 w-3" />
+                <ChevronDown className="ml-1 size-icon-2xs" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -744,7 +748,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
           className="w-full"
           onClick={() => void copyImage()}
         >
-          <Copy className="mr-2 h-4 w-4" /> Copy image
+          <Copy className="mr-2 size-icon-sm" /> Copy image
         </Button>
         {full && onSave && (
           <Button
@@ -773,9 +777,9 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
             }
           >
             {saving ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="mr-2 size-icon-sm animate-spin" />
             ) : (
-              <Save className="mr-2 h-4 w-4" />
+              <Save className="mr-2 size-icon-sm" />
             )}
             Save to my library
           </Button>

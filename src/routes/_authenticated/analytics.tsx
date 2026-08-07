@@ -131,7 +131,7 @@ function AnalyticsPage() {
               <p className="text-xs uppercase tracking-wider text-muted-foreground">Top codes</p>
               {(data?.codes ?? []).length === 0 ? (
                 <p className="mt-4 text-sm text-muted-foreground">
-                  <BarChart3 className="mb-2 h-4 w-4" />
+                  <BarChart3 className="mb-2 size-icon-sm" />
                   Create a dynamic code to start collecting scans.
                 </p>
               ) : (

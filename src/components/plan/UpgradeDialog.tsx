@@ -146,7 +146,7 @@ export function UpgradeDialog({
           <ul className="mt-4 space-y-2">
             {ENTERPRISE.features.map((feature) => (
               <li key={feature} className="flex items-start gap-2 text-sm">
-                <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+                <Check className="mt-0.5 size-icon-sm shrink-0 text-brand" />
                 {feature}
               </li>
             ))}
@@ -155,9 +155,9 @@ export function UpgradeDialog({
 
         <Button size="lg" className="w-full" disabled={paying} onClick={() => void pay()}>
           {paying ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="mr-2 size-icon-sm animate-spin" />
           ) : (
-            <CreditCard className="mr-2 h-4 w-4" />
+            <CreditCard className="mr-2 size-icon-sm" />
           )}
           {paying ? "Opening payment…" : `Pay ${formatPaise(price)} with Cashfree`}
         </Button>

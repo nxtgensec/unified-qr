@@ -93,7 +93,7 @@ function CodesPage() {
       actions={
         <Button size="sm" asChild>
           <Link to="/create">
-            <Plus className="mr-2 h-4 w-4" /> New
+            <Plus className="mr-2 size-icon-sm" /> New
           </Link>
         </Button>
       }
@@ -105,7 +105,7 @@ function CodesPage() {
         </div>
       ) : (data?.length ?? 0) === 0 ? (
         <div className="rounded-xl border border-border bg-card p-12 text-center">
-          <QrCode className="mx-auto h-6 w-6 text-muted-foreground" />
+          <QrCode className="mx-auto size-icon-md text-muted-foreground" />
           <p className="mt-4 text-sm">Your library is empty</p>
           <Button className="mt-6" size="sm" asChild>
             <Link to="/create">Create your first code</Link>
@@ -115,7 +115,7 @@ function CodesPage() {
         <>
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative min-w-0 flex-1 sm:max-w-xs">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-icon-sm -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -180,7 +180,7 @@ function CodesPage() {
                             className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
                           >
                             <Star
-                              className={`h-4 w-4 ${
+                              className={`size-icon-sm ${
                                 code.favorite ? "fill-foreground text-foreground" : ""
                               }`}
                             />
@@ -211,9 +211,9 @@ function CodesPage() {
                             }}
                           >
                             {copied === code.id ? (
-                              <Check className="h-3 w-3 shrink-0" />
+                              <Check className="size-icon-2xs shrink-0" />
                             ) : (
-                              <Copy className="h-3 w-3 shrink-0" />
+                              <Copy className="size-icon-2xs shrink-0" />
                             )}
                             <span className="truncate">/api/public/r/{code.slug}</span>
                           </button>
@@ -249,7 +249,7 @@ function CodesPage() {
                           variant="secondary"
                           onClick={() => downloadPng(svg, code.name || "qr-code", 1024)}
                         >
-                          <Download className="mr-2 h-3.5 w-3.5" /> PNG
+                          <Download className="mr-2 size-icon-xs" /> PNG
                         </Button>
                         {code.is_dynamic && (
                           <Button
@@ -260,7 +260,7 @@ function CodesPage() {
                               setDraft(code.target_url ?? "");
                             }}
                           >
-                            <Pencil className="mr-2 h-3.5 w-3.5" /> Edit target
+                            <Pencil className="mr-2 size-icon-xs" /> Edit target
                           </Button>
                         )}
                         <Button
@@ -269,7 +269,7 @@ function CodesPage() {
                           className="text-destructive hover:text-destructive"
                           onClick={() => removeMutation.mutate(code.id)}
                         >
-                          <Trash2 className="mr-2 h-3.5 w-3.5" /> Delete
+                          <Trash2 className="mr-2 size-icon-xs" /> Delete
                         </Button>
                       </div>
                     )}

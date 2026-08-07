@@ -58,7 +58,13 @@
   --color-sidebar-ring: var(--sidebar-ring);
   --font-sans: "Inter Tight", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --container-main: 72rem;
+  --container-app: 64rem;
+  --container-narrow: 48rem;
+  --container-nav: 28rem;
   --spacing-gutter: 1rem;
+  --spacing-section: 5rem;
+  --spacing-section-lg: 6rem;
   --spacing-header: 4rem;
   --spacing-tabbar: 4rem;
   --spacing-chip: 2.25rem;
@@ -67,9 +73,8 @@
   --spacing-btn-lg: 3rem;
   --spacing-icon-2xs: 0.75rem;
   --spacing-icon-xs: 0.875rem;
-  --spacing-icon-sm: 1rem;
-  --spacing-icon-md: 1.25rem;
-  --spacing-icon-lg: 1.5rem;
+  --spacing-icon-sm: 1.25rem;
+  --spacing-icon-md: 1.5rem;
 }
 
 :root {

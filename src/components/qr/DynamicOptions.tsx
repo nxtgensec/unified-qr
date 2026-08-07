@@ -190,7 +190,7 @@ export function DynamicOptions({
                 aria-label="Remove rule"
                 className="mb-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:text-destructive"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="size-icon-sm" />
               </button>
             </div>
           ))}
@@ -200,7 +200,7 @@ export function DynamicOptions({
             onClick={addRule}
             className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
-            <Plus className="h-3.5 w-3.5" /> Add{" "}
+            <Plus className="size-icon-xs" /> Add{" "}
             {rules.type === "language" ? "language" : "variant"}
           </button>
 

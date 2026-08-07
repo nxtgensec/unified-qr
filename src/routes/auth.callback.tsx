@@ -35,11 +35,11 @@ function AuthCallback() {
   }, [navigate]);
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-background px-5">
+    <div className="relative flex min-h-screen items-center justify-center bg-background px-gutter">
       <div className="grid-noise pointer-events-none absolute inset-0 opacity-30" aria-hidden />
       <div className="relative flex flex-col items-center gap-4 text-center">
         <Logo className="size-8" />
-        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        <Loader2 className="size-icon-md animate-spin text-muted-foreground" />
         <p className="text-sm text-muted-foreground">Completing sign-in…</p>
       </div>
     </div>

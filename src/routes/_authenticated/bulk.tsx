@@ -191,13 +191,13 @@ function BulkPage() {
         </>
       ) : (
         <div className="rounded-2xl border border-border bg-card p-8 text-center">
-          <Layers className="mx-auto h-6 w-6 text-muted-foreground" />
+          <Layers className="mx-auto size-icon-md text-muted-foreground" />
           <h2 className="mt-4 text-base font-medium">Bulk CSV is an Enterprise feature</h2>
           <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
             Generate a whole batch of codes in one pass with the Enterprise plan — from ₹9/day.
           </p>
           <Button className="mt-6" size="sm" onClick={() => setUpgradeOpen(true)}>
-            <Sparkles className="mr-2 h-4 w-4" /> Upgrade to Enterprise
+            <Sparkles className="mr-2 size-icon-sm" /> Upgrade to Enterprise
           </Button>
         </div>
       )}
