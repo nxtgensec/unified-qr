@@ -8,12 +8,12 @@ export const Route = createFileRoute("/refunds")({
       { title: "Refunds & Cancellations — Unified QR" },
       {
         name: "description",
-        content: "Returns, refunds and cancellations for Unified QR Enterprise purchases.",
+        content: "Returns, refunds and cancellations for Unified QR Pro purchases.",
       },
       { property: "og:title", content: "Refunds & Cancellations — Unified QR" },
       {
         property: "og:description",
-        content: "Returns, refunds and cancellations for Unified QR Enterprise purchases.",
+        content: "Returns, refunds and cancellations for Unified QR Pro purchases.",
       },
     ],
   }),
@@ -25,17 +25,16 @@ function RefundsPage() {
     <LegalLayout title="Refunds & Cancellations" updated="August 5, 2026">
       <LegalSection title="1. Digital services are non-returnable">
         <p>
-          Enterprise access is a digital service, not a physical product, so there is no "return" in
-          the usual sense. Because access is granted immediately on payment, most purchases are
-          non-refundable once Enterprise features have been used.
+          Pro access is a digital service, not a physical product, so there is no "return" in the
+          usual sense. Because access is granted immediately on payment, most purchases are
+          non-refundable once Pro features have been used.
         </p>
       </LegalSection>
 
       <LegalSection title="2. 7-day money-back guarantee">
         <p>
-          If you buy Enterprise and haven't used any Enterprise feature — no dynamic code created
-          and no bulk CSV export — we'll refund the full amount. Email us within 7 days of purchase
-          at{" "}
+          If you buy Pro and haven't used any Pro feature — no dynamic code created and no bulk CSV
+          export — we'll refund the full amount. Email us within 7 days of purchase at{" "}
           <a
             href="mailto:support@nxtgensec.org"
             className="text-foreground underline underline-offset-4"
@@ -48,18 +47,17 @@ function RefundsPage() {
 
       <LegalSection title="3. Cancellation">
         <p>
-          You can stop using Enterprise at any time — just don't renew, or email us to cancel.
-          Cancelling never deactivates your codes: static codes and dynamic links keep working, and
-          your account simply returns to Professional limits when the paid period ends. There are no
-          partial refunds for unused days of a current period, except where required by law.
+          You can stop using Pro at any time — just don't renew, or email us to cancel. Cancelling
+          never deactivates your codes: static codes and dynamic links keep working, and your
+          account simply returns to Community limits when the paid period ends. There are no partial
+          refunds for unused days of a current period, except where required by law.
         </p>
       </LegalSection>
 
       <LegalSection title="4. Failed or duplicate charges">
         <p>
-          If a payment succeeds but Enterprise access isn't granted within 24 hours, or you're
-          charged twice for the same period, we'll refund the affected charge in full — just email
-          us.
+          If a payment succeeds but Pro access isn't granted within 24 hours, or you're charged
+          twice for the same period, we'll refund the affected charge in full — just email us.
         </p>
       </LegalSection>
 

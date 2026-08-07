@@ -16,13 +16,12 @@ export const Route = createFileRoute("/auth")({
       {
         name: "description",
         content:
-          "Sign in with Google to get Professional free forever — or upgrade to Enterprise for unlimited dynamic codes.",
+          "Sign in with Google to get the free Community plan forever — or upgrade to Pro for unlimited dynamic codes.",
       },
       { property: "og:title", content: "Sign in — Unified QR" },
       {
         property: "og:description",
-        content:
-          "Professional is free forever. Enterprise adds unlimited dynamic codes and bulk export.",
+        content: "Community is free forever. Pro adds unlimited dynamic codes and bulk export.",
       },
     ],
   }),
@@ -66,25 +65,27 @@ function AuthPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-background px-gutter">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-gutter py-10">
       <div className="grid-noise pointer-events-none absolute inset-0 opacity-30" aria-hidden />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-border" aria-hidden />
       <div className="relative w-full max-w-md">
         <Link
           to="/"
-          className="mb-8 inline-flex items-center gap-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
+          className="mb-8 inline-flex h-11 items-center gap-2 rounded-full px-3 text-small text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <ArrowLeft className="size-icon-xs" /> Back to generator
         </Link>
 
-        <div className="rounded-2xl border border-border bg-card p-8 sm:p-10">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-background">
+        <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-6 sm:p-10">
+          <div className="scan-beam pointer-events-none hidden opacity-40 sm:block" aria-hidden />
+          <div className="flex size-11 items-center justify-center rounded-xl bg-background ring-1 ring-brand/40">
             <Logo className="size-6" />
           </div>
 
-          <h1 className="mt-6 text-2xl font-semibold tracking-tight">Welcome to Unified QR</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Sign in with Google to start on Professional — free forever, no card and no trial timer.
-            Upgrade to Enterprise anytime for unlimited dynamic codes.
+          <h1 className="mt-6 text-h1 font-semibold tracking-tight">Welcome to Unified QR</h1>
+          <p className="mt-2 text-body text-muted-foreground">
+            Sign in with Google to start free — no card, no trial timer and no lock-in. Upgrade to
+            Pro anytime for unlimited dynamic codes.
           </p>
 
           <Button
@@ -105,55 +106,68 @@ function AuthPage() {
 
           <div className="my-6 flex items-center gap-3">
             <span className="h-px flex-1 bg-border" />
-            <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              Professional — free forever
+            <span className="text-caption uppercase tracking-wider text-muted-foreground">
+              Free — forever
             </span>
             <span className="h-px flex-1 bg-border" />
           </div>
 
           <ul className="space-y-3">
             {BENEFITS.map((benefit) => (
-              <li key={benefit} className="flex items-start gap-2.5 text-sm">
-                <Check className="mt-0.5 size-icon-sm shrink-0 text-muted-foreground" />
+              <li key={benefit} className="flex items-start gap-2.5 text-small">
+                <Check className="mt-0.5 size-icon-sm shrink-0 text-brand" />
                 {benefit}
               </li>
             ))}
           </ul>
         </div>
 
-        <p className="mt-6 text-center text-[11px] leading-relaxed text-muted-foreground">
+        <p className="mt-6 text-center text-small leading-relaxed text-muted-foreground">
           By continuing you agree to Google's Terms of Service. Unified QR only receives your name,
           email and avatar — nothing else. No password, no credit card, no trial timer. Need more
           than 3 dynamic codes?{" "}
-          <a
-            href="/#pricing"
-            className="font-medium text-foreground underline-offset-4 transition-colors hover:underline"
+          <Link
+            to="/"
+            hash="pricing"
+            className="font-medium text-brand underline-offset-4 transition-colors hover:underline"
           >
-            See Enterprise pricing
-          </a>
+            See Pro pricing
+          </Link>
           .
         </p>
-        <div className="mt-4 flex items-center justify-center gap-4 text-[11px] text-muted-foreground">
-          <a href="/privacy" className="transition-colors hover:text-foreground">
+        <nav className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-small text-muted-foreground">
+          <Link
+            to="/privacy"
+            className="rounded px-1 py-1.5 transition-colors hover:text-foreground"
+          >
             Privacy
-          </a>
+          </Link>
           <span className="h-3 w-px bg-border" aria-hidden />
-          <a href="/terms" className="transition-colors hover:text-foreground">
+          <Link to="/terms" className="rounded px-1 py-1.5 transition-colors hover:text-foreground">
             Terms
-          </a>
+          </Link>
           <span className="h-3 w-px bg-border" aria-hidden />
-          <a href="/payment" className="transition-colors hover:text-foreground">
+          <Link
+            to="/payment"
+            className="rounded px-1 py-1.5 transition-colors hover:text-foreground"
+          >
             Payment
-          </a>
+          </Link>
           <span className="h-3 w-px bg-border" aria-hidden />
-          <a href="/refunds" className="transition-colors hover:text-foreground">
+          <Link
+            to="/refunds"
+            className="rounded px-1 py-1.5 transition-colors hover:text-foreground"
+          >
             Refunds
-          </a>
+          </Link>
           <span className="h-3 w-px bg-border" aria-hidden />
-          <a href="/contact" className="transition-colors hover:text-foreground">
+          <Link
+            to="/contact"
+            className="rounded px-1 py-1.5 transition-colors hover:text-foreground"
+          >
             Contact
-          </a>
-        </div>
+          </Link>
+        </nav>
       </div>
     </div>
   );

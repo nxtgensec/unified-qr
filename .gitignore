@@ -27,6 +27,9 @@ supabase/.temp/
 .wrangler/
 .dev.vars
 
+# Dev server pid
+.dev.pid
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

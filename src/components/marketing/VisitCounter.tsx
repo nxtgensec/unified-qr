@@ -28,7 +28,7 @@ export function VisitCounter() {
   }, []);
 
   return (
-    <div className="pointer-events-none fixed bottom-4 left-4 z-50 hidden items-center gap-2 rounded-full border border-border bg-background/80 px-3 py-1.5 text-xs text-muted-foreground backdrop-blur sm:flex">
+    <div className="pointer-events-none fixed bottom-4 left-4 z-50 hidden items-center gap-2 rounded-full border border-border bg-background/80 px-3.5 text-small text-muted-foreground backdrop-blur sm:flex">
       <Eye className="size-icon-xs" />
       <span className="font-mono">{stats ? stats.total.toLocaleString() : "…"}</span>
     </div>

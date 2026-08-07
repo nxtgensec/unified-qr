@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as CreateRouteImport } from './routes/create'
 import { Route as PaymentRouteImport } from './routes/payment'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RefundsRouteImport } from './routes/refunds'
@@ -21,7 +22,6 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 import { Route as AuthenticatedBulkRouteImport } from './routes/_authenticated/bulk'
 import { Route as AuthenticatedCodesRouteImport } from './routes/_authenticated/codes'
-import { Route as AuthenticatedCreateRouteImport } from './routes/_authenticated/create'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedDecodeRouteImport } from './routes/_authenticated/decode'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
@@ -58,6 +58,11 @@ const ContactRoute = ContactRouteImport.update({
   path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CreateRoute = CreateRouteImport.update({
+  id: '/create',
+  path: '/create',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PaymentRoute = PaymentRouteImport.update({
   id: '/payment',
   path: '/payment',
@@ -91,11 +96,6 @@ const AuthenticatedBulkRoute = AuthenticatedBulkRouteImport.update({
 const AuthenticatedCodesRoute = AuthenticatedCodesRouteImport.update({
   id: '/codes',
   path: '/codes',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedCreateRoute = AuthenticatedCreateRouteImport.update({
-  id: '/create',
-  path: '/create',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -159,6 +159,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/contact': typeof ContactRoute
+  '/create': typeof CreateRoute
   '/payment': typeof PaymentRoute
   '/privacy': typeof PrivacyRoute
   '/refunds': typeof RefundsRoute
@@ -166,7 +167,6 @@ export interface FileRoutesByFullPath {
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/bulk': typeof AuthenticatedBulkRoute
   '/codes': typeof AuthenticatedCodesRoute
-  '/create': typeof AuthenticatedCreateRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/decode': typeof AuthenticatedDecodeRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -183,6 +183,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
   '/contact': typeof ContactRoute
+  '/create': typeof CreateRoute
   '/payment': typeof PaymentRoute
   '/privacy': typeof PrivacyRoute
   '/refunds': typeof RefundsRoute
@@ -190,7 +191,6 @@ export interface FileRoutesByTo {
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/bulk': typeof AuthenticatedBulkRoute
   '/codes': typeof AuthenticatedCodesRoute
-  '/create': typeof AuthenticatedCreateRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/decode': typeof AuthenticatedDecodeRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -210,6 +210,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/contact': typeof ContactRoute
+  '/create': typeof CreateRoute
   '/payment': typeof PaymentRoute
   '/privacy': typeof PrivacyRoute
   '/refunds': typeof RefundsRoute
@@ -217,7 +218,6 @@ export interface FileRoutesById {
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/bulk': typeof AuthenticatedBulkRoute
   '/_authenticated/codes': typeof AuthenticatedCodesRoute
-  '/_authenticated/create': typeof AuthenticatedCreateRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/decode': typeof AuthenticatedDecodeRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
@@ -237,6 +237,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/contact'
+    | '/create'
     | '/payment'
     | '/privacy'
     | '/refunds'
@@ -244,7 +245,6 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/bulk'
     | '/codes'
-    | '/create'
     | '/dashboard'
     | '/decode'
     | '/settings'
@@ -261,6 +261,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/contact'
+    | '/create'
     | '/payment'
     | '/privacy'
     | '/refunds'
@@ -268,7 +269,6 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/bulk'
     | '/codes'
-    | '/create'
     | '/dashboard'
     | '/decode'
     | '/settings'
@@ -287,6 +287,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/contact'
+    | '/create'
     | '/payment'
     | '/privacy'
     | '/refunds'
@@ -294,7 +295,6 @@ export interface FileRouteTypes {
     | '/_authenticated/analytics'
     | '/_authenticated/bulk'
     | '/_authenticated/codes'
-    | '/_authenticated/create'
     | '/_authenticated/dashboard'
     | '/_authenticated/decode'
     | '/_authenticated/settings'
@@ -314,6 +314,7 @@ export interface RootRouteChildren {
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
   ContactRoute: typeof ContactRoute
+  CreateRoute: typeof CreateRoute
   PaymentRoute: typeof PaymentRoute
   PrivacyRoute: typeof PrivacyRoute
   RefundsRoute: typeof RefundsRoute
@@ -358,6 +359,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/create': {
+      id: '/create'
+      path: '/create'
+      fullPath: '/create'
+      preLoaderRoute: typeof CreateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/payment': {
@@ -407,13 +415,6 @@ declare module '@tanstack/react-router' {
       path: '/codes'
       fullPath: '/codes'
       preLoaderRoute: typeof AuthenticatedCodesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/create': {
-      id: '/_authenticated/create'
-      path: '/create'
-      fullPath: '/create'
-      preLoaderRoute: typeof AuthenticatedCreateRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -500,7 +501,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedBulkRoute: typeof AuthenticatedBulkRoute
   AuthenticatedCodesRoute: typeof AuthenticatedCodesRoute
-  AuthenticatedCreateRoute: typeof AuthenticatedCreateRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDecodeRoute: typeof AuthenticatedDecodeRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
@@ -510,7 +510,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedBulkRoute: AuthenticatedBulkRoute,
   AuthenticatedCodesRoute: AuthenticatedCodesRoute,
-  AuthenticatedCreateRoute: AuthenticatedCreateRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDecodeRoute: AuthenticatedDecodeRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
@@ -553,6 +552,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRouteRoute: AdminRouteRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
   ContactRoute: ContactRoute,
+  CreateRoute: CreateRoute,
   PaymentRoute: PaymentRoute,
   PrivacyRoute: PrivacyRoute,
   RefundsRoute: RefundsRoute,

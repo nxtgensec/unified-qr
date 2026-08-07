@@ -1,9 +1,10 @@
 import { Plus, Trash2 } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
+import { Chip } from "@/components/ui/chip";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { cn } from "@/lib/utils";
 
 export interface RedirectRuleInput {
   lang?: string;
@@ -86,7 +87,7 @@ export function DynamicOptions({
     <div className="space-y-5 border-t border-border pt-5">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label className="text-xs text-muted-foreground">Password (optional)</Label>
+          <Label className="text-small text-muted-foreground">Password (optional)</Label>
           <Input
             type="password"
             value={password}
@@ -94,19 +95,19 @@ export function DynamicOptions({
             placeholder="Lock this link"
             className="bg-background"
           />
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-small text-muted-foreground">
             Scanners enter this password before being redirected.
           </p>
         </div>
         <div className="space-y-2">
-          <Label className="text-xs text-muted-foreground">Expires (optional)</Label>
+          <Label className="text-small text-muted-foreground">Expires (optional)</Label>
           <Input
             type="datetime-local"
             value={expiresAt}
             onChange={(e) => onExpiresAt(e.target.value)}
             className="bg-background"
           />
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-small text-muted-foreground">
             After this moment the code shows an expired message.
           </p>
         </div>
@@ -114,8 +115,8 @@ export function DynamicOptions({
 
       <div className="flex items-start justify-between gap-4 rounded-lg border border-border bg-background p-4">
         <div>
-          <p className="text-sm font-medium">Multi-URL routing</p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
+          <p className="text-small font-medium">Multi-URL routing</p>
+          <p className="mt-0.5 text-small text-muted-foreground">
             Send scanners to different links by language or an A/B split.
           </p>
         </div>
@@ -129,21 +130,16 @@ export function DynamicOptions({
 
       {multi && rules && (
         <div className="space-y-3">
-          <div className="flex gap-1 rounded-lg border border-border bg-background p-1">
+          <div className="flex flex-wrap gap-2">
             {(["language", "split"] as const).map((t) => (
-              <button
+              <Chip
                 key={t}
-                type="button"
+                active={rules.type === t}
                 onClick={() => setMode(t)}
-                className={cn(
-                  "flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-                  rules.type === t
-                    ? "bg-foreground text-background"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
+                className="flex-1 justify-center"
               >
                 {t === "language" ? "By language" : "A/B split"}
-              </button>
+              </Chip>
             ))}
           </div>
 
@@ -151,7 +147,7 @@ export function DynamicOptions({
             <div key={index} className="flex items-end gap-2">
               {rules.type === "language" ? (
                 <div className="w-28 shrink-0 space-y-1">
-                  <Label className="text-[11px] text-muted-foreground">Language</Label>
+                  <Label className="text-small text-muted-foreground">Language</Label>
                   <Input
                     list="qr-langs"
                     value={rule.lang ?? ""}
@@ -162,7 +158,7 @@ export function DynamicOptions({
                 </div>
               ) : (
                 <div className="w-28 shrink-0 space-y-1">
-                  <Label className="text-[11px] text-muted-foreground">Weight</Label>
+                  <Label className="text-small text-muted-foreground">Weight</Label>
                   <Input
                     type="number"
                     min={1}
@@ -176,7 +172,7 @@ export function DynamicOptions({
                 </div>
               )}
               <div className="min-w-0 flex-1 space-y-1">
-                <Label className="text-[11px] text-muted-foreground">URL</Label>
+                <Label className="text-small text-muted-foreground">URL</Label>
                 <Input
                   value={rule.url}
                   placeholder="https://…"
@@ -188,21 +184,17 @@ export function DynamicOptions({
                 type="button"
                 onClick={() => removeRule(index)}
                 aria-label="Remove rule"
-                className="mb-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:text-destructive"
+                className="flex size-11 shrink-0 items-center justify-center rounded-btn border border-border text-muted-foreground transition-colors hover:text-destructive"
               >
                 <Trash2 className="size-icon-sm" />
               </button>
             </div>
           ))}
 
-          <button
-            type="button"
-            onClick={addRule}
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
+          <Button type="button" variant="ghost" className="h-11 px-3 text-small" onClick={addRule}>
             <Plus className="size-icon-xs" /> Add{" "}
             {rules.type === "language" ? "language" : "variant"}
-          </button>
+          </Button>
 
           <datalist id="qr-langs">
             {LANGUAGE_OPTIONS.map((lang) => (
@@ -210,7 +202,7 @@ export function DynamicOptions({
             ))}
           </datalist>
 
-          <p className="text-[11px] leading-relaxed text-muted-foreground">
+          <p className="text-small leading-relaxed text-muted-foreground">
             {rules.type === "language"
               ? "Scanners whose language isn't listed go to the main destination."
               : "Weights are relative — traffic is split proportionally. The main destination is the fallback."}

@@ -24,20 +24,20 @@ export function LegalLayout({
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
         <div className="mx-auto flex h-header max-w-main items-center justify-between px-gutter">
-          <Link to="/" className="flex items-center gap-2.5 font-semibold tracking-tight">
-            <Logo className="size-7" />
+          <Link to="/" className="flex items-center gap-2 text-body font-semibold tracking-tight">
+            <Logo className="size-icon-sm" />
             Unified QR
           </Link>
           <nav className="flex items-center gap-2">
             <a
               href="/#pricing"
-              className="hidden px-3 text-sm text-muted-foreground transition-colors hover:text-foreground sm:block"
+              className="hidden min-h-11 items-center rounded-nav px-3 text-small text-muted-foreground transition-colors hover:text-foreground sm:flex"
             >
               Pricing
             </a>
             <Link
               to="/"
-              className="px-3 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="flex min-h-11 items-center rounded-nav px-3 text-small text-muted-foreground transition-colors hover:text-foreground"
             >
               Back to generator
             </Link>
@@ -46,20 +46,20 @@ export function LegalLayout({
       </header>
 
       <main className="mx-auto max-w-narrow px-gutter py-14 sm:py-16">
-        <p className="font-mono text-xs uppercase tracking-widest text-brand">Legal</p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h1>
-        <p className="mt-2 text-xs text-muted-foreground">Last updated: {updated}</p>
+        <p className="font-mono text-caption uppercase tracking-widest text-brand">Legal</p>
+        <h1 className="mt-3 text-h1 font-semibold tracking-tight">{title}</h1>
+        <p className="mt-2 text-small text-muted-foreground">Last updated: {updated}</p>
         <div className="mt-10 space-y-10">{children}</div>
       </main>
 
       <footer className="border-t border-border">
         <div className="mx-auto max-w-main px-gutter py-10">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <span className="flex items-center gap-2 text-sm font-semibold tracking-tight">
-              <Logo className="size-6" />
+            <span className="flex items-center gap-2 text-body font-semibold tracking-tight">
+              <Logo className="size-icon-sm" />
               Unified QR
             </span>
-            <nav className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground">
+            <nav className="flex flex-wrap gap-x-6 gap-y-2 text-small text-muted-foreground">
               {LEGAL_LINKS.map((link) => (
                 <Link
                   key={link.to}
@@ -71,7 +71,7 @@ export function LegalLayout({
               ))}
             </nav>
           </div>
-          <p className="mt-6 text-xs text-muted-foreground">
+          <p className="mt-6 text-small text-muted-foreground">
             © {new Date().getFullYear()} Unified QR · Made by NxtGenSec Interns, for Everyone on the
             Internet.
           </p>
@@ -84,8 +84,10 @@ export function LegalLayout({
 export function LegalSection({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section>
-      <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
-      <div className="mt-3 space-y-3 text-sm leading-relaxed text-muted-foreground">{children}</div>
+      <h2 className="text-h2 font-semibold tracking-tight">{title}</h2>
+      <div className="mt-3 space-y-3 text-body leading-relaxed text-muted-foreground">
+        {children}
+      </div>
     </section>
   );
 }

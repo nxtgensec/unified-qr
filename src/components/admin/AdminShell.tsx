@@ -64,9 +64,9 @@ export function AdminShell({
             key={item.to}
             to={item.to}
             className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+              "flex min-h-11 items-center gap-3 rounded-nav px-3 text-small transition-colors",
               active
-                ? "bg-primary/15 text-primary"
+                ? "bg-brand/10 text-brand"
                 : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-foreground",
             )}
           >
@@ -80,34 +80,33 @@ export function AdminShell({
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="h-1 bg-red-500/70" />
+      <div className="h-1 bg-foreground/70" />
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r border-sidebar-border bg-sidebar p-4 lg:flex">
         <div className="mb-8 flex items-center justify-between px-2">
           <Link to="/admin" className="flex items-center gap-2 font-semibold tracking-tight">
-            <Logo className="size-5" />
+            <Logo className="size-icon-sm" />
             Unified QR
           </Link>
-          <span className="flex items-center gap-1 rounded-full border border-red-500/40 bg-red-500/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-red-400">
-            <Shield className="h-3 w-3" /> Admin
+          <span className="flex items-center gap-1 rounded-full border border-foreground/30 bg-foreground/10 px-2 py-0.5 text-small font-medium uppercase tracking-wider text-foreground">
+            <Shield className="size-icon-2xs" /> Admin
           </span>
         </div>
         {nav}
         <div className="mt-auto space-y-2 border-t border-sidebar-border pt-4">
           <Link
             to="/dashboard"
-            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-foreground"
+            className="flex min-h-11 items-center gap-3 rounded-nav px-3 text-small text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-foreground"
           >
             <ExternalLink className="size-icon-sm" />
             View app
           </Link>
-          <p className="truncate px-3 text-xs text-muted-foreground">{email}</p>
+          <p className="truncate px-3 text-small text-muted-foreground">{email}</p>
           <Button
             variant="ghost"
-            size="sm"
-            className="w-full justify-start"
+            className="h-11 w-full justify-start"
             onClick={() => void signOut()}
           >
-            <LogOut className="mr-2 size-icon-sm" /> Sign out
+            <LogOut className="size-icon-sm" /> Sign out
           </Button>
         </div>
       </aside>
@@ -118,10 +117,10 @@ export function AdminShell({
           <div className="absolute inset-y-0 left-0 flex w-64 flex-col border-r border-sidebar-border bg-sidebar p-4">
             <div className="mb-8 flex items-center justify-between px-2">
               <span className="flex items-center gap-2 font-semibold">
-                <Logo className="size-5" /> Unified QR
+                <Logo className="size-icon-sm" /> Unified QR
               </span>
               <button
-                className="flex size-10 items-center justify-center rounded-md transition-colors hover:bg-muted"
+                className="flex size-11 items-center justify-center rounded-md transition-colors hover:bg-muted"
                 onClick={() => setOpen(false)}
                 aria-label="Close menu"
               >
@@ -132,11 +131,10 @@ export function AdminShell({
             <div className="mt-auto space-y-2 border-t border-sidebar-border pt-4">
               <Button
                 variant="ghost"
-                size="sm"
-                className="w-full justify-start"
+                className="h-11 w-full justify-start"
                 onClick={() => void signOut()}
               >
-                <LogOut className="mr-2 size-icon-sm" /> Sign out
+                <LogOut className="size-icon-sm" /> Sign out
               </Button>
             </div>
           </div>
@@ -147,18 +145,20 @@ export function AdminShell({
         <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
           <div className="mx-auto flex h-header max-w-main items-center gap-3 px-gutter">
             <button
-              className="flex size-10 items-center justify-center rounded-md transition-colors hover:bg-muted lg:hidden"
+              className="flex size-11 items-center justify-center rounded-md transition-colors hover:bg-muted lg:hidden"
               onClick={() => setOpen(true)}
               aria-label="Open menu"
             >
-              <Menu className="size-5" />
+              <Menu className="size-icon-xs" />
             </button>
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <Shield className="size-icon-sm text-red-400" />
-                <h1 className="text-lg font-semibold tracking-tight">{title}</h1>
+                <Shield className="size-icon-sm text-muted-foreground" />
+                <h1 className="text-h2 font-semibold tracking-tight">{title}</h1>
               </div>
-              {description && <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>}
+              {description && (
+                <p className="mt-0.5 text-small text-muted-foreground">{description}</p>
+              )}
             </div>
             {actions}
           </div>

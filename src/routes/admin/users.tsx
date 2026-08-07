@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 
 import { AdminShell } from "@/components/admin/AdminShell";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { listAdminUsers, type AdminUser } from "@/lib/admin.functions";
 
@@ -37,20 +38,20 @@ function AdminUsers() {
 
   return (
     <AdminShell title="Users" description="Every account, plan and usage on the platform.">
-      <input
+      <Input
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder="Search by email, name or id…"
-        className="mb-4 w-full max-w-sm rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+        className="mb-4 w-full max-w-sm"
       />
       {isLoading ? (
         <Skeleton className="h-96" />
       ) : (
         <>
           <div className="hidden overflow-x-auto rounded-xl border border-border bg-card md:block">
-            <table className="w-full min-w-[720px] text-left text-sm">
+            <table className="w-full min-w-[720px] text-left text-small">
               <thead>
-                <tr className="border-b border-border text-[11px] uppercase tracking-wider text-muted-foreground">
+                <tr className="border-b border-border text-caption uppercase tracking-wider text-muted-foreground">
                   <th className="px-4 py-3 font-medium">User</th>
                   <th className="px-4 py-3 font-medium">Plan</th>
                   <th className="px-4 py-3 font-medium">Codes</th>
@@ -72,14 +73,14 @@ function AdminUsers() {
                     <tr key={u.id} className="border-b border-border last:border-b-0">
                       <td className="px-4 py-3">
                         <p className="font-medium">{u.fullName || "—"}</p>
-                        <p className="text-xs text-muted-foreground">{u.email || "no email"}</p>
+                        <p className="text-small text-muted-foreground">{u.email || "no email"}</p>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="rounded-full border border-border px-2 py-0.5 text-[11px] capitalize">
+                        <span className="rounded-full border border-border px-2 py-0.5 text-small capitalize">
                           {u.plan}
                         </span>
                         {u.planUntil && (
-                          <p className="mt-1 text-[11px] text-muted-foreground">
+                          <p className="mt-1 text-small text-muted-foreground">
                             until{" "}
                             {new Date(u.planUntil).toLocaleDateString("en-IN", {
                               day: "numeric",
@@ -94,16 +95,16 @@ function AdminUsers() {
                       <td className="px-4 py-3">{u.scans}</td>
                       <td className="px-4 py-3">
                         {u.paidUpgrades > 0 ? (
-                          <span className="text-emerald-400">{u.paidUpgrades} paid</span>
+                          <span className="text-success">{u.paidUpgrades} paid</span>
                         ) : null}
                         {u.pendingUpgrades > 0 ? (
-                          <span className="ml-1 text-amber-400">{u.pendingUpgrades} pending</span>
+                          <span className="ml-1 text-warning">{u.pendingUpgrades} pending</span>
                         ) : null}
                         {u.paidUpgrades === 0 && u.pendingUpgrades === 0 ? (
                           <span className="text-muted-foreground">none</span>
                         ) : null}
                       </td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">
+                      <td className="px-4 py-3 text-small text-muted-foreground">
                         {new Date(u.createdAt).toLocaleDateString("en-IN", {
                           day: "numeric",
                           month: "short",
@@ -118,7 +119,7 @@ function AdminUsers() {
           </div>
           <div className="space-y-3 md:hidden">
             {filtered.length === 0 ? (
-              <div className="rounded-xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">
+              <div className="rounded-xl border border-border bg-card p-6 text-center text-small text-muted-foreground">
                 No users found.
               </div>
             ) : (
@@ -136,16 +137,16 @@ function UserCard({ user }: { user: AdminUser }) {
     <div className="rounded-xl border border-border bg-card p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate text-sm font-medium">{user.fullName || "—"}</p>
-          <p className="truncate text-xs text-muted-foreground">{user.email || "no email"}</p>
+          <p className="truncate text-small font-medium">{user.fullName || "—"}</p>
+          <p className="truncate text-small text-muted-foreground">{user.email || "no email"}</p>
         </div>
-        <span className="shrink-0 rounded-full border border-border px-2 py-0.5 text-[11px] capitalize">
+        <span className="shrink-0 rounded-full border border-border px-2 py-0.5 text-small capitalize">
           {user.plan}
         </span>
       </div>
       {user.planUntil && (
-        <p className="mt-1 text-[11px] text-muted-foreground">
-          Enterprise until{" "}
+        <p className="mt-1 text-small text-muted-foreground">
+          Pro until{" "}
           {new Date(user.planUntil).toLocaleDateString("en-IN", {
             day: "numeric",
             month: "short",
@@ -153,7 +154,7 @@ function UserCard({ user }: { user: AdminUser }) {
           })}
         </p>
       )}
-      <dl className="mt-3 grid grid-cols-3 gap-x-3 gap-y-2 text-xs">
+      <dl className="mt-3 grid grid-cols-3 gap-x-3 gap-y-2 text-small">
         <div>
           <dt className="text-muted-foreground">Codes</dt>
           <dd className="mt-0.5">{user.codes}</dd>
@@ -170,10 +171,10 @@ function UserCard({ user }: { user: AdminUser }) {
           <dt className="text-muted-foreground">Upgrades</dt>
           <dd className="mt-0.5">
             {user.paidUpgrades > 0 ? (
-              <span className="text-emerald-400">{user.paidUpgrades} paid</span>
+              <span className="text-success">{user.paidUpgrades} paid</span>
             ) : null}
             {user.pendingUpgrades > 0 ? (
-              <span className="ml-1 text-amber-400">{user.pendingUpgrades} pending</span>
+              <span className="ml-1 text-warning">{user.pendingUpgrades} pending</span>
             ) : null}
             {user.paidUpgrades === 0 && user.pendingUpgrades === 0 ? (
               <span className="text-muted-foreground">none</span>

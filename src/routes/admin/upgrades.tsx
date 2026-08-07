@@ -19,7 +19,7 @@ export const Route = createFileRoute("/admin/upgrades")({
   head: () => ({
     meta: [
       { title: "Upgrade requests — Unified QR" },
-      { name: "description", content: "Pending and paid Enterprise upgrade requests." },
+      { name: "description", content: "Pending and paid Pro upgrade requests." },
     ],
   }),
   component: AdminUpgrades,
@@ -40,7 +40,7 @@ function AdminUpgrades() {
   const mutation = useMutation({
     mutationFn: (input: { upgradeId: string; term: BillingTerm }) => markPaid({ data: input }),
     onSuccess: () => {
-      toast.success("Upgrade marked paid and Enterprise granted");
+      toast.success("Upgrade marked paid and Pro granted");
       void queryClient.invalidateQueries({ queryKey: ["admin-upgrades"] });
       void queryClient.invalidateQueries({ queryKey: ["admin-overview"] });
       void queryClient.invalidateQueries({ queryKey: ["admin-users"] });
@@ -49,18 +49,15 @@ function AdminUpgrades() {
   });
 
   return (
-    <AdminShell
-      title="Upgrade requests"
-      description="Pending and paid Enterprise upgrade requests."
-    >
+    <AdminShell title="Upgrade requests" description="Pending and paid Pro upgrade requests.">
       {isLoading ? (
         <Skeleton className="h-96" />
       ) : (
         <>
           <div className="hidden overflow-x-auto rounded-xl border border-border bg-card md:block">
-            <table className="w-full min-w-[760px] text-left text-sm">
+            <table className="w-full min-w-[760px] text-left text-small">
               <thead>
-                <tr className="border-b border-border text-[11px] uppercase tracking-wider text-muted-foreground">
+                <tr className="border-b border-border text-caption uppercase tracking-wider text-muted-foreground">
                   <th className="px-4 py-3 font-medium">Created</th>
                   <th className="px-4 py-3 font-medium">User</th>
                   <th className="px-4 py-3 font-medium">Term</th>
@@ -91,7 +88,7 @@ function AdminUpgrades() {
           </div>
           <div className="space-y-3 md:hidden">
             {(data ?? []).length === 0 ? (
-              <div className="rounded-xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">
+              <div className="rounded-xl border border-border bg-card p-6 text-center text-small text-muted-foreground">
                 No upgrade requests yet.
               </div>
             ) : (
@@ -124,7 +121,7 @@ function Row({
 
   return (
     <tr className="border-b border-border last:border-b-0">
-      <td className="px-4 py-3 text-xs text-muted-foreground">
+      <td className="px-4 py-3 text-small text-muted-foreground">
         {new Date(request.createdAt).toLocaleString("en-IN", {
           day: "numeric",
           month: "short",
@@ -134,7 +131,7 @@ function Row({
       </td>
       <td className="px-4 py-3">
         <p className="font-medium">{request.email || "unknown"}</p>
-        <p className="text-[11px] text-muted-foreground">{request.orderId ?? "no order"}</p>
+        <p className="text-small text-muted-foreground">{request.orderId ?? "no order"}</p>
       </td>
       <td className="px-4 py-3 capitalize">{request.term ?? "—"}</td>
       <td className="px-4 py-3">
@@ -147,7 +144,7 @@ function Row({
         {pending ? (
           <MarkPaid busy={busy} onMarkPaid={onMarkPaid} />
         ) : (
-          <span className="text-xs text-muted-foreground">—</span>
+          <span className="text-small text-muted-foreground">—</span>
         )}
       </td>
     </tr>
@@ -169,14 +166,14 @@ function MobileCard({
     <div className="rounded-xl border border-border bg-card p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate text-sm font-medium">{request.email || "unknown"}</p>
-          <p className="truncate text-[11px] text-muted-foreground">
+          <p className="truncate text-small font-medium">{request.email || "unknown"}</p>
+          <p className="truncate text-small text-muted-foreground">
             {request.orderId ?? "no order"}
           </p>
         </div>
         <StatusBadge status={request.status} />
       </div>
-      <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+      <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-small">
         <div>
           <dt className="text-muted-foreground">Created</dt>
           <dd className="mt-0.5">
@@ -212,10 +209,10 @@ function StatusBadge({ status }: { status: string }) {
   const pending = status === "pending";
   return (
     <span
-      className={`shrink-0 rounded-full border px-2 py-0.5 text-[11px] capitalize ${
+      className={`shrink-0 rounded-full border px-2 py-0.5 text-small capitalize ${
         pending
-          ? "border-amber-500/40 bg-amber-500/10 text-amber-400"
-          : "border-emerald-500/40 bg-emerald-500/10 text-emerald-400"
+          ? "border-warning/40 bg-warning/10 text-warning"
+          : "border-success/40 bg-success/10 text-success"
       }`}
     >
       {status}
@@ -236,7 +233,7 @@ function MarkPaid({
       <select
         value={term}
         onChange={(e) => setTerm(e.target.value as BillingTerm)}
-        className="rounded-lg border border-input bg-background px-2 py-1.5 text-xs capitalize focus:outline-none focus:ring-1 focus:ring-ring"
+        className="h-btn rounded-btn border border-border bg-background px-4 text-body capitalize"
       >
         {TERMS.map((t) => (
           <option key={t} value={t}>
@@ -244,7 +241,7 @@ function MarkPaid({
           </option>
         ))}
       </select>
-      <Button size="sm" variant="secondary" disabled={busy} onClick={() => onMarkPaid(term)}>
+      <Button variant="secondary" disabled={busy} onClick={() => onMarkPaid(term)}>
         Mark paid
       </Button>
     </div>

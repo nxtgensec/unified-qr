@@ -20,15 +20,15 @@ export function PlanBadge({ className }: { className?: string }) {
     <Link
       to="/settings"
       className={cn(
-        "flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-colors hover:border-ring",
+        "flex h-chip items-center gap-1.5 rounded-full border px-3.5 text-small transition-colors hover:border-ring",
         enterprise
           ? "border-brand/40 bg-brand/10 text-brand"
           : "border-border bg-background text-muted-foreground hover:text-foreground",
         className,
       )}
     >
-      {enterprise && <Sparkles className="h-3 w-3" />}
-      {enterprise ? "Pro · Enterprise" : "Professional · Free"}
+      {enterprise && <Sparkles className="size-icon-2xs" />}
+      {enterprise ? "Pro" : "Community · Free"}
     </Link>
   );
 }

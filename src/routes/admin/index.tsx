@@ -42,15 +42,17 @@ function AdminOverview() {
             <Stat label="QR codes" value={data?.totals.codes} />
             <Stat label="Dynamic codes" value={data?.totals.dynamicCodes} />
             <Stat label="Total scans" value={data?.totals.scans} />
-            <Stat label="Enterprise users" value={data?.totals.enterpriseUsers} />
+            <Stat label="Pro users" value={data?.totals.enterpriseUsers} />
             <Stat label="Visits today" value={data?.totals.visitsToday} />
             <Stat label="Total visits" value={data?.totals.visitsTotal} />
           </div>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             <div className="rounded-xl border border-border bg-card p-5">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">Paid revenue</p>
-              <p className="mt-2 text-3xl font-semibold tracking-tight">
+              <p className="text-caption uppercase tracking-wider text-muted-foreground">
+                Paid revenue
+              </p>
+              <p className="mt-2 text-h1 font-semibold tracking-tight">
                 {data
                   ? new Intl.NumberFormat("en-IN", {
                       style: "currency",
@@ -61,17 +63,17 @@ function AdminOverview() {
               </p>
             </div>
             <div className="rounded-xl border border-border bg-card p-5">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">
+              <p className="text-caption uppercase tracking-wider text-muted-foreground">
                 Pending upgrade requests
               </p>
-              <p className="mt-2 text-3xl font-semibold tracking-tight">
+              <p className="mt-2 text-h1 font-semibold tracking-tight">
                 {data?.totals.pendingUpgrades ?? "—"}
               </p>
             </div>
           </div>
 
           <div className="mt-6 rounded-xl border border-border bg-card p-5">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">
+            <p className="text-caption uppercase tracking-wider text-muted-foreground">
               Scans — last 7 days
             </p>
             <div className="mt-6 flex h-40 items-end gap-[3px]">
@@ -79,12 +81,12 @@ function AdminOverview() {
                 <div
                   key={d.date}
                   title={`${d.date}: ${d.count}`}
-                  className="flex-1 rounded-sm bg-primary/70 transition-colors hover:bg-primary"
+                  className="flex-1 rounded-sm bg-brand/70 transition-colors hover:bg-brand"
                   style={{ height: `${Math.max(2, (d.count / max) * 100)}%` }}
                 />
               ))}
             </div>
-            <div className="mt-2 flex justify-between text-[11px] text-muted-foreground">
+            <div className="mt-2 flex justify-between text-small text-muted-foreground">
               <span>{data?.last7DayScans[0]?.date}</span>
               <span>{data?.last7DayScans[data.last7DayScans.length - 1]?.date}</span>
             </div>
@@ -98,13 +100,11 @@ function AdminOverview() {
 function Stat({ label, value }: { label: string; value: number | null | undefined }) {
   return (
     <div className="rounded-xl border border-border bg-card p-5">
-      <p className="text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className="text-caption uppercase tracking-wider text-muted-foreground">{label}</p>
       {value === undefined || value === null ? (
         <Skeleton className="mt-3 h-8 w-16" />
       ) : (
-        <p className="mt-2 text-3xl font-semibold tracking-tight">
-          {value.toLocaleString("en-US")}
-        </p>
+        <p className="mt-2 text-h1 font-semibold tracking-tight">{value.toLocaleString("en-US")}</p>
       )}
     </div>
   );

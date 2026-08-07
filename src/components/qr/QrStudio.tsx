@@ -14,6 +14,7 @@ import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { Chip as UiChip } from "@/components/ui/chip";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -110,7 +111,7 @@ function toLocalInput(iso: string): string {
 const ECCS: Ecc[] = ["L", "M", "Q", "H"];
 const GRADIENTS: GradientType[] = ["none", "linear", "radial"];
 const FRAMES: FrameKind[] = ["none", "scan-me", "visit-us", "pay-here", "call-us", "download-app"];
-const SWATCHES = ["#000000", "#111827", "#1d4ed8", "#047857", "#b91c1c", "#7c3aed"];
+const SWATCHES = ["#000000", "#1a1a1a", "#333333", "#4d4d4d", "#666666", "#808080"];
 const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 
 export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioProps) {
@@ -262,7 +263,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
       <div className="space-y-6">
         <div>
-          <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+          <Label className="text-caption uppercase tracking-wider text-muted-foreground">
             What should it do
           </Label>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -270,28 +271,22 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
               const locked = !full && Boolean(k.proOnly);
               const active = k.kind === kind;
               return (
-                <button
+                <Chip
                   key={k.kind}
-                  type="button"
+                  active={active}
                   onClick={() => selectKind(k.kind, locked)}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors",
-                    active
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border text-muted-foreground hover:border-ring hover:text-foreground",
-                    locked && "opacity-60",
-                  )}
+                  className={cn(locked && "opacity-60")}
                 >
                   {locked && <Lock className="size-icon-2xs" />}
                   {k.label}
-                </button>
+                </Chip>
               );
             })}
           </div>
         </div>
 
         <div className="space-y-4 rounded-xl border border-border bg-card p-5">
-          <p className="text-xs text-muted-foreground">{meta.hint}</p>
+          <p className="text-small text-muted-foreground">{meta.hint}</p>
           {dynamicOn ? (
             <Field
               label="Destination URL"
@@ -316,7 +311,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
               if (f.type === "file") {
                 return (
                   <div key={f.name} className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">{f.label}</Label>
+                    <Label className="text-small text-muted-foreground">{f.label}</Label>
                     <div className="flex items-center gap-3">
                       {content[f.name] ? (
                         <img
@@ -340,7 +335,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
                           size="sm"
                           onClick={() => setContent((c) => ({ ...c, photo: "" }))}
                         >
-                          <X className="mr-2 size-icon-xs" /> Remove
+                          <X /> Remove
                         </Button>
                       )}
                       <input
@@ -370,12 +365,12 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
           {full && kind === "url" && (
             <div className="flex items-start justify-between gap-4 rounded-lg border border-border bg-background p-4">
               <div>
-                <p className="text-sm font-medium">Dynamic code</p>
-                <p className="mt-1 text-xs text-muted-foreground">
+                <p className="text-small font-medium">Dynamic code</p>
+                <p className="mt-1 text-small text-muted-foreground">
                   Keep the printed code and change where it points later. Enables scan tracking.
                 </p>
                 {dynamicOn && (
-                  <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">
+                  <p className="mt-2 break-all font-mono text-small text-muted-foreground">
                     {shortUrl}
                   </p>
                 )}
@@ -398,7 +393,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
 
         {full ? (
           <div className="space-y-5 rounded-xl border border-border bg-card p-5">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">Design</p>
+            <p className="text-caption uppercase tracking-wider text-muted-foreground">Design</p>
 
             <OptionRow label="Presets">
               <div className="flex flex-wrap gap-2">
@@ -416,7 +411,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
 
             <OptionRow label="My designs">
               <Button type="button" variant="secondary" size="sm" onClick={saveDesign}>
-                <Save className="mr-1.5 size-icon-xs" />
+                <Save />
                 Save current
               </Button>
             </OptionRow>
@@ -425,7 +420,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
                 {designs.map((d) => (
                   <span
                     key={d.id}
-                    className="group inline-flex items-center gap-1 rounded-md border border-border py-1 pl-2.5 pr-1 text-xs text-muted-foreground hover:text-foreground"
+                    className="inline-flex items-center rounded-full border border-border bg-card py-1 pl-3.5 pr-1 text-small text-muted-foreground"
                   >
                     <button
                       type="button"
@@ -439,7 +434,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
                       type="button"
                       aria-label={`Delete design ${d.name}`}
                       onClick={() => deleteDesign(d.id)}
-                      className="rounded p-0.5 opacity-60 transition-opacity hover:opacity-100"
+                      className="flex size-7 items-center justify-center rounded-full transition-opacity hover:text-foreground"
                     >
                       <X className="size-icon-2xs" />
                     </button>
@@ -497,7 +492,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
             </OptionRow>
 
             <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">
+              <Label className="text-small text-muted-foreground">
                 Quiet zone · margin ({style.margin} modules)
               </Label>
               <input
@@ -507,7 +502,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
                 step={1}
                 value={style.margin}
                 onChange={(e) => setStyle((s) => ({ ...s, margin: Number(e.target.value) }))}
-                className="w-full"
+                className="w-full accent-brand"
               />
             </div>
 
@@ -552,7 +547,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
                   onChange={(v) => setStyle((s) => ({ ...s, gradientEnd: v }))}
                 />
                 <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">
+                  <Label className="text-small text-muted-foreground">
                     Angle ({style.gradientAngle}deg)
                   </Label>
                   <input
@@ -564,7 +559,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
                     onChange={(e) =>
                       setStyle((s) => ({ ...s, gradientAngle: Number(e.target.value) }))
                     }
-                    className="w-full"
+                    className="w-full accent-brand"
                   />
                 </div>
               </div>
@@ -590,9 +585,13 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
                   type="button"
                   aria-label={`Use ${c}`}
                   onClick={() => setStyle((s) => ({ ...s, fg: c }))}
-                  className="h-6 w-6 rounded-full border border-border"
-                  style={{ backgroundColor: c }}
-                />
+                  className="flex size-11 items-center justify-center rounded-full border border-border transition-colors hover:border-foreground/40"
+                >
+                  <span
+                    className="size-7 rounded-full border border-black/30"
+                    style={{ backgroundColor: c }}
+                  />
+                </button>
               ))}
             </OptionRow>
 
@@ -601,7 +600,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
                 checked={Boolean(style.transparentBg)}
                 onCheckedChange={(v) => setStyle((s) => ({ ...s, transparentBg: v }))}
               />
-              <span className="text-xs text-muted-foreground">
+              <span className="text-small text-muted-foreground">
                 PNG / SVG only — ideal for print or brand assets
               </span>
             </OptionRow>
@@ -609,7 +608,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
             {style.logo && (
               <>
                 <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">
+                  <Label className="text-small text-muted-foreground">
                     Logo size ({Math.round(style.logoScale * 100)}%)
                   </Label>
                   <input
@@ -621,7 +620,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
                     onChange={(e) =>
                       setStyle((s) => ({ ...s, logoScale: Number(e.target.value) / 100 }))
                     }
-                    className="w-full"
+                    className="w-full accent-brand"
                   />
                 </div>
                 <OptionRow label="Logo plate">
@@ -652,7 +651,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
                 size="sm"
                 onClick={() => fileRef.current?.click()}
               >
-                <ImageIcon className="mr-2 size-icon-sm" />
+                <ImageIcon />
                 {style.logo ? "Replace logo" : "Add logo"}
               </Button>
               {style.logo && (
@@ -662,7 +661,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
                   size="sm"
                   onClick={() => setStyle((s) => ({ ...s, logo: null }))}
                 >
-                  <X className="mr-2 size-icon-sm" />
+                  <X />
                   Remove
                 </Button>
               )}
@@ -672,7 +671,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
                 size="sm"
                 onClick={() => setStyle({ ...defaultStyle })}
               >
-                <RefreshCw className="mr-2 size-icon-sm" />
+                <RefreshCw />
                 Reset design
               </Button>
             </div>
@@ -684,8 +683,8 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
             className="flex w-full items-center justify-between rounded-xl border border-dashed border-border bg-card p-5 text-left transition-colors hover:border-ring"
           >
             <div>
-              <p className="text-sm font-medium">Colors, logo, shapes, SVG export, tracking</p>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="text-small font-medium">Colors, logo, shapes, SVG export, tracking</p>
+              <p className="mt-1 text-small text-muted-foreground">
                 Free forever — just sign in with Google to unlock.
               </p>
             </div>
@@ -694,7 +693,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
         )}
       </div>
 
-      <div className="space-y-4 lg:sticky lg:top-6 lg:self-start">
+      <div className="order-first space-y-4 lg:order-none lg:sticky lg:top-6 lg:self-start">
         <QrPreview payload={payload} style={style} />
         {full && <ScanMeter payload={payload} style={style} />}
         {full && (
@@ -707,7 +706,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
         )}
         {full && (
           <div className="space-y-2 rounded-xl border border-border bg-card p-4">
-            <Label className="text-xs text-muted-foreground">Export size</Label>
+            <Label className="text-small text-muted-foreground">Export size</Label>
             <div className="flex gap-2">
               {EXPORT_SIZES.map((s) => (
                 <Chip key={s} active={exportSize === s} onClick={() => setExportSize(s)}>
@@ -719,16 +718,12 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
         )}
         <div className="grid grid-cols-2 gap-2">
           <Button type="button" onClick={() => void download("png")}>
-            <Download className="mr-2 size-icon-sm" /> PNG
+            <Download /> PNG
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button type="button" variant="secondary">
-                {full ? (
-                  <Download className="mr-2 size-icon-sm" />
-                ) : (
-                  <Lock className="mr-2 size-icon-sm" />
-                )}
+                {full ? <Download /> : <Lock />}
                 Export
                 <ChevronDown className="ml-1 size-icon-2xs" />
               </Button>
@@ -748,7 +743,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
           className="w-full"
           onClick={() => void copyImage()}
         >
-          <Copy className="mr-2 size-icon-sm" /> Copy image
+          <Copy /> Copy image
         </Button>
         {full && onSave && (
           <Button
@@ -776,15 +771,11 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
               })
             }
           >
-            {saving ? (
-              <Loader2 className="mr-2 size-icon-sm animate-spin" />
-            ) : (
-              <Save className="mr-2 size-icon-sm" />
-            )}
+            {saving ? <Loader2 className="size-icon-sm animate-spin" /> : <Save />}
             Save to my library
           </Button>
         )}
-        <p className="text-center text-xs text-muted-foreground">
+        <p className="text-center text-small text-muted-foreground">
           No watermark. Codes never expire.
         </p>
       </div>
@@ -807,7 +798,7 @@ function Field({
 }) {
   return (
     <div className="space-y-2">
-      <Label className="text-xs text-muted-foreground">{label}</Label>
+      <Label className="text-small text-muted-foreground">{label}</Label>
       {type === "textarea" ? (
         <Textarea
           value={value}
@@ -842,11 +833,11 @@ function SelectField({
 }) {
   return (
     <div className="space-y-2">
-      <Label className="text-xs text-muted-foreground">{label}</Label>
+      <Label className="text-small text-muted-foreground">{label}</Label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="flex h-9 w-full rounded-md border border-border bg-background px-3 py-1 text-sm capitalize text-foreground"
+        className="flex h-btn w-full rounded-btn border border-border bg-background px-4 text-body capitalize text-foreground"
       >
         <option value="">Select…</option>
         {options.map((o) => (
@@ -862,7 +853,7 @@ function SelectField({
 function OptionRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="w-full shrink-0 text-xs text-muted-foreground sm:w-32">{label}</span>
+      <span className="w-full shrink-0 text-small text-muted-foreground sm:w-32">{label}</span>
       {children}
     </div>
   );
@@ -872,24 +863,22 @@ function Chip({
   active,
   onClick,
   children,
+  className,
 }: {
   active: boolean;
   onClick: () => void;
   children: React.ReactNode;
+  className?: string;
 }) {
   return (
-    <button
+    <UiChip
       type="button"
+      variant={active ? "active" : "default"}
       onClick={onClick}
-      className={cn(
-        "rounded-md border px-2.5 py-1 text-xs capitalize transition-colors",
-        active
-          ? "border-primary bg-primary text-primary-foreground"
-          : "border-border text-muted-foreground hover:text-foreground",
-      )}
+      className={cn("capitalize", className)}
     >
       {children}
-    </button>
+    </UiChip>
   );
 }
 
@@ -904,13 +893,13 @@ function ColorField({
 }) {
   return (
     <div className="space-y-2">
-      <Label className="text-xs text-muted-foreground">{label}</Label>
+      <Label className="text-small text-muted-foreground">{label}</Label>
       <div className="flex items-center gap-2">
         <input
           type="color"
           value={HEX_COLOR.test(value) ? value : "#000000"}
           onChange={(e) => onChange(e.target.value)}
-          className="h-9 w-10 cursor-pointer rounded-md border border-border bg-background"
+          className="size-11 cursor-pointer rounded-btn border border-border bg-background"
           aria-label={label}
         />
         <Input
@@ -919,7 +908,7 @@ function ColorField({
             const v = e.target.value.startsWith("#") ? e.target.value : `#${e.target.value}`;
             if (/^#[0-9a-fA-F]{0,6}$/.test(v)) onChange(v);
           }}
-          className="bg-background font-mono text-xs"
+          className="bg-background font-mono text-small"
         />
       </div>
     </div>
@@ -930,30 +919,32 @@ function ScanMeter({ payload, style }: { payload: string; style: QrStyle }) {
   const analysis = useMemo(() => analyzeQr(payload, style), [payload, style]);
   const tone =
     analysis.label === "Excellent"
-      ? "text-emerald-400"
+      ? "text-foreground"
       : analysis.label === "Good"
-        ? "text-lime-400"
+        ? "text-success"
         : analysis.label === "At risk"
-          ? "text-amber-400"
-          : "text-red-400";
+          ? "text-warning"
+          : "text-destructive";
   return (
     <div className="rounded-xl border border-border bg-card p-4">
       <div className="flex items-center justify-between">
-        <span className="text-xs uppercase tracking-wider text-muted-foreground">Scannability</span>
-        <span className={`text-sm font-semibold ${tone}`}>{analysis.score}/100</span>
+        <span className="text-caption uppercase tracking-wider text-muted-foreground">
+          Scannability
+        </span>
+        <span className={`text-small font-semibold ${tone}`}>{analysis.score}/100</span>
       </div>
       <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-border">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-red-500 via-amber-400 to-emerald-400"
+          className="h-full rounded-full bg-gradient-to-r from-border via-muted-foreground to-foreground"
           style={{ width: `${analysis.score}%` }}
         />
       </div>
-      <p className={`mt-2 text-xs font-medium ${tone}`}>{analysis.label}</p>
+      <p className={`mt-2 text-small font-medium ${tone}`}>{analysis.label}</p>
       {analysis.issues.length > 0 && (
         <ul className="mt-2 space-y-1">
           {analysis.issues.map((issue) => (
-            <li key={issue} className="flex gap-1.5 text-xs text-muted-foreground">
-              <span className="text-amber-400">•</span>
+            <li key={issue} className="flex gap-1.5 text-small text-muted-foreground">
+              <span className="text-warning">•</span>
               {issue}
             </li>
           ))}

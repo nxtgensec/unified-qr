@@ -24,7 +24,7 @@ export function QrPreview({ payload, style, className, size = 320 }: QrPreviewPr
     return (
       <div
         className={cn(
-          "flex aspect-square w-full items-center justify-center rounded-xl border border-border bg-muted text-xs text-muted-foreground",
+          "flex aspect-square w-full items-center justify-center rounded-xl border border-border bg-muted text-small text-muted-foreground",
           className,
         )}
       >

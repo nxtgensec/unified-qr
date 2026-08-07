@@ -13,7 +13,7 @@ export interface PlanDefinition {
 export const PLANS: Record<PlanId, PlanDefinition> = {
   professional: {
     id: "professional",
-    name: "Professional",
+    name: "Community",
     tagline: "Free forever",
     dynamicCodes: 3,
     analyticsDays: 30,
@@ -29,7 +29,7 @@ export const PLANS: Record<PlanId, PlanDefinition> = {
   },
   enterprise: {
     id: "enterprise",
-    name: "Enterprise",
+    name: "Pro",
     tagline: "Unlimited everything",
     dynamicCodes: Number.POSITIVE_INFINITY,
     analyticsDays: Number.POSITIVE_INFINITY,
@@ -38,7 +38,7 @@ export const PLANS: Record<PlanId, PlanDefinition> = {
       "Unlimited dynamic QR codes",
       "Full scan history, never truncated",
       "Bulk generation from CSV",
-      "Everything in Professional",
+      "Everything in Community",
       "Priority support",
     ],
   },

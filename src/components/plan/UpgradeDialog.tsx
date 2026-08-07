@@ -68,7 +68,7 @@ export function UpgradeDialog({
       const order = await createOrder({ data: { term } });
       if (!order.available) {
         if ("alreadyPaid" in order) {
-          toast.success("Your Enterprise access is already active — reload to see it.");
+          toast.success("Your Pro access is already active — reload to see it.");
           void queryClient.invalidateQueries({ queryKey: ["plan"] });
           void queryClient.invalidateQueries({ queryKey: ["codes"] });
           void queryClient.invalidateQueries({ queryKey: ["analytics"] });
@@ -100,14 +100,14 @@ export function UpgradeDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Upgrade to Enterprise</DialogTitle>
+          <DialogTitle>Upgrade to Pro</DialogTitle>
           <DialogDescription>
             Unlimited dynamic codes, full scan history and bulk CSV export. Your existing codes stay
             exactly as they are — nothing gets recreated or reprinted.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {ENTERPRISE_TERMS.map((option) => {
             const active = term === option.id;
             return (
@@ -116,21 +116,21 @@ export function UpgradeDialog({
                 type="button"
                 onClick={() => setTerm(option.id)}
                 className={cn(
-                  "relative rounded-xl border px-3 py-3 text-left transition-colors",
+                  "relative min-h-14 rounded-nav border px-3 py-3 text-left transition-colors",
                   active
                     ? "border-brand bg-brand/10 text-foreground"
                     : "border-border text-muted-foreground hover:border-ring",
                 )}
               >
                 {option.id === "yearly" && (
-                  <span className="absolute -top-2 right-2 rounded-full border border-brand/40 bg-background px-2 py-0.5 text-[10px] font-medium text-brand">
+                  <span className="absolute -top-2 right-2 rounded-full border border-brand/40 bg-background px-2 py-0.5 text-small font-medium text-brand">
                     Best value
                   </span>
                 )}
-                <span className="block text-sm font-medium">{option.label}</span>
-                <span className="mt-0.5 block text-sm">
+                <span className="block text-small font-medium">{option.label}</span>
+                <span className="mt-0.5 block text-small">
                   {formatPaise(option.paise)}
-                  <span className="text-xs text-muted-foreground"> / {option.per}</span>
+                  <span className="text-small text-muted-foreground"> / {option.per}</span>
                 </span>
               </button>
             );
@@ -138,14 +138,16 @@ export function UpgradeDialog({
         </div>
 
         <div className="rounded-xl border border-border bg-card p-5">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">Enterprise</p>
-          <p className="mt-2 text-3xl font-semibold tracking-tight">
+          <p className="text-caption uppercase tracking-wider text-muted-foreground">Pro</p>
+          <p className="mt-2 text-h1 font-semibold tracking-tight">
             {formatPaise(selected.paise)}
-            <span className="ml-1 text-sm font-normal text-muted-foreground">/ {selected.per}</span>
+            <span className="ml-1 text-small font-normal text-muted-foreground">
+              / {selected.per}
+            </span>
           </p>
           <ul className="mt-4 space-y-2">
             {ENTERPRISE.features.map((feature) => (
-              <li key={feature} className="flex items-start gap-2 text-sm">
+              <li key={feature} className="flex items-start gap-2 text-small">
                 <Check className="mt-0.5 size-icon-sm shrink-0 text-brand" />
                 {feature}
               </li>
@@ -155,13 +157,13 @@ export function UpgradeDialog({
 
         <Button size="lg" className="w-full" disabled={paying} onClick={() => void pay()}>
           {paying ? (
-            <Loader2 className="mr-2 size-icon-sm animate-spin" />
+            <Loader2 className="size-icon-sm animate-spin" />
           ) : (
-            <CreditCard className="mr-2 size-icon-sm" />
+            <CreditCard className="size-icon-sm" />
           )}
           {paying ? "Opening payment…" : `Pay ${formatPaise(price)} with Cashfree`}
         </Button>
-        <p className="text-center text-[11px] leading-relaxed text-muted-foreground">
+        <p className="text-center text-small leading-relaxed text-muted-foreground">
           Secured by Cashfree. Access lasts for the period you choose and doesn't auto-renew. By
           paying you agree to our{" "}
           <a href="/terms" className="underline underline-offset-2 hover:text-foreground">

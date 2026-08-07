@@ -1,19 +1,11 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Github, House, QrCode, Scale, ShieldCheck, Tag } from "lucide-react";
+import { Github } from "lucide-react";
 import { type ReactNode } from "react";
 
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 import { useSignedIn } from "@/hooks/use-signed-in";
 import { cn } from "@/lib/utils";
-
-const BOTTOM_NAV = [
-  { href: "/", label: "Home", icon: House },
-  { href: "/#types", label: "Code types", icon: QrCode },
-  { href: "/#compare", label: "Compare", icon: Scale },
-  { href: "/#pricing", label: "Pricing", icon: Tag },
-  { href: "/#why", label: "Why us", icon: ShieldCheck },
-] as const;
 
 const PUBLIC_LINKS = [
   { href: "/#types", label: "Code types" },
@@ -39,14 +31,16 @@ export function PublicLayout({
   const signedIn = useSignedIn();
 
   const goAuth = () => void navigate({ to: signedIn ? "/dashboard" : "/auth" });
-  const activeHref = hash ? `/#${hash.replace(/^#/, "")}` : pathname;
 
   return (
-    <div className="min-h-screen bg-background pb-16 lg:pb-0">
+    <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
         <div className="mx-auto flex h-header max-w-main items-center justify-between gap-4 px-gutter">
-          <Link to="/" className="flex shrink-0 items-center gap-2.5 font-semibold tracking-tight">
-            <Logo className="size-7" />
+          <Link
+            to="/"
+            className="flex shrink-0 items-center gap-2 text-body font-semibold tracking-tight"
+          >
+            <Logo className="size-icon-sm" />
             <span className="hidden sm:inline">Unified QR</span>
           </Link>
           <nav className="hidden items-center gap-1 md:flex">
@@ -55,10 +49,10 @@ export function PublicLayout({
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "rounded-lg px-3 py-1.5 text-sm transition-colors",
+                  "flex min-h-11 items-center rounded-nav px-3 text-small transition-colors",
                   pathname === link.href.split("#")[0] && hash === `#${link.href.split("#")[1]}`
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground",
+                    ? "bg-brand/10 text-foreground ring-1 ring-brand/30"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
                 {link.label}
@@ -71,11 +65,13 @@ export function PublicLayout({
               target="_blank"
               rel="noreferrer"
               aria-label="GitHub"
-              className="flex size-10 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="flex size-12 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
-              <Github className="size-icon-sm" />
+              <Github className="size-icon-lg" strokeWidth={2} />
             </a>
-            <Button onClick={goAuth}>{signedIn ? "Dashboard" : "Sign in"}</Button>
+            <Button size="sm" onClick={goAuth}>
+              {signedIn ? "Dashboard" : "Sign in"}
+            </Button>
           </div>
         </div>
       </header>
@@ -83,17 +79,17 @@ export function PublicLayout({
       <main>
         <div className="mx-auto max-w-main px-gutter py-14 sm:py-16">
           {kicker && (
-            <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+            <p className="font-mono text-caption uppercase tracking-widest text-muted-foreground">
               {kicker}
             </p>
           )}
           {title && (
-            <h1 className="mt-4 text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
+            <h1 className="mt-4 text-balance text-h1 font-semibold tracking-tight sm:text-hero">
               {title}
             </h1>
           )}
           {description && (
-            <p className="mt-4 max-w-2xl text-pretty text-base text-muted-foreground sm:text-lg">
+            <p className="mt-4 max-w-2xl text-pretty text-body text-muted-foreground sm:text-h2">
               {description}
             </p>
           )}
@@ -105,16 +101,16 @@ export function PublicLayout({
         <div className="mx-auto max-w-main px-gutter py-10">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex flex-col gap-2">
-              <span className="flex items-center gap-2.5 text-sm font-semibold tracking-tight">
-                <Logo className="size-7" />
+              <span className="flex items-center gap-2.5 text-small font-semibold tracking-tight">
+                <Logo />
                 Unified QR
               </span>
-              <span className="max-w-xs text-xs text-muted-foreground">
-                Every QR code job, in one place. Professional is free forever — no watermarks, no
+              <span className="max-w-xs text-small text-muted-foreground">
+                Every QR code job, in one place. Community is free forever — no watermarks, no
                 expiry, no trial traps.
               </span>
             </div>
-            <nav className="flex max-w-md flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground">
+            <nav className="flex max-w-md flex-wrap gap-x-6 gap-y-2 text-small text-muted-foreground">
               {PUBLIC_LINKS.map((link) => (
                 <a
                   key={link.href}
@@ -141,47 +137,11 @@ export function PublicLayout({
               </Link>
             </nav>
           </div>
-          <p className="mt-6 text-xs text-muted-foreground">
+          <p className="mt-6 text-small text-muted-foreground">
             © {new Date().getFullYear()} Unified QR · Built by NxtGenSec.
           </p>
         </div>
       </footer>
-
-      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
-        <div className="mx-auto grid h-tabbar max-w-nav grid-cols-5">
-          {BOTTOM_NAV.map((item) => {
-            const isActive = item.href === activeHref;
-            return (
-              <a
-                key={item.href}
-                href={item.href}
-                aria-current={isActive ? "page" : undefined}
-                className="relative flex flex-col items-center justify-center gap-1.5"
-              >
-                {isActive && (
-                  <span className="absolute top-1.5 h-0.5 w-8 rounded-full bg-foreground" />
-                )}
-                <item.icon
-                  size={24}
-                  strokeWidth={2}
-                  className={cn(
-                    "transition-colors",
-                    isActive ? "text-foreground" : "text-muted-foreground",
-                  )}
-                />
-                <span
-                  className={cn(
-                    "text-xs font-medium leading-none transition-colors",
-                    isActive ? "text-foreground" : "text-muted-foreground",
-                  )}
-                >
-                  {item.label}
-                </span>
-              </a>
-            );
-          })}
-        </div>
-      </nav>
     </div>
   );
 }

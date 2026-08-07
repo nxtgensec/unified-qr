@@ -50,7 +50,7 @@ function SettingsPage() {
     void (async () => {
       try {
         await verifyPayment({ data: { orderId } });
-        toast.success("Welcome to Enterprise!");
+        toast.success("Welcome to Pro!");
         void queryClient.invalidateQueries({ queryKey: ["plan"] });
         void queryClient.invalidateQueries({ queryKey: ["codes"] });
         void queryClient.invalidateQueries({ queryKey: ["analytics"] });
@@ -127,29 +127,29 @@ function SettingsPage() {
   return (
     <DashboardShell title="Settings" description="Account, plan and session.">
       <div className="rounded-xl border border-border bg-card p-5">
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">Signed in as</p>
-        <p className="mt-2 text-sm">{email || "—"}</p>
-        <p className="mt-1 text-xs text-muted-foreground">Google account</p>
+        <p className="text-caption uppercase tracking-wider text-muted-foreground">Signed in as</p>
+        <p className="mt-2 text-body">{email || "—"}</p>
+        <p className="mt-1 text-small text-muted-foreground">Google account</p>
       </div>
 
       <div className="mt-6 rounded-xl border border-border bg-card p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-medium">Plan</p>
+            <p className="text-small font-medium">Plan</p>
             {isLoading ? (
               <Skeleton className="mt-3 h-5 w-40" />
             ) : (
-              <p className="mt-1 text-sm">
+              <p className="mt-1 text-body">
                 {plan?.planName}
-                <span className="ml-2 rounded-full border border-border px-2 py-0.5 text-[11px] text-muted-foreground">
+                <span className="ml-2 rounded-full border border-border px-2 py-0.5 text-small text-muted-foreground">
                   {enterprise ? "Unlimited" : plan?.tagline}
                 </span>
               </p>
             )}
           </div>
           {!enterprise && (
-            <Button size="sm" onClick={() => setUpgradeOpen(true)}>
-              <Sparkles className="mr-2 size-icon-sm" /> Upgrade to Enterprise
+            <Button onClick={() => setUpgradeOpen(true)}>
+              <Sparkles /> Upgrade to Pro
             </Button>
           )}
         </div>
@@ -157,39 +157,39 @@ function SettingsPage() {
         {!isLoading && (
           <dl className="mt-5 grid gap-4 border-t border-border pt-5 sm:grid-cols-3">
             <div>
-              <dt className="text-xs uppercase tracking-wider text-muted-foreground">
+              <dt className="text-caption uppercase tracking-wider text-muted-foreground">
                 Dynamic codes
               </dt>
-              <dd className="mt-1 text-sm">
+              <dd className="mt-1 text-body">
                 {plan?.dynamicLimit == null
                   ? "Unlimited"
                   : `${plan?.dynamicUsed ?? 0} / ${plan?.dynamicLimit}`}
               </dd>
             </div>
             <div>
-              <dt className="text-xs uppercase tracking-wider text-muted-foreground">
+              <dt className="text-caption uppercase tracking-wider text-muted-foreground">
                 Scan history
               </dt>
-              <dd className="mt-1 text-sm">
+              <dd className="mt-1 text-body">
                 {plan?.analyticsDays == null ? "Full history" : `Last ${plan?.analyticsDays} days`}
               </dd>
             </div>
             <div>
-              <dt className="text-xs uppercase tracking-wider text-muted-foreground">
+              <dt className="text-caption uppercase tracking-wider text-muted-foreground">
                 Bulk CSV export
               </dt>
-              <dd className="mt-1 text-sm">{plan?.bulk ? "Included" : "Enterprise only"}</dd>
+              <dd className="mt-1 text-body">{plan?.bulk ? "Included" : "Pro only"}</dd>
             </div>
           </dl>
         )}
 
-        <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
+        <p className="mt-5 text-small leading-relaxed text-muted-foreground">
           Codes never expire and scans are never capped on any plan. Upgrading or cancelling never
           recreates a code or breaks a printed one.
         </p>
         {enterprise && plan?.planUntil && (
-          <p className="mt-3 text-xs text-muted-foreground">
-            Enterprise access lasts until{" "}
+          <p className="mt-3 text-small text-muted-foreground">
+            Pro access lasts until{" "}
             <span className="font-medium text-foreground">
               {new Date(plan.planUntil).toLocaleString("en-IN", {
                 day: "numeric",
@@ -205,61 +205,57 @@ function SettingsPage() {
       </div>
 
       <div className="mt-6 rounded-xl border border-border bg-card p-5">
-        <p className="text-sm font-medium">Backup &amp; restore</p>
-        <p className="mt-1 text-xs text-muted-foreground">
+        <p className="text-small font-medium">Backup &amp; restore</p>
+        <p className="mt-1 text-small text-muted-foreground">
           Export your whole library as JSON, CSV, or a ZIP that also includes every QR image — or
           re-import a JSON backup any time.
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <Button
-            size="sm"
             variant="secondary"
             disabled={backupBusy != null}
             onClick={() => void onExport("json")}
           >
             {backupBusy === "json" ? (
-              <Loader2 className="mr-2 size-icon-sm animate-spin" />
+              <Loader2 className="size-icon-sm animate-spin" />
             ) : (
-              <Download className="mr-2 size-icon-sm" />
+              <Download />
             )}
             JSON
           </Button>
           <Button
-            size="sm"
             variant="secondary"
             disabled={backupBusy != null}
             onClick={() => void onExport("csv")}
           >
             {backupBusy === "csv" ? (
-              <Loader2 className="mr-2 size-icon-sm animate-spin" />
+              <Loader2 className="size-icon-sm animate-spin" />
             ) : (
-              <Download className="mr-2 size-icon-sm" />
+              <Download />
             )}
             CSV
           </Button>
           <Button
-            size="sm"
             variant="secondary"
             disabled={backupBusy != null}
             onClick={() => void onExport("zip")}
           >
             {backupBusy === "zip" ? (
-              <Loader2 className="mr-2 size-icon-sm animate-spin" />
+              <Loader2 className="size-icon-sm animate-spin" />
             ) : (
-              <Download className="mr-2 size-icon-sm" />
+              <Download />
             )}
             ZIP + images
           </Button>
           <Button
-            size="sm"
             variant="secondary"
             disabled={importMutation.isPending}
             onClick={() => importRef.current?.click()}
           >
             {importMutation.isPending ? (
-              <Loader2 className="mr-2 size-icon-sm animate-spin" />
+              <Loader2 className="size-icon-sm animate-spin" />
             ) : (
-              <Upload className="mr-2 size-icon-sm" />
+              <Upload />
             )}
             Restore from JSON
           </Button>
@@ -276,11 +272,11 @@ function SettingsPage() {
         </div>
       </div>
 
-      <Button className="mt-6" variant="secondary" size="sm" onClick={() => void signOut()}>
-        <LogOut className="mr-2 size-icon-sm" /> Sign out
+      <Button className="mt-6" variant="secondary" onClick={() => void signOut()}>
+        <LogOut /> Sign out
       </Button>
 
-      <div className="mt-6 flex items-center gap-4 text-xs text-muted-foreground">
+      <div className="mt-6 flex items-center gap-4 text-small text-muted-foreground">
         <a href="/privacy" className="transition-colors hover:text-foreground">
           Privacy
         </a>

@@ -53,8 +53,8 @@ function DecodePage() {
     <DashboardShell title="Decode" description="Read the contents of an existing QR image.">
       <div className="rounded-xl border border-dashed border-border bg-card p-12 text-center">
         <ScanLine className="mx-auto size-icon-md text-muted-foreground" />
-        <p className="mt-4 text-sm">Upload a PNG or JPG containing a QR code</p>
-        <Button className="mt-6" size="sm" onClick={() => inputRef.current?.click()}>
+        <p className="mt-4 text-body">Upload a PNG or JPG containing a QR code</p>
+        <Button className="mt-6" onClick={() => inputRef.current?.click()}>
           Choose image
         </Button>
         <input
@@ -70,14 +70,15 @@ function DecodePage() {
         />
       </div>
 
-      {error && <p className="mt-6 text-sm text-destructive">{error}</p>}
+      {error && <p className="mt-6 text-body text-destructive">{error}</p>}
       {result && (
         <div className="mt-6 rounded-xl border border-border bg-card p-5">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">Decoded content</p>
-          <p className="mt-3 break-all font-mono text-sm">{result}</p>
+          <p className="text-caption uppercase tracking-wider text-muted-foreground">
+            Decoded content
+          </p>
+          <p className="mt-3 break-all font-mono text-body">{result}</p>
           <Button
             className="mt-4"
-            size="sm"
             variant="secondary"
             onClick={() => void navigator.clipboard.writeText(result)}
           >

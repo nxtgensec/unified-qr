@@ -91,20 +91,20 @@ function AnalyticsPage() {
         <>
           <div className="rounded-xl border border-border bg-card p-5">
             <div className="flex items-baseline justify-between">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">Scans</p>
-              <p className="text-2xl font-semibold tracking-tight">{total}</p>
+              <p className="text-caption uppercase tracking-wider text-muted-foreground">Scans</p>
+              <p className="text-h1 font-semibold tracking-tight">{total}</p>
             </div>
             <div className="mt-6 flex h-40 items-end gap-[3px]">
               {days.map((d) => (
                 <div
                   key={d.date}
                   title={`${d.date}: ${d.count}`}
-                  className="flex-1 rounded-sm bg-primary/70 transition-colors hover:bg-primary"
+                  className="flex-1 rounded-sm bg-brand/70 transition-colors hover:bg-brand"
                   style={{ height: `${Math.max(2, (d.count / max) * 100)}%` }}
                 />
               ))}
             </div>
-            <div className="mt-2 flex justify-between text-[11px] text-muted-foreground">
+            <div className="mt-2 flex justify-between text-small text-muted-foreground">
               <span>{days[0]?.date}</span>
               <span>{days[days.length - 1]?.date}</span>
             </div>
@@ -112,11 +112,13 @@ function AnalyticsPage() {
 
           <div className="mt-6 grid gap-6 sm:grid-cols-2">
             <div className="rounded-xl border border-border bg-card p-5">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">By device</p>
+              <p className="text-caption uppercase tracking-wider text-muted-foreground">
+                By device
+              </p>
               {devices.length === 0 ? (
-                <p className="mt-4 text-sm text-muted-foreground">No scans recorded yet.</p>
+                <p className="mt-4 text-small text-muted-foreground">No scans recorded yet.</p>
               ) : (
-                <ul className="mt-4 space-y-2 text-sm">
+                <ul className="mt-4 space-y-2 text-small">
                   {devices.map(([name, count]) => (
                     <li key={name} className="flex justify-between capitalize">
                       <span>{name}</span>
@@ -128,14 +130,16 @@ function AnalyticsPage() {
             </div>
 
             <div className="rounded-xl border border-border bg-card p-5">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">Top codes</p>
+              <p className="text-caption uppercase tracking-wider text-muted-foreground">
+                Top codes
+              </p>
               {(data?.codes ?? []).length === 0 ? (
-                <p className="mt-4 text-sm text-muted-foreground">
+                <p className="mt-4 text-small text-muted-foreground">
                   <BarChart3 className="mb-2 size-icon-sm" />
                   Create a dynamic code to start collecting scans.
                 </p>
               ) : (
-                <ul className="mt-4 space-y-2 text-sm">
+                <ul className="mt-4 space-y-2 text-small">
                   {(data?.codes ?? []).slice(0, 6).map((c) => (
                     <li key={c.id} className="flex justify-between gap-3">
                       <span className="truncate">{c.name}</span>

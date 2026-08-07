@@ -64,8 +64,8 @@ function TermsPage() {
 
       <LegalSection title="5. Plans and payments">
         <p>
-          The Professional plan is free forever. The Enterprise plan is paid and grants access for
-          the period you purchase. Payment terms, prices and renewal rules are described in our{" "}
+          The Community plan is free forever. The Pro plan is paid and grants access for the period
+          you purchase. Payment terms, prices and renewal rules are described in our{" "}
           <a href="/payment" className="text-foreground underline underline-offset-4">
             Payment Policy
           </a>
@@ -80,8 +80,8 @@ function TermsPage() {
       <LegalSection title="6. Cancellation and your codes">
         <p>
           You can stop using the Service at any time. Your codes are never deactivated because you
-          stop paying — dynamic links and static codes keep working, and an expired Enterprise plan
-          simply returns you to the free Professional limits.
+          stop paying — dynamic links and static codes keep working, and an expired Pro plan simply
+          returns you to the free Community limits.
         </p>
       </LegalSection>
 

@@ -88,13 +88,13 @@ export function DashboardShell({
             key={item.to}
             to={item.to}
             className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+              "flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-small transition-colors",
               active
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                ? "bg-brand/10 text-foreground ring-1 ring-brand/30"
                 : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-foreground",
             )}
           >
-            <item.icon className="size-icon-sm" />
+            <item.icon className={cn("size-icon-sm", active && "text-brand")} />
             <span className="flex-1">{item.label}</span>
           </Link>
         );
@@ -114,14 +114,14 @@ export function DashboardShell({
           {adminStatus?.isAdmin && (
             <Link
               to="/admin"
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-foreground"
+              className="flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-small text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-foreground"
             >
               <Shield className="size-icon-sm" />
               Admin panel
             </Link>
           )}
           <PlanBadge className="w-full justify-center" />
-          <p className="truncate px-3 text-xs text-muted-foreground">
+          <p className="truncate px-3 text-small text-muted-foreground">
             {email}
             {isPro && (
               <span className="ml-1 align-super text-[10px] font-bold uppercase leading-none text-brand">
@@ -149,7 +149,7 @@ export function DashboardShell({
                 <Logo className="size-5" /> Unified QR
               </span>
               <button
-                className="flex size-10 items-center justify-center rounded-md transition-colors hover:bg-muted"
+                className="flex size-11 items-center justify-center rounded-md transition-colors hover:bg-muted"
                 onClick={() => setOpen(false)}
                 aria-label="Close menu"
               >
@@ -161,14 +161,14 @@ export function DashboardShell({
               {adminStatus?.isAdmin && (
                 <Link
                   to="/admin"
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-foreground"
+                  className="flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-small text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-foreground"
                 >
                   <Shield className="size-icon-sm" />
                   Admin panel
                 </Link>
               )}
               <PlanBadge className="w-full justify-center" />
-              <p className="truncate px-3 text-xs text-muted-foreground">
+              <p className="truncate px-3 text-small text-muted-foreground">
                 {email}
                 {isPro && (
                   <span className="ml-1 align-super text-[10px] font-bold uppercase leading-none text-brand">
@@ -191,19 +191,19 @@ export function DashboardShell({
 
       <div className="lg:pl-60">
         <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
-          <div className="mx-auto flex h-header max-w-app items-center gap-3 px-gutter">
+          <div className="mx-auto flex min-h-header max-w-app items-center gap-3 px-gutter py-2">
             <button
-              className="flex size-10 items-center justify-center rounded-md transition-colors hover:bg-muted lg:hidden"
+              className="flex size-12 items-center justify-center rounded-full transition-colors hover:bg-muted lg:hidden"
               onClick={() => setOpen(true)}
               aria-label="Open menu"
             >
-              <Menu className="size-5" />
+              <Menu className="size-icon-lg" strokeWidth={2} />
             </button>
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <h1 className="text-lg font-semibold tracking-tight">{title}</h1>
-              </div>
-              {description && <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>}
+            <div className="min-w-0 flex-1">
+              <h1 className="truncate text-h2 font-semibold tracking-tight">{title}</h1>
+              {description && (
+                <p className="mt-0.5 truncate text-small text-muted-foreground">{description}</p>
+              )}
             </div>
             {actions}
           </div>

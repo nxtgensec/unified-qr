@@ -92,7 +92,7 @@ export const saveCode = createServerFn({ method: "POST" })
       if (countError) throw new Error(countError.message);
       if ((count ?? 0) >= PLANS.professional.dynamicCodes) {
         throw new Error(
-          `Professional includes ${PLANS.professional.dynamicCodes} dynamic codes. Upgrade to Enterprise for unlimited dynamic QR codes.`,
+          `Community includes ${PLANS.professional.dynamicCodes} dynamic codes. Upgrade to Pro for unlimited dynamic QR codes.`,
         );
       }
     }

@@ -25,12 +25,11 @@ function PaymentPage() {
     <LegalLayout title="Payment Policy" updated="August 5, 2026">
       <LegalSection title="1. Plans and prices">
         <p>
-          <strong className="text-foreground">Professional</strong> is free forever — no card, no
-          trial timer.
+          <strong className="text-foreground">Community</strong> is free forever — no card, no trial
+          timer.
         </p>
         <p>
-          <strong className="text-foreground">Enterprise</strong> is paid in Indian Rupees (INR) and
-          costs:
+          <strong className="text-foreground">Pro</strong> is paid in Indian Rupees (INR) and costs:
         </p>
         <ul className="list-disc space-y-1.5 pl-5">
           <li>₹9 per day</li>
@@ -51,17 +50,17 @@ function PaymentPage() {
 
       <LegalSection title="3. What you get">
         <p>
-          An Enterprise purchase grants access for the period you selected — one day, one week, one
-          month or one year — starting the moment payment is verified. During that period you get
-          unlimited dynamic codes, full scan history and bulk CSV export.
+          A Pro purchase grants access for the period you selected — one day, one week, one month or
+          one year — starting the moment payment is verified. During that period you get unlimited
+          dynamic codes, full scan history and bulk CSV export.
         </p>
       </LegalSection>
 
       <LegalSection title="4. Renewal">
         <p>
-          Enterprise access does not auto-renew. When your paid period ends, your account returns to
-          the free Professional limits automatically. To continue, buy Enterprise again for a new
-          period — your codes, links and scans are never reset or removed.
+          Pro access does not auto-renew. When your paid period ends, your account returns to the
+          free Community limits automatically. To continue, buy Pro again for a new period — your
+          codes, links and scans are never reset or removed.
         </p>
       </LegalSection>
 

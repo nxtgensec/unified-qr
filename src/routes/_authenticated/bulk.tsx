@@ -101,21 +101,21 @@ function BulkPage() {
             onChange={(e) => setRaw(e.target.value)}
             placeholder={"Homepage,https://example.com\nMenu,https://example.com/menu"}
           />
-          <p className="mt-2 text-xs text-muted-foreground">
+          <p className="mt-2 text-small text-muted-foreground">
             Up to {MAX_BULK_CODES} codes per batch
             {lineCount > MAX_BULK_CODES && (
               <span className="ml-1 text-destructive">· {lineCount} rows in input</span>
             )}
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
-            <Button size="sm" onClick={generate} disabled={!raw.trim()}>
+            <Button onClick={generate} disabled={!raw.trim()}>
               Generate{" "}
               {lineCount
                 ? `(${Math.min(lineCount, MAX_BULK_CODES)}${lineCount > MAX_BULK_CODES ? ` of ${lineCount}` : ""})`
                 : ""}
             </Button>
             {rows.length > 0 && (
-              <Button size="sm" variant="secondary" onClick={onSave} disabled={saving}>
+              <Button variant="secondary" onClick={onSave} disabled={saving}>
                 {saving
                   ? "Saving..."
                   : savedCount !== null
@@ -125,7 +125,6 @@ function BulkPage() {
             )}
             {rows.length > 0 && (
               <Button
-                size="sm"
                 variant="secondary"
                 onClick={async () => {
                   try {
@@ -160,7 +159,7 @@ function BulkPage() {
           </div>
 
           {savedCount !== null && savedCount > 0 && (
-            <p className="mt-3 text-sm text-muted-foreground">
+            <p className="mt-3 text-body text-muted-foreground">
               {savedCount} code{savedCount === 1 ? "" : "s"} stored in your library.{" "}
               <Link to="/codes" className="text-foreground underline underline-offset-4">
                 Open library
@@ -168,7 +167,7 @@ function BulkPage() {
             </p>
           )}
           {skipped > 0 && (
-            <p className="mt-3 text-xs text-destructive">
+            <p className="mt-3 text-small text-destructive">
               {skipped} row{skipped === 1 ? "" : "s"} skipped — only the first {MAX_BULK_CODES} were
               kept.
             </p>
@@ -182,8 +181,8 @@ function BulkPage() {
                   className="rounded-xl border border-border bg-card p-3"
                 >
                   <QrPreview payload={r.value} style={defaultStyle} size={220} />
-                  <p className="mt-3 truncate text-xs">{r.name}</p>
-                  <p className="truncate text-[11px] text-muted-foreground">{r.value}</p>
+                  <p className="mt-3 truncate text-small">{r.name}</p>
+                  <p className="truncate text-small text-muted-foreground">{r.value}</p>
                 </div>
               ))}
             </div>
@@ -192,12 +191,12 @@ function BulkPage() {
       ) : (
         <div className="rounded-2xl border border-border bg-card p-8 text-center">
           <Layers className="mx-auto size-icon-md text-muted-foreground" />
-          <h2 className="mt-4 text-base font-medium">Bulk CSV is an Enterprise feature</h2>
-          <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-            Generate a whole batch of codes in one pass with the Enterprise plan — from ₹9/day.
+          <h2 className="mt-4 text-body font-medium">Bulk CSV is a Pro feature</h2>
+          <p className="mx-auto mt-2 max-w-sm text-small text-muted-foreground">
+            Generate a whole batch of codes in one pass with the Pro plan — from ₹9/day.
           </p>
-          <Button className="mt-6" size="sm" onClick={() => setUpgradeOpen(true)}>
-            <Sparkles className="mr-2 size-icon-sm" /> Upgrade to Enterprise
+          <Button className="mt-6" onClick={() => setUpgradeOpen(true)}>
+            <Sparkles className="size-icon-sm" /> Upgrade to Pro
           </Button>
         </div>
       )}

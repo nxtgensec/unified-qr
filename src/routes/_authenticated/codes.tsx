@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { QrPreview } from "@/components/qr/QrPreview";
 import { Button } from "@/components/ui/button";
+import { Chip } from "@/components/ui/chip";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { deleteCode, listCodes, updateCode } from "@/lib/codes.functions";
@@ -93,7 +94,7 @@ function CodesPage() {
       actions={
         <Button size="sm" asChild>
           <Link to="/create">
-            <Plus className="mr-2 size-icon-sm" /> New
+            <Plus /> New
           </Link>
         </Button>
       }
@@ -106,7 +107,7 @@ function CodesPage() {
       ) : (data?.length ?? 0) === 0 ? (
         <div className="rounded-xl border border-border bg-card p-12 text-center">
           <QrCode className="mx-auto size-icon-md text-muted-foreground" />
-          <p className="mt-4 text-sm">Your library is empty</p>
+          <p className="mt-4 text-small">Your library is empty</p>
           <Button className="mt-6" size="sm" asChild>
             <Link to="/create">Create your first code</Link>
           </Button>
@@ -123,26 +124,22 @@ function CodesPage() {
                 className="pl-9"
               />
             </div>
-            <div className="flex rounded-lg border border-border p-0.5">
+            <div className="flex flex-wrap gap-2">
               {(["all", "dynamic", "static"] as const).map((f) => (
-                <button
+                <Chip
                   key={f}
                   type="button"
+                  variant={filter === f ? "active" : "default"}
                   onClick={() => setFilter(f)}
-                  className={`rounded-md px-3 py-1 text-xs capitalize transition-colors ${
-                    filter === f
-                      ? "bg-foreground text-background"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
                 >
                   {f}
-                </button>
+                </Chip>
               ))}
             </div>
           </div>
 
           {codes.length === 0 ? (
-            <div className="mt-4 rounded-xl border border-border bg-card p-10 text-center text-sm text-muted-foreground">
+            <div className="mt-4 rounded-xl border border-border bg-card p-10 text-center text-small text-muted-foreground">
               No codes match your search.
             </div>
           ) : (
@@ -167,7 +164,7 @@ function CodesPage() {
 
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-2">
-                          <p className="truncate text-sm font-medium">{code.name}</p>
+                          <p className="truncate text-small font-medium">{code.name}</p>
                           <button
                             type="button"
                             aria-label={code.favorite ? "Unfavorite" : "Favorite"}
@@ -177,16 +174,16 @@ function CodesPage() {
                                 favorite: !code.favorite,
                               })
                             }
-                            className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+                            className="flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                           >
                             <Star
                               className={`size-icon-sm ${
-                                code.favorite ? "fill-foreground text-foreground" : ""
+                                code.favorite ? "fill-brand text-brand" : ""
                               }`}
                             />
                           </button>
                         </div>
-                        <p className="text-xs capitalize text-muted-foreground">
+                        <p className="text-small capitalize text-muted-foreground">
                           {code.kind}
                           {code.is_dynamic ? " · dynamic" : " · static"} · {code.scan_count} scans
                           {code.expires_at && (
@@ -203,7 +200,7 @@ function CodesPage() {
                         </p>
                         {shortUrl && (
                           <button
-                            className="mt-2 flex max-w-full items-center gap-1.5 truncate text-xs text-muted-foreground hover:text-foreground"
+                            className="mt-1 flex min-h-11 max-w-full items-center gap-1.5 rounded-nav px-2 text-small text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                             onClick={() => {
                               void navigator.clipboard.writeText(shortUrl);
                               setCopied(code.id);
@@ -211,9 +208,9 @@ function CodesPage() {
                             }}
                           >
                             {copied === code.id ? (
-                              <Check className="size-icon-2xs shrink-0" />
+                              <Check className="size-icon-xs shrink-0" />
                             ) : (
-                              <Copy className="size-icon-2xs shrink-0" />
+                              <Copy className="size-icon-xs shrink-0" />
                             )}
                             <span className="truncate">/api/public/r/{code.slug}</span>
                           </button>
@@ -231,13 +228,12 @@ function CodesPage() {
                         />
                         <div className="flex gap-2">
                           <Button
-                            size="sm"
                             disabled={updateMutation.isPending}
                             onClick={() => updateMutation.mutate({ id: code.id, targetUrl: draft })}
                           >
                             Save
                           </Button>
-                          <Button size="sm" variant="ghost" onClick={() => setEditing(null)}>
+                          <Button variant="ghost" onClick={() => setEditing(null)}>
                             Cancel
                           </Button>
                         </div>
@@ -249,7 +245,7 @@ function CodesPage() {
                           variant="secondary"
                           onClick={() => downloadPng(svg, code.name || "qr-code", 1024)}
                         >
-                          <Download className="mr-2 size-icon-xs" /> PNG
+                          <Download /> PNG
                         </Button>
                         {code.is_dynamic && (
                           <Button
@@ -260,7 +256,7 @@ function CodesPage() {
                               setDraft(code.target_url ?? "");
                             }}
                           >
-                            <Pencil className="mr-2 size-icon-xs" /> Edit target
+                            <Pencil /> Edit target
                           </Button>
                         )}
                         <Button
@@ -269,7 +265,7 @@ function CodesPage() {
                           className="text-destructive hover:text-destructive"
                           onClick={() => removeMutation.mutate(code.id)}
                         >
-                          <Trash2 className="mr-2 size-icon-xs" /> Delete
+                          <Trash2 /> Delete
                         </Button>
                       </div>
                     )}

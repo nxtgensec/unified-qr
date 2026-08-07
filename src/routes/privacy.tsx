@@ -85,9 +85,9 @@ function PrivacyPage() {
 
       <LegalSection title="6. Data retention and deletion">
         <p>
-          Your codes, scans and profile are kept while your account is active. The Professional
-          plan's analytics view shows the last 30 days; Enterprise shows full history. To delete
-          your account and all associated data, email us at{" "}
+          Your codes, scans and profile are kept while your account is active. The Community plan's
+          analytics view shows the last 30 days; Pro shows full history. To delete your account and
+          all associated data, email us at{" "}
           <a
             href="mailto:support@nxtgensec.org"
             className="text-foreground underline underline-offset-4"

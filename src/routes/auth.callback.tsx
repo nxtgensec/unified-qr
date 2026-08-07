@@ -40,7 +40,7 @@ function AuthCallback() {
       <div className="relative flex flex-col items-center gap-4 text-center">
         <Logo className="size-8" />
         <Loader2 className="size-icon-md animate-spin text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">Completing sign-in…</p>
+        <p className="text-body text-muted-foreground">Completing sign-in…</p>
       </div>
     </div>
   );

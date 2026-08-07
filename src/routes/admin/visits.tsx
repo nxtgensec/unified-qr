@@ -39,7 +39,7 @@ function AdminVisits() {
           </div>
 
           <div className="mt-6 rounded-xl border border-border bg-card p-5">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">
+            <p className="text-caption uppercase tracking-wider text-muted-foreground">
               Visits — last 14 days
             </p>
             <div className="mt-6 flex h-40 items-end gap-[3px]">
@@ -47,12 +47,12 @@ function AdminVisits() {
                 <div
                   key={d.date}
                   title={`${d.date}: ${d.count}`}
-                  className="flex-1 rounded-sm bg-primary/70 transition-colors hover:bg-primary"
+                  className="flex-1 rounded-sm bg-brand/70 transition-colors hover:bg-brand"
                   style={{ height: `${Math.max(2, (d.count / max) * 100)}%` }}
                 />
               ))}
             </div>
-            <div className="mt-2 flex justify-between text-[11px] text-muted-foreground">
+            <div className="mt-2 flex justify-between text-small text-muted-foreground">
               <span>{data?.last14Days[0]?.date}</span>
               <span>{data?.last14Days[data.last14Days.length - 1]?.date}</span>
             </div>
@@ -72,8 +72,8 @@ function AdminVisits() {
 function Stat({ label, value }: { label: string; value: number | null | undefined }) {
   return (
     <div className="rounded-xl border border-border bg-card p-5">
-      <p className="text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
-      <p className="mt-2 text-3xl font-semibold tracking-tight">
+      <p className="text-caption uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className="mt-2 text-h1 font-semibold tracking-tight">
         {value === undefined || value === null ? "—" : value.toLocaleString("en-US")}
       </p>
     </div>
@@ -83,11 +83,11 @@ function Stat({ label, value }: { label: string; value: number | null | undefine
 function Breakdown({ title, items }: { title: string; items: [string, number][] }) {
   return (
     <div className="rounded-xl border border-border bg-card p-5">
-      <p className="text-xs uppercase tracking-wider text-muted-foreground">{title}</p>
+      <p className="text-caption uppercase tracking-wider text-muted-foreground">{title}</p>
       {items.length === 0 ? (
-        <p className="mt-4 text-sm text-muted-foreground">No data yet.</p>
+        <p className="mt-4 text-small text-muted-foreground">No data yet.</p>
       ) : (
-        <ul className="mt-4 space-y-2 text-sm">
+        <ul className="mt-4 space-y-2 text-small">
           {items.map(([name, count]) => (
             <li key={name} className="flex justify-between gap-3">
               <span className="truncate">{name}</span>

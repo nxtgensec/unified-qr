@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import { QrPreview } from "@/components/qr/QrPreview";
 import { Button } from "@/components/ui/button";
+import { Chip } from "@/components/ui/chip";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -101,21 +102,21 @@ export function HeroStudio({ kind, onLocked }: HeroStudioProps) {
   };
 
   return (
-    <div className="relative rounded-3xl border border-border bg-elevated p-5 shadow-2xl shadow-black/50">
+    <div className="relative rounded-3xl border border-border bg-elevated p-4 shadow-2xl shadow-black/50 sm:p-5">
       <div className="mb-4 flex items-center justify-between gap-3 border-b border-border pb-4">
-        <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest">
+        <span className="inline-flex items-center gap-2 text-small font-semibold uppercase tracking-widest">
           <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-60" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-60" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-brand" />
           </span>
           Live generator
         </span>
-        <span className="flex items-center gap-3 text-[11px] text-muted-foreground">
+        <span className="flex items-center gap-3 text-small text-muted-foreground">
           <span className="hidden items-center gap-1 sm:inline-flex">
-            <Zap className="h-3 w-3" /> 0ms generation
+            <Zap className="size-icon-xs" /> 0ms generation
           </span>
           <span className="inline-flex items-center gap-1">
-            <RefreshCw className="h-3 w-3" /> Updates instantly
+            <RefreshCw className="size-icon-xs" /> Updates instantly
           </span>
         </span>
       </div>
@@ -124,7 +125,7 @@ export function HeroStudio({ kind, onLocked }: HeroStudioProps) {
         <div className="min-w-0 space-y-3 lg:max-h-[560px] lg:overflow-y-auto lg:pr-1">
           {meta.fields.map((field) => (
             <div key={field.name} className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">{field.label}</Label>
+              <Label className="text-small text-muted-foreground">{field.label}</Label>
               {field.type === "textarea" ? (
                 <Textarea
                   value={content[field.name] ?? ""}
@@ -147,69 +148,78 @@ export function HeroStudio({ kind, onLocked }: HeroStudioProps) {
         </div>
 
         <div className="min-w-0 space-y-3">
-          <div className="rounded-2xl bg-white p-4 shadow-xl shadow-black/40">
+          <div className="rounded-2xl border border-border bg-white p-4">
             <QrPreview
               payload={trimmed || " "}
               style={DEMO_STYLE}
               size={512}
               className="rounded-xl border-0"
             />
-            <div className="mt-2.5 flex items-center justify-between text-[11px]">
+            <div className="mt-2.5 flex items-center justify-between text-small">
               <span className="inline-flex items-center gap-1 font-medium text-neutral-700">
-                <Check className="h-3 w-3" /> Print ready
+                <Check className="size-icon-xs" /> Print ready
               </span>
               <span className="font-semibold text-neutral-800">{quality}/100 quality</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2">
-            <Button type="button" size="sm" onClick={() => void onPng()}>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              size="sm"
+              className="min-w-0 flex-1 px-1.5 text-small sm:px-[18px] sm:text-small"
+              onClick={() => void onPng()}
+            >
               {locked ? <Lock className="size-icon-sm" /> : <Download className="size-icon-sm" />}{" "}
               PNG
             </Button>
-            <Button type="button" size="sm" variant="secondary" onClick={onLocked}>
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              className="min-w-0 flex-1 px-1.5 text-small sm:px-[18px] sm:text-small"
+              onClick={onLocked}
+            >
               <Lock className="size-icon-sm" /> SVG
             </Button>
-            <Button type="button" size="sm" variant="secondary" onClick={() => void onCopy()}>
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              className="min-w-0 flex-1 px-1.5 text-small sm:px-[18px] sm:text-small"
+              onClick={() => void onCopy()}
+            >
               {copied ? <Check className="size-icon-sm" /> : <Copy className="size-icon-sm" />}
               {copied ? "Copied" : "Copy"}
             </Button>
           </div>
 
-          <p className="text-center text-[11px] text-muted-foreground">
+          <p className="text-center text-small text-muted-foreground">
             {locked
               ? "Sign in free to download, save & customize."
               : "Free to download — no watermark, ever."}
           </p>
 
           <div>
-            <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+            <p className="text-small font-medium uppercase tracking-wider text-muted-foreground">
               Customize
             </p>
-            <div className="mt-2 flex flex-wrap gap-1.5">
+            <div className="mt-2 flex flex-wrap gap-2">
               {CUSTOMIZE.map((item) => (
-                <button
-                  key={item}
-                  type="button"
-                  onClick={onLocked}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-[11px] text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground"
-                >
-                  <Lock className="h-3 w-3" /> {item}
-                </button>
+                <Chip key={item} type="button" onClick={onLocked}>
+                  <Lock /> {item}
+                </Chip>
               ))}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-1.5 border-t border-border pt-3">
+      <div className="mt-4 flex flex-wrap gap-2 border-t border-border pt-3">
         {STATUS.map((item) => (
-          <span
-            key={item}
-            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-[11px] text-muted-foreground"
-          >
-            <Check className="h-3 w-3 text-foreground" /> {item}
-          </span>
+          <Chip key={item}>
+            <Check className="text-foreground" /> {item}
+          </Chip>
         ))}
       </div>
     </div>
