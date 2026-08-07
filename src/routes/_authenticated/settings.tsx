@@ -191,10 +191,12 @@ function SettingsPage() {
           <p className="mt-3 text-xs text-muted-foreground">
             Enterprise access lasts until{" "}
             <span className="font-medium text-foreground">
-              {new Date(plan.planUntil).toLocaleDateString("en-IN", {
+              {new Date(plan.planUntil).toLocaleString("en-IN", {
                 day: "numeric",
                 month: "short",
                 year: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
               })}
             </span>
             . It doesn't auto-renew — purchase again to continue.

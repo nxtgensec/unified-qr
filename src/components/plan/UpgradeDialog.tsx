@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Check, CreditCard, Loader2 } from "lucide-react";
 import { useState } from "react";
@@ -54,6 +55,7 @@ export function UpgradeDialog({
 }) {
   const createOrder = useServerFn(createCashfreeOrder);
   const request = useServerFn(requestUpgrade);
+  const queryClient = useQueryClient();
   const [term, setTerm] = useState<BillingTerm>("yearly");
   const [paying, setPaying] = useState(false);
 
@@ -65,6 +67,14 @@ export function UpgradeDialog({
     try {
       const order = await createOrder({ data: { term } });
       if (!order.available) {
+        if ("alreadyPaid" in order) {
+          toast.success("Your Enterprise access is already active — reload to see it.");
+          void queryClient.invalidateQueries({ queryKey: ["plan"] });
+          void queryClient.invalidateQueries({ queryKey: ["codes"] });
+          void queryClient.invalidateQueries({ queryKey: ["analytics"] });
+          onOpenChange(false);
+          return;
+        }
         await request();
         toast.success("Upgrade request received — we'll email you to complete payment.");
         onOpenChange(false);

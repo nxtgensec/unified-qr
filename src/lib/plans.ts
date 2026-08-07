@@ -66,8 +66,8 @@ const TERM_DAYS: Record<BillingTerm, number> = {
   yearly: 365,
 };
 
-export function planUntilForTerm(term: BillingTerm): Date {
-  return new Date(Date.now() + TERM_DAYS[term] * 86400000);
+export function planUntilForTerm(term: BillingTerm, from: Date = new Date()): Date {
+  return new Date(from.getTime() + TERM_DAYS[term] * 86400000);
 }
 
 export function effectivePlan(planTier: string | null, planUntil: string | null): PlanId {

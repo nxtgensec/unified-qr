@@ -270,7 +270,16 @@ export const adminMarkUpgradePaid = createServerFn({ method: "POST" })
     if (!request) throw new Error("Upgrade request not found.");
     if (request.status === "paid") throw new Error("This request is already marked paid.");
 
-    const planUntil = planUntilForTerm(data.term).toISOString();
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("plan_until")
+      .eq("id", request.user_id)
+      .maybeSingle();
+    const base =
+      profile?.plan_until && new Date(profile.plan_until).getTime() > Date.now()
+        ? new Date(profile.plan_until)
+        : new Date();
+    const planUntil = planUntilForTerm(data.term, base).toISOString();
 
     const { error: profileError } = await supabaseAdmin
       .from("profiles")

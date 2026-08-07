@@ -71,6 +71,13 @@ export const requestUpgrade = createServerFn({ method: "POST" })
       .eq("id", context.userId)
       .single();
     if (profileError) throw new Error("Unauthorized");
+    const { data: existing } = await supabaseAdmin
+      .from("upgrade_requests")
+      .select("id")
+      .eq("user_id", context.userId)
+      .eq("status", "pending")
+      .maybeSingle();
+    if (existing) return { ok: true, id: existing.id, alreadyPending: true };
     const { data, error } = await supabaseAdmin
       .from("upgrade_requests")
       .insert({ user_id: context.userId, plan_tier: "enterprise", status: "pending" })
@@ -105,6 +112,7 @@ function cashfreeHeaders(clientId: string, secretKey: string) {
 
 export type CashfreeOrderResult =
   | { available: false }
+  | { available: false; alreadyPaid: true; planUntil: string }
   | {
       available: true;
       orderId: string;
@@ -114,6 +122,26 @@ export type CashfreeOrderResult =
       mode: "production" | "sandbox";
     };
 
+async function activateEnterprise(userId: string, term: BillingTerm): Promise<string> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: profile } = await supabaseAdmin
+    .from("profiles")
+    .select("plan_until")
+    .eq("id", userId)
+    .maybeSingle();
+  const base =
+    profile?.plan_until && new Date(profile.plan_until).getTime() > Date.now()
+      ? new Date(profile.plan_until)
+      : new Date();
+  const planUntil = planUntilForTerm(term, base).toISOString();
+  const { error } = await supabaseAdmin
+    .from("profiles")
+    .update({ plan_tier: "enterprise", plan_until: planUntil })
+    .eq("id", userId);
+  if (error) throw new Error(error.message);
+  return planUntil;
+}
+
 export const createCashfreeOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((input: unknown) =>
@@ -122,6 +150,40 @@ export const createCashfreeOrder = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<CashfreeOrderResult> => {
     const config = cashfreeConfig();
     if (!config) return { available: false };
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: pendingReqs, error: pendingError } = await supabaseAdmin
+      .from("upgrade_requests")
+      .select("id, term, payment_order_id")
+      .eq("user_id", context.userId)
+      .eq("status", "pending")
+      .order("created_at", { ascending: true })
+      .limit(10);
+    if (pendingError) throw new Error(pendingError.message);
+
+    if (pendingReqs && pendingReqs.length > 0) {
+      for (const pending of pendingReqs) {
+        if (!pending.payment_order_id) continue;
+        const statusRes = await fetch(
+          `${config.baseUrl}/orders/${encodeURIComponent(pending.payment_order_id)}`,
+          { method: "GET", headers: cashfreeHeaders(config.clientId, config.secretKey) },
+        );
+        if (!statusRes.ok) continue;
+        const status = (await statusRes.json()) as { order_status?: string };
+        if (status.order_status === "PAID") {
+          const planUntil = await activateEnterprise(
+            context.userId,
+            (pending.term as BillingTerm | null) ?? data.term,
+          );
+          await supabaseAdmin
+            .from("upgrade_requests")
+            .update({ status: "paid" })
+            .eq("id", pending.id);
+          return { available: false, alreadyPaid: true, planUntil };
+        }
+      }
+    }
 
     const { data: profile } = await context.supabase
       .from("profiles")
@@ -165,16 +227,31 @@ export const createCashfreeOrder = createServerFn({ method: "POST" })
       order_currency: string;
     };
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin.from("upgrade_requests").insert({
-      user_id: context.userId,
-      plan_tier: "enterprise",
-      status: "pending",
-      amount: amountPaise,
-      currency: order.order_currency,
-      term: data.term,
-      payment_order_id: order.order_id,
-    });
+    const reuse = pendingReqs?.[0];
+    if (reuse) {
+      const { error: updateError } = await supabaseAdmin
+        .from("upgrade_requests")
+        .update({
+          plan_tier: "enterprise",
+          status: "pending",
+          amount: amountPaise,
+          currency: order.order_currency,
+          term: data.term,
+          payment_order_id: order.order_id,
+        })
+        .eq("id", reuse.id);
+      if (updateError) throw new Error(updateError.message);
+    } else {
+      await supabaseAdmin.from("upgrade_requests").insert({
+        user_id: context.userId,
+        plan_tier: "enterprise",
+        status: "pending",
+        amount: amountPaise,
+        currency: order.order_currency,
+        term: data.term,
+        payment_order_id: order.order_id,
+      });
+    }
 
     return {
       available: true,
@@ -250,13 +327,7 @@ export const verifyCashfreePayment = createServerFn({ method: "POST" })
     }
 
     if (!request.term) throw new Error("Upgrade request is missing its term.");
-    const planUntil = planUntilForTerm(request.term as BillingTerm).toISOString();
-
-    const { error: updateError } = await supabaseAdmin
-      .from("profiles")
-      .update({ plan_tier: "enterprise", plan_until: planUntil })
-      .eq("id", context.userId);
-    if (updateError) throw new Error(updateError.message);
+    await activateEnterprise(context.userId, request.term as BillingTerm);
 
     await supabaseAdmin
       .from("upgrade_requests")

@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import {
   ArrowRight,
   BarChart3,
@@ -10,6 +11,7 @@ import {
   Plus,
   QrCode,
   ScanLine,
+  Sparkles,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -18,6 +20,7 @@ import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetchMyCodes } from "@/lib/client-queries";
+import { getMyPlan } from "@/lib/plans.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -33,6 +36,12 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 
 function Dashboard() {
   const [copied, setCopied] = useState<string | null>(null);
+  const fetchPlan = useServerFn(getMyPlan);
+  const { data: plan, isLoading: planLoading } = useQuery({
+    queryKey: ["plan"],
+    queryFn: () => fetchPlan(),
+    staleTime: 60_000,
+  });
   const { data, isLoading } = useQuery({
     queryKey: ["codes"],
     queryFn: fetchMyCodes,
@@ -59,6 +68,38 @@ function Dashboard() {
         <Stat label="Saved codes" value={isLoading ? null : codes.length} />
         <Stat label="Total scans" value={isLoading ? null : scans} />
         <Stat label="Dynamic codes" value={isLoading ? null : dynamic} />
+      </div>
+
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-border bg-card p-5">
+        <div>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">Your plan</p>
+          {planLoading ? (
+            <Skeleton className="mt-3 h-5 w-44" />
+          ) : (
+            <p className="mt-1 text-sm font-medium">
+              {plan?.planName}
+              {plan?.plan === "enterprise" && plan.planUntil && (
+                <span className="ml-2 text-xs font-normal text-muted-foreground">
+                  active until{" "}
+                  {new Date(plan.planUntil).toLocaleString("en-IN", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                  })}
+                </span>
+              )}
+            </p>
+          )}
+        </div>
+        {!planLoading && plan?.plan !== "enterprise" && (
+          <Button size="sm" asChild>
+            <Link to="/settings">
+              <Sparkles className="mr-2 h-4 w-4" /> Upgrade to Enterprise
+            </Link>
+          </Button>
+        )}
       </div>
 
       <div className="mt-10">
