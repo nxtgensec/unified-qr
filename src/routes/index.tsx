@@ -34,11 +34,9 @@ import {
   MessageSquare,
   Minus,
   Music2,
-  Palette,
   PenLine,
   Phone,
   QrCode,
-  ScanLine,
   Send,
   Share2,
   ShieldCheck,
@@ -52,7 +50,6 @@ import {
   Truck,
   Twitter,
   UserRound,
-  UserRoundPlus,
   Utensils,
   Wifi,
   X,
@@ -104,7 +101,7 @@ const NAV = [
   { label: "Code types", href: "#types" },
   { label: "Features", href: "#ecosystem" },
   { label: "Security", href: "#security" },
-  { label: "Open Source", href: "#open-source" },
+  { label: "Open Source", href: "#developers" },
   { label: "Pricing", href: "#pricing" },
 ] as const;
 
@@ -113,7 +110,7 @@ const MOBILE_NAV = [
   { href: "#types", label: "Types", icon: QrCode },
   { href: "#ecosystem", label: "Features", icon: Layers },
   { href: "#pricing", label: "Pricing", icon: Tag },
-  { href: "#open-source", label: "Open Source", icon: Star },
+  { href: "#developers", label: "Open Source", icon: Star },
 ] as const;
 
 const TRUST = [
@@ -154,34 +151,6 @@ const WHY = [
   },
 ] as const;
 
-const TYPE_GROUPS: { title: string; blurb: string; kinds: QrKind[] }[] = [
-  {
-    title: "Business",
-    blurb: "Websites, cards, reviews",
-    kinds: ["url", "vcard", "googlereview", "trustpilot", "yelp", "booking", "linkedin", "youtube"],
-  },
-  {
-    title: "Payments",
-    blurb: "Collect money",
-    kinds: ["upi", "paypal", "bitcoin", "ethereum", "solana", "litecoin", "dogecoin", "monero"],
-  },
-  {
-    title: "Social & messaging",
-    blurb: "Grow followings",
-    kinds: ["whatsapp", "telegram", "instagram", "tiktok", "facebook", "x", "social", "sms"],
-  },
-  {
-    title: "Productivity",
-    blurb: "Info & scheduling",
-    kinds: ["text", "email", "event", "wifi", "geo", "phone"],
-  },
-  {
-    title: "Marketing",
-    blurb: "Offers & installs",
-    kinds: ["coupon", "app"],
-  },
-];
-
 const PILLARS = [
   {
     icon: PenLine,
@@ -217,39 +186,6 @@ const PILLARS = [
       "Bulk generation from CSV",
       "Decode any QR image",
     ],
-  },
-] as const;
-
-const TOUR = [
-  {
-    icon: PenLine,
-    title: "Generator",
-    body: "Every code type, live preview, full design control.",
-    to: "/create",
-  },
-  {
-    icon: FolderOpen,
-    title: "Dashboard",
-    body: "Your saved codes, all in one library.",
-    to: "/dashboard",
-  },
-  {
-    icon: BarChart3,
-    title: "Analytics",
-    body: "Scans over time, by device and country.",
-    to: "/analytics",
-  },
-  {
-    icon: Layers,
-    title: "Bulk",
-    body: "Hundreds of codes from one CSV — Enterprise.",
-    to: "/bulk",
-  },
-  {
-    icon: ScanLine,
-    title: "Decode",
-    body: "Drop in a QR image and read what's inside.",
-    to: "/decode",
   },
 ] as const;
 
@@ -450,6 +386,21 @@ const SAMPLES: Record<QrKind, QrContent> = {
   x: { username: "username" },
 };
 
+const TOP_TYPES: QrKind[] = [
+  "url",
+  "text",
+  "wifi",
+  "vcard",
+  "email",
+  "whatsapp",
+  "phone",
+  "sms",
+  "event",
+  "geo",
+  "upi",
+  "paypal",
+];
+
 const URL_HOW = [
   { title: "Enter the URL", body: "Paste the link you want people to reach." },
   {
@@ -459,34 +410,6 @@ const URL_HOW = [
   {
     title: "Download & share",
     body: "Print it, embed it in a document, or share it digitally. No watermark, ever.",
-  },
-] as const;
-
-const URL_STEPS = [
-  {
-    icon: UserRoundPlus,
-    title: "Sign in with Google",
-    body: "One click, no password. Professional is free forever — no card, no trial timer.",
-  },
-  {
-    icon: ScanLine,
-    title: "Choose the Website type",
-    body: "Open the generator and pick Website from the type tabs at the top.",
-  },
-  {
-    icon: Link2,
-    title: "Paste your link",
-    body: "Drop in any https:// URL. The live preview renders the code as you type.",
-  },
-  {
-    icon: Palette,
-    title: "Design & download",
-    body: "Choose shapes, colors and your logo, then export a watermark-free PNG or SVG.",
-  },
-  {
-    icon: BarChart3,
-    title: "Print & track",
-    body: "Print it anywhere. Dynamic codes let you change the link later, with 30 days of scan analytics.",
   },
 ] as const;
 
@@ -728,30 +651,16 @@ function Landing() {
   const navigate = useNavigate();
   const signedIn = useSignedIn();
   const [faqTab, setFaqTab] = useState<FaqTabId>("general");
+  const [heroKind, setHeroKind] = useState<QrKind>("url");
 
   const goAuth = () => void navigate({ to: signedIn ? "/dashboard" : "/auth" });
   const goUpgrade = () => void navigate({ to: signedIn ? "/settings" : "/auth" });
   const goGenerate = () => void navigate({ to: "/create" });
   const onLocked = () => void navigate({ to: signedIn ? "/create" : "/auth" });
+  const selectHeroKind = (kind: QrKind) => setHeroKind(kind);
 
   return (
     <div className="min-h-screen scroll-smooth bg-background pb-16 lg:pb-0">
-      <div className="border-b border-border bg-foreground/[0.04]">
-        <div className="mx-auto flex h-9 max-w-6xl items-center justify-center gap-2 px-5 text-xs">
-          <span className="text-muted-foreground">
-            Professional is free forever — no card, no trial timer.
-          </span>
-          <a
-            href={GITHUB}
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-1 font-medium text-foreground transition-opacity hover:opacity-70"
-          >
-            Open source on GitHub <ArrowRight className="h-3 w-3" />
-          </a>
-        </div>
-      </div>
-
       <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
           <Link to="/" className="flex items-center gap-2.5 font-semibold tracking-tight">
@@ -798,7 +707,41 @@ function Landing() {
             <div className="absolute -top-32 left-1/2 h-96 w-[42rem] -translate-x-1/2 rounded-full bg-foreground/[0.07] blur-3xl" />
           </div>
 
-          <div className="relative mx-auto grid max-w-6xl gap-14 px-5 pb-20 pt-16 sm:pt-24 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-center lg:gap-16">
+          <div className="hero-enter relative mx-auto max-w-6xl px-5 pt-10 sm:pt-14">
+            <div className="flex flex-wrap items-center gap-2">
+              {TOP_TYPES.map((chip) => {
+                const chipMeta = KINDS.find((k) => k.kind === chip)!;
+                const Icon = ICONS[chip];
+                const active = heroKind === chip;
+                const chipLocked = Boolean(chipMeta.proOnly);
+                return (
+                  <button
+                    key={chip}
+                    type="button"
+                    onClick={() => selectHeroKind(chip)}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition-colors",
+                      active
+                        ? "border-foreground bg-foreground text-background"
+                        : "border-border bg-card/60 text-muted-foreground hover:border-foreground/40 hover:text-foreground",
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {chipMeta.label}
+                    {chipLocked && <Lock className="h-3 w-3 opacity-60" />}
+                  </button>
+                );
+              })}
+              <Link
+                to="/create"
+                className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-border px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground"
+              >
+                All {KINDS.length} types <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+
+          <div className="relative mx-auto grid max-w-6xl gap-14 px-5 pb-20 pt-8 sm:pt-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-center lg:gap-16">
             <div>
               <span className="hero-enter inline-flex items-center gap-2 rounded-full border border-border bg-card/50 px-3 py-1 text-xs text-muted-foreground">
                 <Globe className="h-3.5 w-3.5" />
@@ -846,7 +789,7 @@ function Landing() {
                 aria-hidden
               />
               <div className="relative">
-                <HeroStudio onLocked={onLocked} />
+                <HeroStudio kind={heroKind} onLocked={onLocked} />
               </div>
             </div>
           </div>
@@ -874,50 +817,26 @@ function Landing() {
         <section id="types" className="scroll-mt-16 border-b border-border">
           <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
             <div className="mx-auto max-w-2xl text-center">
-              <p className="text-sm font-medium text-muted-foreground">Popular QR types</p>
-              <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+              <h2 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
                 Every code you'll ever need, none paywalled
               </h2>
               <p className="mt-4 text-pretty text-sm text-muted-foreground sm:text-base">
-                Nineteen code types organized the way you think about them — each one free on
-                Professional, forever.
+                All {KINDS.length} types — free on Professional, forever.
               </p>
             </div>
-            <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-              {TYPE_GROUPS.map((group) => (
-                <div key={group.title} className="rounded-2xl border border-border bg-card p-5">
-                  <h3 className="text-sm font-semibold">{group.title}</h3>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{group.blurb}</p>
-                  <div className="mt-4 flex flex-wrap gap-1.5">
-                    {group.kinds.map((kind) => {
-                      const meta = KINDS.find((k) => k.kind === kind)!;
-                      return (
-                        <Link
-                          key={kind}
-                          to="/create"
-                          className="inline-flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground"
-                        >
-                          {meta.label}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
             <div className="mt-12">
-              <h3 className="text-center text-sm font-medium text-muted-foreground">
-                The full catalog
-              </h3>
-              <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {KINDS.map((kind) => {
+              <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                {KINDS.slice(0, 8).map((kind, index) => {
                   const Icon = ICONS[kind.kind];
                   const payload = buildPayload(kind.kind, SAMPLES[kind.kind]);
                   return (
                     <Link
                       key={kind.kind}
                       to="/create"
-                      className="group rounded-2xl border border-border bg-card p-5 transition-colors hover:border-foreground/40"
+                      className={cn(
+                        "group rounded-2xl border border-border bg-card p-5 transition-colors hover:border-foreground/40",
+                        index >= 4 && "hidden lg:block",
+                      )}
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex items-center gap-2.5">
@@ -939,6 +858,13 @@ function Landing() {
                     </Link>
                   );
                 })}
+                <Link
+                  to="/create"
+                  className="flex items-center justify-center gap-1.5 rounded-2xl border border-dashed border-border p-5 text-sm text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground"
+                >
+                  +{KINDS.length - 8} more
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
               </div>
             </div>
           </div>
@@ -964,37 +890,6 @@ function Landing() {
                   </span>
                   <h3 className="mt-4 text-sm font-semibold">{step.title}</h3>
                   <p className="mt-1.5 text-sm text-muted-foreground">{step.body}</p>
-                </div>
-              ))}
-            </div>
-            <div className="mt-12 space-y-4">
-              {URL_STEPS.map((step, i) => (
-                <div
-                  key={step.title}
-                  className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-6 sm:flex-row sm:items-start sm:gap-5"
-                >
-                  <div className="flex items-center gap-3 sm:flex-col sm:gap-2">
-                    <span className="flex size-8 items-center justify-center rounded-full border border-border bg-background text-sm font-semibold">
-                      {i + 1}
-                    </span>
-                    <span className="flex size-10 items-center justify-center rounded-xl border border-border bg-foreground/[0.04]">
-                      <step.icon className="size-5" />
-                    </span>
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="text-sm font-semibold">{step.title}</h3>
-                    <p className="mt-1.5 text-sm text-muted-foreground">{step.body}</p>
-                  </div>
-                  {i === 2 && (
-                    <div className="hidden shrink-0 sm:block">
-                      <QrPreview
-                        payload="https://example.com"
-                        style={defaultStyle}
-                        size={160}
-                        className="w-24 rounded-lg"
-                      />
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
@@ -1101,35 +996,6 @@ function Landing() {
           </div>
         </section>
 
-        <section id="tour" className="scroll-mt-16 border-b border-border">
-          <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
-            <div className="mx-auto max-w-2xl text-center">
-              <p className="text-sm font-medium text-muted-foreground">Product tour</p>
-              <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
-                Everything, one step away
-              </h2>
-              <p className="mt-4 text-pretty text-sm text-muted-foreground sm:text-base">
-                Sign in with Google and each part of the platform is at your fingertips.
-              </p>
-            </div>
-            <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-              {TOUR.map((item) => (
-                <Link
-                  key={item.title}
-                  to={item.to}
-                  className="group rounded-2xl border border-border bg-card p-5 transition-colors hover:border-foreground/40"
-                >
-                  <div className="flex size-9 items-center justify-center rounded-xl border border-border bg-foreground/[0.04]">
-                    <item.icon className="size-4.5" />
-                  </div>
-                  <h3 className="mt-4 text-sm font-semibold">{item.title}</h3>
-                  <p className="mt-1 text-xs text-muted-foreground">{item.body}</p>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-
         <section id="compare" className="scroll-mt-16 border-b border-border">
           <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
             <div className="mx-auto max-w-2xl text-center">
@@ -1144,7 +1010,7 @@ function Landing() {
               </p>
             </div>
 
-            <div className="mt-10 rounded-2xl border border-foreground/40 bg-card p-6 sm:p-7">
+            <div className="mt-8 rounded-2xl border border-foreground/40 bg-card p-6 sm:p-7">
               <p className="flex items-center gap-2 text-sm font-medium">
                 <BadgeCheck className="h-4 w-4" /> The short version
               </p>
@@ -1154,72 +1020,6 @@ function Landing() {
                 <li>No ads, ever — Bitly puts ads on free scans.</li>
                 <li>Your codes keep working if you cancel — theirs often don't.</li>
               </ul>
-            </div>
-
-            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {COMPETITORS.map((c) => (
-                <div
-                  key={c.name}
-                  className="flex flex-col rounded-2xl border border-border bg-card p-6"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <h3 className="text-sm font-semibold">{c.name}</h3>
-                    <span className="whitespace-nowrap rounded-full border border-border px-2.5 py-0.5 text-xs text-muted-foreground">
-                      Entry · {c.entry}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-xs text-muted-foreground">{c.entryNote}</p>
-                  <div className="mt-5 space-y-3 text-sm">
-                    <div>
-                      <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                        Free tier
-                      </p>
-                      <p className="mt-1 font-medium">{c.free}</p>
-                      <p className="text-xs text-muted-foreground">{c.freeNote}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                        The catch
-                      </p>
-                      <p className="mt-1 text-muted-foreground">{c.catch}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              <div className="flex flex-col justify-between rounded-2xl border border-foreground/40 bg-elevated p-6">
-                <div>
-                  <div className="flex items-start justify-between gap-3">
-                    <h3 className="text-sm font-semibold">Unified QR</h3>
-                    <span className="whitespace-nowrap rounded-full bg-foreground px-2.5 py-0.5 text-xs font-medium text-background">
-                      Entry · Free
-                    </span>
-                  </div>
-                  <p className="mt-1 text-xs text-muted-foreground">3 dynamic codes, no caps</p>
-                  <div className="mt-5 space-y-3 text-sm">
-                    <div>
-                      <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                        Free tier
-                      </p>
-                      <p className="mt-1 font-medium">Professional — free forever</p>
-                      <p className="text-xs text-muted-foreground">
-                        All 32 types, 3 dynamic, 30-day analytics, PNG + SVG + PDF + EPS
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                        The catch
-                      </p>
-                      <p className="mt-1 text-muted-foreground">
-                        None. Only the things we actually host cost money.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <Button className="mt-6" onClick={goAuth}>
-                  Start free
-                </Button>
-              </div>
             </div>
 
             <h3 className="mt-16 text-center text-2xl font-semibold tracking-tight sm:text-3xl">
@@ -1275,21 +1075,6 @@ function Landing() {
               reflects each platform's published policy that dynamic codes can be deactivated when a
               subscription ends.
             </p>
-
-            <div className="mt-14 grid gap-6 rounded-2xl border border-border bg-card p-6 sm:grid-cols-[1fr_auto] sm:items-center sm:p-8">
-              <div>
-                <h3 className="text-lg font-semibold tracking-tight">
-                  Same features. Different business model.
-                </h3>
-                <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-                  We make money the same way they do — from Enterprise. We just don't hide the free
-                  plan behind scan caps, ads, branding or a trial timer.
-                </p>
-              </div>
-              <Button size="lg" onClick={goAuth}>
-                Try Professional free <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
           </div>
         </section>
 
@@ -1357,44 +1142,6 @@ function Landing() {
                     <Github className="h-4 w-4" /> Explore on GitHub
                   </a>
                 </Button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="open-source" className="scroll-mt-16 border-b border-border">
-          <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
-            <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-8 text-center sm:p-12">
-              <div
-                className="pointer-events-none absolute -top-24 left-1/2 h-64 w-[36rem] -translate-x-1/2 rounded-full bg-foreground/[0.06] blur-3xl"
-                aria-hidden
-              />
-              <div className="relative">
-                <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-muted-foreground">
-                  <Star className="h-3.5 w-3.5" /> Open source
-                </span>
-                <h2 className="mt-6 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
-                  Built in public. Built to last.
-                </h2>
-                <p className="mx-auto mt-4 max-w-xl text-pretty text-sm text-muted-foreground sm:text-base">
-                  The entire platform is open on GitHub. Read the code, follow the roadmap, file
-                  issues, or contribute — this project grows with its community.
-                </p>
-                <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-                  <Button size="lg" asChild>
-                    <a href={GITHUB} target="_blank" rel="noreferrer">
-                      <Star className="h-4 w-4" /> Star on GitHub
-                    </a>
-                  </Button>
-                  <Button size="lg" variant="secondary" asChild>
-                    <a href={`${GITHUB}/issues`} target="_blank" rel="noreferrer">
-                      <Terminal className="h-4 w-4" /> Open an issue
-                    </a>
-                  </Button>
-                </div>
-                <p className="mt-6 font-mono text-xs text-muted-foreground">
-                  github.com/nxtgensec/unified-qr
-                </p>
               </div>
             </div>
           </div>

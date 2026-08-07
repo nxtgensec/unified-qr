@@ -4,8 +4,10 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Json } from "@/integrations/supabase/types";
 import { assertSafeHttpUrl, hashPassword, validateRedirectRules } from "./dynamic";
-import { KINDS } from "./qr/types";
+import { KINDS, defaultStyle } from "./qr/types";
 import { PLANS, effectivePlan, type PlanId } from "./plans";
+
+export const MAX_BULK_CODES = 100;
 
 export const listCodes = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -24,8 +26,8 @@ const styleSchema = z
   .object({
     fg: z.string().regex(/^#[0-9a-fA-F]{3,6}$/, "Invalid foreground color"),
     bg: z.string().regex(/^#[0-9a-fA-F]{3,6}$/, "Invalid background color"),
-    dotStyle: z.enum(["square", "rounded", "dots"]),
-    cornerStyle: z.enum(["square", "rounded", "circle"]),
+    dotStyle: z.enum(["square", "rounded", "dots", "diamond", "circle"]),
+    cornerStyle: z.enum(["square", "rounded", "circle", "diamond"]),
     ecc: z.enum(["L", "M", "Q", "H"]),
     margin: z.number().min(0).max(8),
     logo: z
@@ -38,6 +40,8 @@ const styleSchema = z
       .nullable()
       .optional(),
     logoScale: z.number().min(0.1).max(0.34),
+    logoPlate: z.enum(["none", "rounded", "circle"]).optional(),
+    transparentBg: z.boolean().optional(),
   })
   .passthrough();
 
@@ -297,6 +301,43 @@ export const importCodes = createServerFn({ method: "POST" })
     }
 
     return { imported, failed };
+  });
+
+export const saveBulkCodes = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((input: unknown) =>
+    z
+      .object({
+        codes: z
+          .array(
+            z.object({
+              name: z.string().min(1).max(120),
+              value: z.string().min(1).max(4096),
+            }),
+          )
+          .min(1)
+          .max(MAX_BULK_CODES),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const rows = data.codes.map((code) => ({
+      user_id: context.userId,
+      name: code.name,
+      kind: "url",
+      content: { url: code.value } as Json,
+      style: defaultStyle as unknown as Json,
+      is_dynamic: false,
+      slug: null,
+      target_url: null,
+    }));
+
+    const { data: inserted, error } = await context.supabase
+      .from("qr_codes")
+      .insert(rows)
+      .select("id");
+    if (error) throw new Error(error.message);
+    return { saved: inserted?.length ?? 0 };
   });
 
 export const deleteCode = createServerFn({ method: "POST" })

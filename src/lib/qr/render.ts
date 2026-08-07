@@ -1,8 +1,15 @@
 import QRCode from "qrcode";
 
-import type { QrStyle } from "./types";
+import type { LogoPlate, QrStyle } from "./types";
 
 const HEX_COLOR = /^#[0-9a-fA-F]{3,6}$/;
+
+let uidCounter = 0;
+
+function uid(prefix: string): string {
+  uidCounter += 1;
+  return `${prefix}-${uidCounter}`;
+}
 
 function safeColor(value: string | undefined, fallback: string): string {
   return value && HEX_COLOR.test(value) ? value.toLowerCase() : fallback;
@@ -16,7 +23,7 @@ function safeLogo(value: string | undefined | null): string | null {
   return RASTER_LOGO.test(value) ? value : null;
 }
 
-function buildDefs(style: QrStyle): string {
+function buildDefs(style: QrStyle, gradId: string): string {
   const defs: string[] = [];
   if (style.gradientType === "linear" || style.gradientType === "radial") {
     const fg = safeColor(style.fg, "#000000");
@@ -29,14 +36,14 @@ function buildDefs(style: QrStyle): string {
       const x2 = 50 + 50 * Math.cos(rad);
       const y2 = 50 + 50 * Math.sin(rad);
       defs.push(
-        `<linearGradient id="qr-grad" x1="${x1}%" y1="${y1}%" x2="${x2}%" y2="${y2}%">` +
+        `<linearGradient id="${gradId}" x1="${x1}%" y1="${y1}%" x2="${x2}%" y2="${y2}%">` +
           `<stop offset="0%" stop-color="${fg}"/>` +
           `<stop offset="100%" stop-color="${end}"/>` +
           `</linearGradient>`,
       );
     } else {
       defs.push(
-        `<radialGradient id="qr-grad" cx="50%" cy="50%" r="60%">` +
+        `<radialGradient id="${gradId}" cx="50%" cy="50%" r="60%">` +
           `<stop offset="0%" stop-color="${fg}"/>` +
           `<stop offset="100%" stop-color="${end}"/>` +
           `</radialGradient>`,
@@ -105,25 +112,27 @@ export function buildQrSvg(payload: string, style: QrStyle, size = 512): string 
   const qr = QRCode.create(safePayload, { errorCorrectionLevel: style.ecc });
   const fg = safeColor(style.fg, "#000000");
   const bg = safeColor(style.bg, "#ffffff");
+  const transparent = Boolean(style.transparentBg);
   const logo = safeLogo(style.logo);
   const n = qr.modules.size;
   const data = qr.modules.data;
   const margin = Math.max(0, Math.min(8, style.margin));
   const total = n + margin * 2;
 
+  const gradId = uid("qr-grad");
   const hasGrad = style.gradientType === "linear" || style.gradientType === "radial";
-  const fill = hasGrad ? "url(#qr-grad)" : fg;
+  const fill = hasGrad ? `url(#${gradId})` : fg;
 
   const isFinder = (x: number, y: number) =>
     (x < 7 && y < 7) || (x >= n - 7 && y < 7) || (x < 7 && y >= n - 7);
 
-  const moduleR =
+  const dotR =
     style.dotStyle === "dots"
-      ? 0.5
-      : style.dotStyle === "rounded"
-        ? 0.28
-        : style.dotStyle === "diamond"
-          ? 0
+      ? 0.32
+      : style.dotStyle === "circle"
+        ? 0.5
+        : style.dotStyle === "rounded"
+          ? 0.28
           : 0;
   const eyeR =
     style.eyeStyle === "circle"
@@ -149,13 +158,13 @@ export function buildQrSvg(payload: string, style: QrStyle, size = 512): string 
       if (isFinder(x, y)) continue;
       const cx = x + margin;
       const cy = y + margin;
-      if (style.dotStyle === "dots") {
-        cells += `<circle cx="${cx + 0.5}" cy="${cy + 0.5}" r="0.5"/>`;
+      if (style.dotStyle === "dots" || style.dotStyle === "circle") {
+        cells += `<circle cx="${cx + 0.5}" cy="${cy + 0.5}" r="${dotR}"/>`;
       } else if (style.dotStyle === "diamond") {
         const s = 0.72;
         cells += `<polygon points="${cx + 0.5},${cy + 0.5 - s} ${cx + 0.5 + s},${cy + 0.5} ${cx + 0.5},${cy + 0.5 + s} ${cx + 0.5 - s},${cy + 0.5}"/>`;
       } else {
-        cells += `<rect x="${cx}" y="${cy}" width="1" height="1" rx="${moduleR}"/>`;
+        cells += `<rect x="${cx}" y="${cy}" width="1" height="1" rx="${dotR}"/>`;
       }
     }
   }
@@ -177,7 +186,9 @@ export function buildQrSvg(payload: string, style: QrStyle, size = 512): string 
     }
 
     let innerBg: string;
-    if (style.eyeStyle === "diamond") {
+    if (transparent) {
+      innerBg = "";
+    } else if (style.eyeStyle === "diamond") {
       innerBg = `<polygon points="${x + 3.5},${y + 1} ${x + 6},${y + 3.5} ${x + 3.5},${y + 6} ${x + 1},${y + 3.5}" fill="${bg}"/>`;
     } else {
       const cutR = Math.max(0, oR - 1);
@@ -215,17 +226,26 @@ export function buildQrSvg(payload: string, style: QrStyle, size = 512): string 
     const posX = offsetX + (total - w) / 2;
     const posY = offsetY + (total - w) / 2;
     const pad = w * 0.12;
-    logoTag =
-      `<rect x="${posX - pad}" y="${posY - pad}" width="${w + pad * 2}" height="${w + pad * 2}" rx="${w * 0.18}" fill="${bg}"/>` +
-      `<image href="${logo}" x="${posX}" y="${posY}" width="${w}" height="${w}" preserveAspectRatio="xMidYMid meet"/>`;
+    const plate = (style.logoPlate ?? "rounded") as LogoPlate;
+    if (plate !== "none") {
+      const plateSize = w + pad * 2;
+      const plateX = posX - pad;
+      const plateY = posY - pad;
+      if (plate === "circle") {
+        logoTag += `<circle cx="${posX + w / 2}" cy="${posY + w / 2}" r="${plateSize / 2}" fill="${bg}"/>`;
+      } else {
+        logoTag += `<rect x="${plateX}" y="${plateY}" width="${plateSize}" height="${plateSize}" rx="${plateSize * 0.22}" fill="${bg}"/>`;
+      }
+    }
+    logoTag += `<image href="${logo}" x="${posX}" y="${posY}" width="${w}" height="${w}" preserveAspectRatio="xMidYMid meet"/>`;
   }
 
-  const defs = buildDefs(style);
+  const defs = buildDefs(style, gradId);
 
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" class="block h-auto w-full" width="${size}" height="${size}" viewBox="0 0 ${finalW} ${finalH}" shape-rendering="geometricPrecision">` +
     defs +
-    `<rect width="${finalW}" height="${finalH}" fill="${bg}"/>` +
+    (transparent ? "" : `<rect width="${finalW}" height="${finalH}" fill="${bg}"/>`) +
     frame.frameSvg +
     `<g transform="translate(${offsetX},${offsetY})" fill="${fill}">${cells}</g>` +
     `<g transform="translate(${offsetX},${offsetY})" fill="${fill}">${finders}</g>` +
@@ -336,8 +356,9 @@ export function buildQrEps(payload: string, style: QrStyle): string {
       if (isFinder(x, y)) continue;
       const cx = x + margin + offsetX;
       const cy = y + margin + offsetY;
-      if (style.dotStyle === "dots") {
-        eps.push(`newpath ${f(cx + 0.5)} ${f(flipY(cy, 1) + 0.5)} 0.5 0 360 arc fill`);
+      if (style.dotStyle === "dots" || style.dotStyle === "circle") {
+        const r = style.dotStyle === "dots" ? 0.32 : 0.5;
+        eps.push(`newpath ${f(cx + 0.5)} ${f(flipY(cy, 1) + 0.5)} ${f(r)} 0 360 arc fill`);
       } else if (style.dotStyle === "diamond") {
         const s = 0.72;
         const px = cx + 0.5;
@@ -557,4 +578,90 @@ export function slugify() {
   crypto.getRandomValues(bytes);
   for (const b of bytes) out += alphabet[b % alphabet.length];
   return out;
+}
+
+function luminance(hex: string): number {
+  const value = safeColor(hex, "#000000").replace("#", "");
+  const rgb = [0, 2, 4].map((i) => parseInt(value.slice(i, i + 2), 16) / 255);
+  const linear = (v: number) => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+  return 0.2126 * linear(rgb[0]!) + 0.7152 * linear(rgb[1]!) + 0.0722 * linear(rgb[2]!);
+}
+
+function contrastRatio(a: string, b: string): number {
+  const l1 = luminance(a);
+  const l2 = luminance(b);
+  return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+}
+
+export type QrScore = "Excellent" | "Good" | "At risk" | "Poor";
+
+export interface QrAnalysis {
+  score: number;
+  label: QrScore;
+  issues: string[];
+}
+
+export function analyzeQr(payload: string, style: QrStyle): QrAnalysis {
+  const safePayload = payload && payload.length > 0 ? payload : " ";
+  let n = 0;
+  try {
+    n = QRCode.create(safePayload, { errorCorrectionLevel: style.ecc }).modules.size;
+  } catch {
+    return { score: 0, label: "Poor", issues: ["Content is too long for a QR code"] };
+  }
+
+  const issues: string[] = [];
+  let score = 100;
+
+  const fg = safeColor(style.fg, "#000000");
+  const bg = safeColor(style.bg, "#ffffff");
+  const contrast = contrastRatio(fg, bg);
+  if (contrast < 2.5) {
+    score -= 55;
+    issues.push("Very low contrast — most scanners will fail");
+  } else if (contrast < 3) {
+    score -= 40;
+    issues.push("Low contrast between colors — hard to read");
+  } else if (contrast < 4.5) {
+    score -= 18;
+    issues.push("Contrast is a little low — use a darker foreground");
+  }
+
+  if (n > 57) {
+    score -= 16;
+    issues.push("Very dense code — shorten the content or print it large");
+  } else if (n > 41) {
+    score -= 8;
+    issues.push("Dense code — print large enough for a quick scan");
+  }
+
+  if (style.logo) {
+    if (style.ecc === "L") {
+      score -= 30;
+      issues.push("A logo needs stronger error correction — use M or higher");
+    }
+    if ((style.logoScale ?? 0.22) > 0.25) {
+      score -= 12;
+      issues.push("Logo covers too much of the code");
+    }
+  }
+
+  const margin = Math.max(0, Math.min(8, style.margin));
+  if (margin < 1) {
+    score -= 25;
+    issues.push("No quiet zone — keep at least 2 modules of margin");
+  } else if (margin < 2) {
+    score -= 10;
+    issues.push("Small quiet zone — 2 modules of margin is the standard");
+  }
+
+  if (style.gradientType !== "none") {
+    score -= 5;
+    issues.push("Gradients soften contrast — test it before printing");
+  }
+
+  score = Math.max(0, Math.min(100, score));
+  const label: QrScore =
+    score >= 90 ? "Excellent" : score >= 75 ? "Good" : score >= 55 ? "At risk" : "Poor";
+  return { score, label, issues };
 }

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import JSZip from "jszip";
 import { Layers, Sparkles } from "lucide-react";
@@ -12,6 +12,7 @@ import { UpgradeDialog } from "@/components/plan/UpgradeDialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { MAX_BULK_CODES, saveBulkCodes } from "@/lib/codes.functions";
 import { getMyPlan } from "@/lib/plans.functions";
 import { buildQrSvg, renderPngBlob } from "@/lib/qr/render";
 import { defaultStyle } from "@/lib/qr/types";
@@ -35,7 +36,11 @@ function BulkPage() {
   const [raw, setRaw] = useState("");
   const [rows, setRows] = useState<{ name: string; value: string }[]>([]);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [savedCount, setSavedCount] = useState<number | null>(null);
+  const [skipped, setSkipped] = useState(0);
   const fetchPlan = useServerFn(getMyPlan);
+  const saveBulk = useServerFn(saveBulkCodes);
   const { data: plan, isLoading } = useQuery({
     queryKey: ["plan"],
     queryFn: () => fetchPlan(),
@@ -51,8 +56,38 @@ function BulkPage() {
         const [a, b] = line.split(",").map((p) => p.trim());
         return b ? { name: a ?? "", value: b } : { name: a ?? "", value: a ?? "" };
       });
-    setRows(parsed);
+    const overflow = Math.max(0, parsed.length - MAX_BULK_CODES);
+    setRows(
+      parsed
+        .slice(0, MAX_BULK_CODES)
+        .map((row, i) => ({ name: row.name || `QR-${i + 1}`, value: row.value })),
+    );
+    setSkipped(overflow);
+    setSavedCount(null);
+    if (overflow > 0) {
+      toast.warning(
+        `Bulk is limited to ${MAX_BULK_CODES} codes at a time. ${overflow} row${
+          overflow === 1 ? "" : "s"
+        } skipped.`,
+      );
+    }
   };
+
+  const onSave = async () => {
+    if (rows.length === 0) return;
+    setSaving(true);
+    try {
+      const res = await saveBulk({ data: { codes: rows } });
+      setSavedCount(res.saved);
+      toast.success(`Saved ${res.saved} code${res.saved === 1 ? "" : "s"} to your library`);
+    } catch {
+      toast.error("Could not save codes. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const lineCount = raw.trim() ? raw.trim().split("\n").length : 0;
 
   return (
     <DashboardShell title="Bulk CSV" description="One row per code: name,value — or just a value.">
@@ -66,10 +101,28 @@ function BulkPage() {
             onChange={(e) => setRaw(e.target.value)}
             placeholder={"Homepage,https://example.com\nMenu,https://example.com/menu"}
           />
-          <div className="mt-4 flex gap-2">
+          <p className="mt-2 text-xs text-muted-foreground">
+            Up to {MAX_BULK_CODES} codes per batch
+            {lineCount > MAX_BULK_CODES && (
+              <span className="ml-1 text-destructive">· {lineCount} rows in input</span>
+            )}
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
             <Button size="sm" onClick={generate} disabled={!raw.trim()}>
-              Generate {raw.trim() ? `(${raw.trim().split("\n").length})` : ""}
+              Generate{" "}
+              {lineCount
+                ? `(${Math.min(lineCount, MAX_BULK_CODES)}${lineCount > MAX_BULK_CODES ? ` of ${lineCount}` : ""})`
+                : ""}
             </Button>
+            {rows.length > 0 && (
+              <Button size="sm" variant="secondary" onClick={onSave} disabled={saving}>
+                {saving
+                  ? "Saving..."
+                  : savedCount !== null
+                    ? `Saved (${savedCount})`
+                    : "Save to library"}
+              </Button>
+            )}
             {rows.length > 0 && (
               <Button
                 size="sm"
@@ -105,6 +158,21 @@ function BulkPage() {
               </Button>
             )}
           </div>
+
+          {savedCount !== null && savedCount > 0 && (
+            <p className="mt-3 text-sm text-muted-foreground">
+              {savedCount} code{savedCount === 1 ? "" : "s"} stored in your library.{" "}
+              <Link to="/codes" className="text-foreground underline underline-offset-4">
+                Open library
+              </Link>
+            </p>
+          )}
+          {skipped > 0 && (
+            <p className="mt-3 text-xs text-destructive">
+              {skipped} row{skipped === 1 ? "" : "s"} skipped — only the first {MAX_BULK_CODES} were
+              kept.
+            </p>
+          )}
 
           {rows.length > 0 && (
             <div className="mt-8 grid gap-4 sm:grid-cols-3 lg:grid-cols-4">

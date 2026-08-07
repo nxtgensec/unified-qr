@@ -37,6 +37,7 @@ export type CornerStyle = "square" | "rounded" | "circle" | "diamond";
 export type Ecc = "L" | "M" | "Q" | "H";
 export type GradientType = "none" | "linear" | "radial";
 export type FrameKind = "none" | "scan-me" | "visit-us" | "pay-here" | "call-us" | "download-app";
+export type LogoPlate = "none" | "rounded" | "circle";
 
 export interface QrStyle {
   fg: string;
@@ -47,6 +48,8 @@ export interface QrStyle {
   margin: number;
   logo?: string | null;
   logoScale: number;
+  logoPlate: LogoPlate;
+  transparentBg: boolean;
   gradientType: GradientType;
   gradientEnd: string;
   gradientAngle: number;
@@ -65,6 +68,8 @@ export const defaultStyle: QrStyle = {
   margin: 2,
   logo: null,
   logoScale: 0.22,
+  logoPlate: "rounded",
+  transparentBg: false,
   gradientType: "none",
   gradientEnd: "#1d4ed8",
   gradientAngle: 135,

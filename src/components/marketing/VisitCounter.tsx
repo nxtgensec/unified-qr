@@ -1,3 +1,4 @@
+import { Eye } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface VisitStats {
@@ -28,15 +29,8 @@ export function VisitCounter() {
 
   return (
     <div className="pointer-events-none fixed bottom-4 left-4 z-50 hidden items-center gap-2 rounded-full border border-border bg-background/80 px-3 py-1.5 text-xs text-muted-foreground backdrop-blur sm:flex">
-      <span className="relative flex h-2 w-2">
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-foreground opacity-50" />
-        <span className="relative inline-flex h-2 w-2 rounded-full bg-foreground" />
-      </span>
-      <span className="font-mono">
-        {stats
-          ? `${stats.today.toLocaleString()} today · ${stats.total.toLocaleString()} total`
-          : "…"}
-      </span>
+      <Eye className="h-3.5 w-3.5" />
+      <span className="font-mono">{stats ? stats.total.toLocaleString() : "…"}</span>
     </div>
   );
 }

@@ -1,5 +1,5 @@
-import { Check, Copy, Download, Lock, RefreshCw, Search, Zap } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Check, Copy, Download, Lock, RefreshCw, Zap } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { QrPreview } from "@/components/qr/QrPreview";
@@ -10,23 +10,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { buildQrSvg, downloadPng, renderPngBlob } from "@/lib/qr/render";
 import { KINDS, buildPayload, defaultStyle } from "@/lib/qr/types";
 import type { QrContent, QrKind } from "@/lib/qr/types";
-import { cn } from "@/lib/utils";
 
 interface HeroStudioProps {
+  kind: QrKind;
   onLocked: () => void;
 }
-
-const HERO_GROUPS: { title: string; kinds: QrKind[] }[] = [
-  { title: "Popular", kinds: ["url", "text", "wifi", "vcard"] },
-  { title: "Business", kinds: ["googlereview", "trustpilot", "yelp", "booking", "coupon"] },
-  {
-    title: "Social & messaging",
-    kinds: ["whatsapp", "telegram", "instagram", "tiktok", "facebook", "x", "social", "sms"],
-  },
-  { title: "Payments", kinds: ["upi", "paypal", "bitcoin", "ethereum", "solana", "litecoin"] },
-  { title: "Productivity", kinds: ["email", "event", "geo", "phone"] },
-  { title: "More", kinds: ["app", "youtube", "linkedin", "dogecoin", "monero"] },
-];
 
 const CUSTOMIZE = ["Color", "Logo", "Shape", "Gradient", "Eyes", "Frame", "Tracking"] as const;
 
@@ -47,13 +35,17 @@ function contrastRatio(a: string, b: string) {
   return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
 }
 
-export function HeroStudio({ onLocked }: HeroStudioProps) {
-  const [kind, setKind] = useState<QrKind>("url");
-  const [content, setContent] = useState<QrContent>({ url: "" });
-  const [query, setQuery] = useState("");
+export function HeroStudio({ kind, onLocked }: HeroStudioProps) {
+  const [content, setContent] = useState<QrContent>({});
   const [copied, setCopied] = useState(false);
 
   const meta = useMemo(() => KINDS.find((k) => k.kind === kind) ?? KINDS[0]!, [kind]);
+
+  const locked = Boolean(meta.proOnly);
+
+  useEffect(() => {
+    setContent({});
+  }, [kind]);
 
   const payload = buildPayload(kind, content);
   const trimmed = payload.trim();
@@ -70,23 +62,8 @@ export function HeroStudio({ onLocked }: HeroStudioProps) {
     return score;
   }, []);
 
-  const groups = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return HERO_GROUPS;
-    const kinds = HERO_GROUPS.flatMap((g) => g.kinds).filter((k) =>
-      (KINDS.find((m) => m.kind === k)?.label ?? "").toLowerCase().includes(q),
-    );
-    return [{ title: "Results", kinds }];
-  }, [query]);
-
-  const select = (next: QrKind) => {
-    const nextMeta = KINDS.find((k) => k.kind === next);
-    if (nextMeta?.proOnly) return onLocked();
-    setKind(next);
-    setContent({});
-  };
-
   const onPng = async () => {
+    if (locked) return onLocked();
     if (!trimmed) {
       toast.error("Add some content first");
       return;
@@ -101,6 +78,7 @@ export function HeroStudio({ onLocked }: HeroStudioProps) {
   };
 
   const onCopy = async () => {
+    if (locked) return onLocked();
     if (!trimmed) {
       toast.error("Add some content first");
       return;
@@ -142,86 +120,33 @@ export function HeroStudio({ onLocked }: HeroStudioProps) {
         </span>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-[200px_minmax(0,1fr)]">
-        <div className="flex min-h-0 flex-col gap-3">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search QR type…"
-              className="h-9 bg-background pl-8 text-xs"
-            />
-          </div>
-          <div className="max-h-[430px] space-y-3 overflow-y-auto pr-1">
-            {groups.map((group) => (
-              <div key={group.title}>
-                <p className="px-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                  {group.title}
-                </p>
-                <div className="mt-1 space-y-0.5">
-                  {group.kinds.map((k) => {
-                    const kMeta = KINDS.find((m) => m.kind === k)!;
-                    const active = k === kind;
-                    const locked = Boolean(kMeta.proOnly);
-                    return (
-                      <button
-                        key={k}
-                        type="button"
-                        onClick={() => select(k)}
-                        className={cn(
-                          "flex w-full items-center justify-between gap-2 rounded-lg border px-2.5 py-1.5 text-left text-xs transition-all duration-200",
-                          active
-                            ? "border-primary bg-primary text-primary-foreground shadow-[0_2px_16px_rgba(0,0,0,0.4)]"
-                            : "border-transparent text-muted-foreground hover:border-border hover:bg-card hover:text-foreground",
-                          locked && "opacity-60",
-                        )}
-                      >
-                        <span className="flex min-w-0 items-center gap-2">
-                          <span
-                            className={cn(
-                              "h-1.5 w-1.5 shrink-0 rounded-full",
-                              active ? "bg-primary-foreground" : "bg-border",
-                            )}
-                          />
-                          <span className="truncate">{kMeta.label}</span>
-                        </span>
-                        {locked && <Lock className="h-3 w-3 shrink-0 opacity-70" />}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
+        <div className="min-w-0 space-y-2 lg:max-h-[560px] lg:overflow-y-auto lg:pr-1">
+          {meta.fields.map((field) => (
+            <div key={field.name} className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">{field.label}</Label>
+              {field.type === "textarea" ? (
+                <Textarea
+                  value={content[field.name] ?? ""}
+                  placeholder={field.placeholder}
+                  onChange={(e) => setContent((c) => ({ ...c, [field.name]: e.target.value }))}
+                  rows={3}
+                  className="bg-background"
+                />
+              ) : (
+                <Input
+                  value={content[field.name] ?? ""}
+                  type={field.type ?? "text"}
+                  placeholder={field.placeholder}
+                  onChange={(e) => setContent((c) => ({ ...c, [field.name]: e.target.value }))}
+                  className="bg-background"
+                />
+              )}
+            </div>
+          ))}
         </div>
 
         <div className="min-w-0 space-y-3">
-          <div className="space-y-2">
-            {meta.fields.map((field) => (
-              <div key={field.name} className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">{field.label}</Label>
-                {field.type === "textarea" ? (
-                  <Textarea
-                    value={content[field.name] ?? ""}
-                    placeholder={field.placeholder}
-                    onChange={(e) => setContent((c) => ({ ...c, [field.name]: e.target.value }))}
-                    rows={3}
-                    className="bg-background"
-                  />
-                ) : (
-                  <Input
-                    value={content[field.name] ?? ""}
-                    type={field.type ?? "text"}
-                    placeholder={field.placeholder}
-                    onChange={(e) => setContent((c) => ({ ...c, [field.name]: e.target.value }))}
-                    className="bg-background"
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-
           <div className="rounded-2xl bg-white p-3 shadow-xl shadow-black/40">
             <QrPreview
               payload={trimmed || " "}
@@ -239,7 +164,7 @@ export function HeroStudio({ onLocked }: HeroStudioProps) {
 
           <div className="grid grid-cols-3 gap-2">
             <Button type="button" size="sm" onClick={() => void onPng()}>
-              <Download className="h-3.5 w-3.5" /> PNG
+              {locked ? <Lock className="h-3.5 w-3.5" /> : <Download className="h-3.5 w-3.5" />} PNG
             </Button>
             <Button type="button" size="sm" variant="secondary" onClick={onLocked}>
               <Lock className="h-3.5 w-3.5" /> SVG
@@ -249,6 +174,12 @@ export function HeroStudio({ onLocked }: HeroStudioProps) {
               {copied ? "Copied" : "Copy"}
             </Button>
           </div>
+
+          <p className="text-center text-[11px] text-muted-foreground">
+            {locked
+              ? "Sign in free to download, save & customize."
+              : "Free to download — no watermark, ever."}
+          </p>
 
           <div>
             <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">

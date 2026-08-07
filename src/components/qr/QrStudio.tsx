@@ -29,6 +29,7 @@ import { QrPreview } from "@/components/qr/QrPreview";
 import {
   buildQrEps,
   buildQrSvg,
+  analyzeQr,
   downloadEps,
   downloadPdf,
   downloadPng,
@@ -43,6 +44,7 @@ import type {
   Ecc,
   FrameKind,
   GradientType,
+  LogoPlate,
   QrContent,
   QrKind,
   QrStyle,
@@ -69,8 +71,35 @@ interface QrStudioProps {
   onLocked?: () => void;
 }
 
-const SHAPES: DotStyle[] = ["square", "rounded", "dots", "diamond"];
+interface SavedDesign {
+  id: string;
+  name: string;
+  style: QrStyle;
+  updatedAt: number;
+}
+
+const DESIGNS_KEY = "unified-qr:my-designs";
+
+function loadDesigns(): SavedDesign[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(DESIGNS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as SavedDesign[];
+    return Array.isArray(parsed) ? parsed.slice(0, 12) : [];
+  } catch {
+    return [];
+  }
+}
+
+function opaque(s: QrStyle): QrStyle {
+  return s.transparentBg ? { ...s, transparentBg: false } : s;
+}
+
+const SHAPES: DotStyle[] = ["square", "rounded", "dots", "diamond", "circle"];
 const EYE_SHAPES: CornerStyle[] = ["square", "rounded", "circle", "diamond"];
+const LOGO_PLATES: LogoPlate[] = ["none", "rounded", "circle"];
+const EXPORT_SIZES = [512, 1024, 2048] as const;
 
 function toLocalInput(iso: string): string {
   const d = new Date(iso);
@@ -97,6 +126,8 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
     initial?.expiresAt ? toLocalInput(initial.expiresAt) : "",
   );
   const [rules, setRules] = useState<RedirectRulesInput | null>(initial?.redirectRules ?? null);
+  const [exportSize, setExportSize] = useState<number>(1024);
+  const [designs, setDesigns] = useState<SavedDesign[]>(loadDesigns);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const meta = useMemo(() => KINDS.find((k) => k.kind === kind) ?? KINDS[0]!, [kind]);
@@ -114,19 +145,50 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
       return;
     }
     try {
-      const svg = buildQrSvg(payload, style, 1024);
+      const svg = buildQrSvg(payload, style, exportSize);
       if (format === "png") {
-        await downloadPng(svg, filename);
+        await downloadPng(svg, filename, exportSize);
       } else {
         if (!full) return onLocked?.();
         if (format === "svg") downloadSvg(svg, filename);
-        else if (format === "pdf") await downloadPdf(svg, filename);
-        else downloadEps(buildQrEps(payload, style), filename);
+        else if (format === "pdf")
+          await downloadPdf(buildQrSvg(payload, opaque(style), exportSize), filename, exportSize);
+        else downloadEps(buildQrEps(payload, opaque(style)), filename);
       }
       toast.success(`Downloaded ${format.toUpperCase()}`);
     } catch {
       toast.error("Could not export this code");
     }
+  };
+
+  const saveDesign = () => {
+    const design: SavedDesign = {
+      id: slugify(),
+      name: name || meta.label,
+      style: { ...defaultStyle, ...style },
+      updatedAt: Date.now(),
+    };
+    const next = [design, ...designs].slice(0, 12);
+    try {
+      window.localStorage.setItem(DESIGNS_KEY, JSON.stringify(next));
+    } catch {
+      toast.error("Could not save design");
+      return;
+    }
+    setDesigns(next);
+    toast.success("Design saved");
+  };
+
+  const applyDesign = (saved: QrStyle) => setStyle((s) => ({ ...s, ...saved }));
+
+  const deleteDesign = (id: string) => {
+    const next = designs.filter((d) => d.id !== id);
+    try {
+      window.localStorage.setItem(DESIGNS_KEY, JSON.stringify(next));
+    } catch {
+      return;
+    }
+    setDesigns(next);
   };
 
   const copyImage = async () => {
@@ -352,6 +414,40 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
               </div>
             </OptionRow>
 
+            <OptionRow label="My designs">
+              <Button type="button" variant="secondary" size="sm" onClick={saveDesign}>
+                <Save className="mr-1.5 h-3.5 w-3.5" />
+                Save current
+              </Button>
+            </OptionRow>
+            {designs.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 pl-0 sm:pl-32">
+                {designs.map((d) => (
+                  <span
+                    key={d.id}
+                    className="group inline-flex items-center gap-1 rounded-md border border-border py-1 pl-2.5 pr-1 text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => applyDesign(d.style)}
+                      className="max-w-32 truncate"
+                      title={d.name}
+                    >
+                      {d.name}
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`Delete design ${d.name}`}
+                      onClick={() => deleteDesign(d.id)}
+                      className="rounded p-0.5 opacity-60 transition-opacity hover:opacity-100"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+
             <OptionRow label="Module shape">
               {SHAPES.map((d) => (
                 <Chip
@@ -399,6 +495,21 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
                 </Chip>
               ))}
             </OptionRow>
+
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">
+                Quiet zone · margin ({style.margin} modules)
+              </Label>
+              <input
+                type="range"
+                min={0}
+                max={8}
+                step={1}
+                value={style.margin}
+                onChange={(e) => setStyle((s) => ({ ...s, margin: Number(e.target.value) }))}
+                className="w-full"
+              />
+            </div>
 
             <OptionRow label="Frame">
               {FRAMES.map((f) => (
@@ -485,6 +596,48 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
               ))}
             </OptionRow>
 
+            <OptionRow label="Transparent bg">
+              <Switch
+                checked={Boolean(style.transparentBg)}
+                onCheckedChange={(v) => setStyle((s) => ({ ...s, transparentBg: v }))}
+              />
+              <span className="text-xs text-muted-foreground">
+                PNG / SVG only — ideal for print or brand assets
+              </span>
+            </OptionRow>
+
+            {style.logo && (
+              <>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">
+                    Logo size ({Math.round(style.logoScale * 100)}%)
+                  </Label>
+                  <input
+                    type="range"
+                    min={10}
+                    max={30}
+                    step={1}
+                    value={Math.round(style.logoScale * 100)}
+                    onChange={(e) =>
+                      setStyle((s) => ({ ...s, logoScale: Number(e.target.value) / 100 }))
+                    }
+                    className="w-full"
+                  />
+                </div>
+                <OptionRow label="Logo plate">
+                  {LOGO_PLATES.map((p) => (
+                    <Chip
+                      key={p}
+                      active={(style.logoPlate ?? "rounded") === p}
+                      onClick={() => setStyle((s) => ({ ...s, logoPlate: p }))}
+                    >
+                      {p === "rounded" ? "rounded" : p === "circle" ? "circle" : "none"}
+                    </Chip>
+                  ))}
+                </OptionRow>
+              </>
+            )}
+
             <div className="flex flex-wrap items-center gap-3">
               <input
                 ref={fileRef}
@@ -543,6 +696,7 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
 
       <div className="space-y-4 lg:sticky lg:top-6 lg:self-start">
         <QrPreview payload={payload} style={style} />
+        {full && <ScanMeter payload={payload} style={style} />}
         {full && (
           <Input
             value={name}
@@ -550,6 +704,18 @@ export function QrStudio({ mode, initial, saving, onSave, onLocked }: QrStudioPr
             placeholder="Name this code"
             className="bg-card"
           />
+        )}
+        {full && (
+          <div className="space-y-2 rounded-xl border border-border bg-card p-4">
+            <Label className="text-xs text-muted-foreground">Export size</Label>
+            <div className="flex gap-2">
+              {EXPORT_SIZES.map((s) => (
+                <Chip key={s} active={exportSize === s} onClick={() => setExportSize(s)}>
+                  {s}px
+                </Chip>
+              ))}
+            </div>
+          </div>
         )}
         <div className="grid grid-cols-2 gap-2">
           <Button type="button" onClick={() => void download("png")}>
@@ -752,6 +918,43 @@ function ColorField({
           className="bg-background font-mono text-xs"
         />
       </div>
+    </div>
+  );
+}
+
+function ScanMeter({ payload, style }: { payload: string; style: QrStyle }) {
+  const analysis = useMemo(() => analyzeQr(payload, style), [payload, style]);
+  const tone =
+    analysis.label === "Excellent"
+      ? "text-emerald-400"
+      : analysis.label === "Good"
+        ? "text-lime-400"
+        : analysis.label === "At risk"
+          ? "text-amber-400"
+          : "text-red-400";
+  return (
+    <div className="rounded-xl border border-border bg-card p-4">
+      <div className="flex items-center justify-between">
+        <span className="text-xs uppercase tracking-wider text-muted-foreground">Scannability</span>
+        <span className={`text-sm font-semibold ${tone}`}>{analysis.score}/100</span>
+      </div>
+      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-border">
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-red-500 via-amber-400 to-emerald-400"
+          style={{ width: `${analysis.score}%` }}
+        />
+      </div>
+      <p className={`mt-2 text-xs font-medium ${tone}`}>{analysis.label}</p>
+      {analysis.issues.length > 0 && (
+        <ul className="mt-2 space-y-1">
+          {analysis.issues.map((issue) => (
+            <li key={issue} className="flex gap-1.5 text-xs text-muted-foreground">
+              <span className="text-amber-400">•</span>
+              {issue}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
