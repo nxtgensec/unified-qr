@@ -44,7 +44,7 @@ export function PublicLayout({
   return (
     <div className="min-h-screen bg-background pb-16 lg:pb-0">
       <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
-        <div className="mx-auto flex h-header max-w-6xl items-center justify-between gap-4 px-5">
+        <div className="mx-auto flex h-header max-w-6xl items-center justify-between gap-4 px-gutter">
           <Link to="/" className="flex shrink-0 items-center gap-2.5 font-semibold tracking-tight">
             <Logo className="size-7" />
             <span className="hidden sm:inline">Unified QR</span>
@@ -66,14 +66,16 @@ export function PublicLayout({
             ))}
           </nav>
           <div className="flex items-center gap-2">
-            <Button size="icon" variant="ghost" asChild aria-label="GitHub">
-              <a href="https://github.com/nxtgensec/unified-qr" target="_blank" rel="noreferrer">
-                <Github size={20} />
-              </a>
-            </Button>
-            <Button size="sm" onClick={goAuth}>
-              {signedIn ? "Dashboard" : "Sign in"}
-            </Button>
+            <a
+              href="https://github.com/nxtgensec/unified-qr"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="GitHub"
+              className="flex size-10 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <Github className="size-icon-md" />
+            </a>
+            <Button onClick={goAuth}>{signedIn ? "Dashboard" : "Sign in"}</Button>
           </div>
         </div>
       </header>
@@ -154,20 +156,27 @@ export function PublicLayout({
                 key={item.href}
                 href={item.href}
                 aria-current={isActive ? "page" : undefined}
-                className={cn(
-                  "flex flex-col items-center justify-center gap-1 text-[10px] font-medium leading-none transition-colors",
-                  isActive ? "text-foreground" : "text-muted-foreground",
-                )}
+                className="relative flex flex-col items-center justify-center gap-1.5"
               >
+                {isActive && (
+                  <span className="absolute top-1.5 h-0.5 w-8 rounded-full bg-foreground" />
+                )}
+                <item.icon
+                  size={24}
+                  strokeWidth={2}
+                  className={cn(
+                    "transition-colors",
+                    isActive ? "text-foreground" : "text-muted-foreground",
+                  )}
+                />
                 <span
                   className={cn(
-                    "flex h-8 w-12 items-center justify-center rounded-full transition-colors",
-                    isActive ? "bg-foreground text-background" : "text-muted-foreground",
+                    "text-xs font-medium leading-none transition-colors",
+                    isActive ? "text-foreground" : "text-muted-foreground",
                   )}
                 >
-                  <item.icon size={24} strokeWidth={2} />
+                  {item.label}
                 </span>
-                {item.label}
               </a>
             );
           })}

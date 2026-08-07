@@ -101,8 +101,8 @@ export function HeroStudio({ kind, onLocked }: HeroStudioProps) {
   };
 
   return (
-    <div className="relative rounded-3xl border border-border bg-elevated p-4 shadow-2xl shadow-black/50 sm:p-5">
-      <div className="mb-4 flex items-center justify-between gap-3 border-b border-border pb-3">
+    <div className="relative rounded-3xl border border-border bg-elevated p-5 shadow-2xl shadow-black/50">
+      <div className="mb-4 flex items-center justify-between gap-3 border-b border-border pb-4">
         <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest">
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-60" />
@@ -121,7 +121,7 @@ export function HeroStudio({ kind, onLocked }: HeroStudioProps) {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
-        <div className="min-w-0 space-y-2 lg:max-h-[560px] lg:overflow-y-auto lg:pr-1">
+        <div className="min-w-0 space-y-3 lg:max-h-[560px] lg:overflow-y-auto lg:pr-1">
           {meta.fields.map((field) => (
             <div key={field.name} className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">{field.label}</Label>
@@ -147,7 +147,7 @@ export function HeroStudio({ kind, onLocked }: HeroStudioProps) {
         </div>
 
         <div className="min-w-0 space-y-3">
-          <div className="rounded-2xl bg-white p-3 shadow-xl shadow-black/40">
+          <div className="rounded-2xl bg-white p-4 shadow-xl shadow-black/40">
             <QrPreview
               payload={trimmed || " "}
               style={DEMO_STYLE}

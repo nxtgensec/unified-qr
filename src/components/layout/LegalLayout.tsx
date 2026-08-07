@@ -23,7 +23,7 @@ export function LegalLayout({
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
-        <div className="mx-auto flex h-header max-w-6xl items-center justify-between px-5">
+        <div className="mx-auto flex h-header max-w-6xl items-center justify-between px-gutter">
           <Link to="/" className="flex items-center gap-2.5 font-semibold tracking-tight">
             <Logo className="size-7" />
             Unified QR

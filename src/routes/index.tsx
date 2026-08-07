@@ -626,20 +626,27 @@ function MobileNav() {
               key={item.href}
               href={item.href}
               aria-current={isActive ? "page" : undefined}
-              className={cn(
-                "flex flex-col items-center justify-center gap-1 text-[10px] font-medium leading-none transition-colors",
-                isActive ? "text-foreground" : "text-muted-foreground",
-              )}
+              className="relative flex flex-col items-center justify-center gap-1.5"
             >
+              {isActive && (
+                <span className="absolute top-1.5 h-0.5 w-8 rounded-full bg-foreground" />
+              )}
+              <item.icon
+                size={24}
+                strokeWidth={2}
+                className={cn(
+                  "transition-colors",
+                  isActive ? "text-foreground" : "text-muted-foreground",
+                )}
+              />
               <span
                 className={cn(
-                  "flex h-8 w-12 items-center justify-center rounded-full transition-colors",
-                  isActive ? "bg-foreground text-background" : "text-muted-foreground",
+                  "text-xs font-medium leading-none transition-colors",
+                  isActive ? "text-foreground" : "text-muted-foreground",
                 )}
               >
-                <item.icon size={24} strokeWidth={2} />
+                {item.label}
               </span>
-              {item.label}
             </a>
           );
         })}
@@ -663,7 +670,7 @@ function Landing() {
   return (
     <div className="min-h-screen scroll-smooth bg-background pb-16 lg:pb-0">
       <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur">
-        <div className="mx-auto flex h-header max-w-6xl items-center justify-between px-5">
+        <div className="mx-auto flex h-header max-w-6xl items-center justify-between px-gutter">
           <Link to="/" className="flex items-center gap-2.5 font-semibold tracking-tight">
             <Logo className="size-7" />
             <span>Unified QR</span>
@@ -690,14 +697,16 @@ function Landing() {
             )}
           </nav>
           <div className="flex items-center gap-2">
-            <Button size="icon" variant="ghost" asChild aria-label="GitHub">
-              <a href={GITHUB} target="_blank" rel="noreferrer">
-                <Github size={20} />
-              </a>
-            </Button>
-            <Button size="sm" onClick={goAuth}>
-              {signedIn ? "Dashboard" : "Sign in"}
-            </Button>
+            <a
+              href={GITHUB}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="GitHub"
+              className="flex size-10 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <Github className="size-icon-md" />
+            </a>
+            <Button onClick={goAuth}>{signedIn ? "Dashboard" : "Sign in"}</Button>
           </div>
         </div>
       </header>
@@ -721,31 +730,31 @@ function Landing() {
                     type="button"
                     onClick={() => selectHeroKind(chip)}
                     className={cn(
-                      "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition-colors",
+                      "inline-flex h-chip items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-colors",
                       active
                         ? "border-foreground bg-foreground text-background"
                         : "border-border bg-card/60 text-muted-foreground hover:border-foreground/40 hover:text-foreground",
                     )}
                   >
-                    <Icon className="h-4 w-4" />
+                    <Icon className="size-4" />
                     {chipMeta.label}
-                    {chipLocked && <Lock className="h-3 w-3 opacity-60" />}
+                    {chipLocked && <Lock className="size-3 opacity-60" />}
                   </button>
                 );
               })}
               <Link
                 to="/create"
-                className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-border px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground"
+                className="inline-flex h-chip items-center gap-1.5 rounded-full border border-dashed border-border px-3.5 text-sm font-medium text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground"
               >
-                All {KINDS.length} types <ArrowRight className="h-4 w-4" />
+                All {KINDS.length} types <ArrowRight className="size-4" />
               </Link>
             </div>
           </div>
 
           <div className="relative mx-auto grid max-w-6xl gap-14 px-5 pb-20 pt-8 sm:pt-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-center lg:gap-16">
             <div>
-              <span className="hero-enter inline-flex items-center gap-2 rounded-full border border-border bg-card/50 px-3 py-1 text-xs text-muted-foreground">
-                <Globe className="h-3.5 w-3.5" />
+              <span className="hero-enter inline-flex h-chip items-center gap-1.5 rounded-full border border-border bg-card/50 px-3.5 text-sm text-muted-foreground">
+                <Globe className="size-4" />
                 Built by NxtGenSec
               </span>
               <h1 className="hero-enter hero-delay-1 mt-6 text-balance text-4xl font-semibold tracking-tight sm:text-6xl">
@@ -754,7 +763,7 @@ function Landing() {
                   everything QR.
                 </span>
               </h1>
-              <p className="hero-enter hero-delay-2 mt-5 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">
+              <p className="hero-enter hero-delay-2 mt-6 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">
                 Create, customize, manage and track QR codes with enterprise-grade tools —
                 completely free for individuals, open source, privacy-first and built for
                 developers.
@@ -771,9 +780,9 @@ function Landing() {
                 {TRUST.map((item) => (
                   <li
                     key={item.label}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card/50 px-3 py-1.5 text-xs text-muted-foreground"
+                    className="inline-flex h-chip items-center gap-1.5 rounded-full border border-border bg-card/50 px-3.5 text-sm text-muted-foreground"
                   >
-                    <item.icon className="h-3.5 w-3.5" /> {item.label}
+                    <item.icon className="size-4" /> {item.label}
                   </li>
                 ))}
               </ul>

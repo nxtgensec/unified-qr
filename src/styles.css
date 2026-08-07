@@ -58,8 +58,18 @@
   --color-sidebar-ring: var(--sidebar-ring);
   --font-sans: "Inter Tight", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --spacing-gutter: 1rem;
   --spacing-header: 4rem;
   --spacing-tabbar: 4rem;
+  --spacing-chip: 2.25rem;
+  --spacing-btn-sm: 2rem;
+  --spacing-btn: 2.5rem;
+  --spacing-btn-lg: 3rem;
+  --spacing-icon-2xs: 0.75rem;
+  --spacing-icon-xs: 0.875rem;
+  --spacing-icon-sm: 1rem;
+  --spacing-icon-md: 1.25rem;
+  --spacing-icon-lg: 1.5rem;
 }
 
 :root {

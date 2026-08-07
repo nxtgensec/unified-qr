@@ -145,7 +145,7 @@ export function AdminShell({
 
       <div className="lg:pl-60">
         <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
-          <div className="mx-auto flex h-header max-w-6xl items-center gap-3 px-5">
+          <div className="mx-auto flex h-header max-w-6xl items-center gap-3 px-gutter">
             <button
               className="flex size-10 items-center justify-center rounded-md transition-colors hover:bg-muted lg:hidden"
               onClick={() => setOpen(true)}
