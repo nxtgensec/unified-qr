@@ -65,7 +65,7 @@ function RefundsPage() {
 
       <LegalSection title="5. How refunds are paid">
         <p>
-          Refunds go back to the original payment method through Razorpay within 7–10 business days
+          Refunds go back to the original payment method through Cashfree within 7–10 business days
           of approval. You'll get a confirmation email once the refund is issued.
         </p>
       </LegalSection>

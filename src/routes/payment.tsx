@@ -43,8 +43,8 @@ function PaymentPage() {
 
       <LegalSection title="2. How you pay">
         <p>
-          Payments are processed by Razorpay, which supports UPI, credit and debit cards, netbanking
-          and wallets. Your card details go straight to Razorpay and are never handled or stored by
+          Payments are processed by Cashfree, which supports UPI, credit and debit cards, netbanking
+          and wallets. Your card details go straight to Cashfree and are never handled or stored by
           us. You'll receive a receipt by email.
         </p>
       </LegalSection>

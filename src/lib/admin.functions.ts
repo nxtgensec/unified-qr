@@ -243,8 +243,8 @@ export const listAdminUpgradeRequests = createServerFn({ method: "GET" })
       term: r.term,
       amount: r.amount,
       currency: r.currency,
-      orderId: r.razorpay_order_id,
-      paymentId: r.razorpay_payment_id,
+      orderId: r.payment_order_id,
+      paymentId: r.payment_id,
       createdAt: r.created_at,
     }));
   });

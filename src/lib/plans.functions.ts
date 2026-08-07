@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequestUrl } from "@tanstack/react-start/server";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -73,89 +74,155 @@ export const requestUpgrade = createServerFn({ method: "POST" })
     return { ok: true, id: data.id };
   });
 
-export type RazorpayOrderResult =
-  | { available: false }
-  | { available: true; orderId: string; amount: number; currency: string; keyId: string };
+const CASHFREE_API_VERSION = "2026-01-01";
 
-export const createRazorpayOrder = createServerFn({ method: "POST" })
+function cashfreeConfig() {
+  const clientId = process.env["CASHFREE_CLIENT_ID"];
+  const secretKey = process.env["CASHFREE_SECRET_KEY"];
+  if (!clientId || !secretKey) return null;
+  const mode: "sandbox" | "production" =
+    process.env["CASHFREE_ENVIRONMENT"] === "sandbox" ? "sandbox" : "production";
+  const baseUrl =
+    mode === "sandbox" ? "https://sandbox.cashfree.com/pg" : "https://api.cashfree.com/pg";
+  return { clientId, secretKey, mode, baseUrl };
+}
+
+function cashfreeHeaders(clientId: string, secretKey: string) {
+  return {
+    "x-client-id": clientId,
+    "x-client-secret": secretKey,
+    "x-api-version": CASHFREE_API_VERSION,
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  };
+}
+
+export type CashfreeOrderResult =
+  | { available: false }
+  | {
+      available: true;
+      orderId: string;
+      paymentSessionId: string;
+      amount: number;
+      currency: string;
+      mode: "production" | "sandbox";
+    };
+
+export const createCashfreeOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((input: unknown) =>
     z.object({ term: z.enum(["daily", "weekly", "monthly", "yearly"]) }).parse(input),
   )
-  .handler(async ({ data, context }): Promise<RazorpayOrderResult> => {
-    const keyId = process.env["RAZORPAY_KEY_ID"];
-    const keySecret = process.env["RAZORPAY_KEY_SECRET"];
-    if (!keyId || !keySecret) return { available: false };
+  .handler(async ({ data, context }): Promise<CashfreeOrderResult> => {
+    const config = cashfreeConfig();
+    if (!config) return { available: false };
 
-    const amount = termPaise(data.term);
+    const { data: profile } = await context.supabase
+      .from("profiles")
+      .select("email, full_name")
+      .eq("id", context.userId)
+      .maybeSingle();
 
-    const auth = Buffer.from(`${keyId}:${keySecret}`).toString("base64");
-    const res = await fetch("https://api.razorpay.com/v1/orders", {
+    const amountPaise = termPaise(data.term);
+    const orderId = `ent-${context.userId.slice(0, 8)}-${Date.now().toString(36)}`;
+    const origin = getRequestUrl({ xForwardedHost: true, xForwardedProto: true }).origin;
+
+    const res = await fetch(`${config.baseUrl}/orders`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Basic ${auth}`,
-      },
+      headers: cashfreeHeaders(config.clientId, config.secretKey),
       body: JSON.stringify({
-        amount,
-        currency: ENTERPRISE_CURRENCY,
-        receipt: `ent-${context.userId.slice(0, 8)}-${data.term}`,
-        notes: { userId: context.userId, term: data.term },
+        order_id: orderId,
+        order_amount: amountPaise / 100,
+        order_currency: ENTERPRISE_CURRENCY,
+        customer_details: {
+          customer_id: context.userId,
+          customer_name: profile?.full_name ?? "Unified QR customer",
+          customer_email: profile?.email ?? "support@nxtgensec.org",
+          customer_phone: "9999999999",
+        },
+        order_meta: {
+          return_url: `${origin}/app/settings?order_id={order_id}`,
+        },
+        order_note: `Enterprise ${data.term} plan`,
+        order_tags: { userId: context.userId, term: data.term },
       }),
     });
     if (!res.ok) {
       const body = await res.text().catch(() => "");
-      throw new Error(`Razorpay order failed (${res.status}): ${body}`);
+      throw new Error(`Cashfree order failed (${res.status}): ${body}`);
     }
 
-    const order = (await res.json()) as { id: string; amount: number; currency: string };
+    const order = (await res.json()) as {
+      order_id: string;
+      payment_session_id: string;
+      order_amount: number;
+      order_currency: string;
+    };
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin.from("upgrade_requests").insert({
       user_id: context.userId,
       plan_tier: "enterprise",
       status: "pending",
-      amount: order.amount,
-      currency: order.currency,
+      amount: amountPaise,
+      currency: order.order_currency,
       term: data.term,
-      razorpay_order_id: order.id,
+      payment_order_id: order.order_id,
     });
 
     return {
       available: true,
-      orderId: order.id,
-      amount: order.amount,
-      currency: order.currency,
-      keyId,
+      orderId: order.order_id,
+      paymentSessionId: order.payment_session_id,
+      amount: order.order_amount,
+      currency: order.order_currency,
+      mode: config.mode,
     };
   });
 
-export const verifyRazorpayPayment = createServerFn({ method: "POST" })
+export const verifyCashfreePayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: unknown) =>
-    z
-      .object({
-        term: z.enum(["daily", "weekly", "monthly", "yearly"]),
-        razorpayOrderId: z.string().min(1),
-        razorpayPaymentId: z.string().min(1),
-        razorpaySignature: z.string().min(1),
-      })
-      .parse(input),
-  )
+  .validator((input: unknown) => z.object({ orderId: z.string().min(1) }).parse(input))
   .handler(async ({ data, context }) => {
-    const keySecret = process.env["RAZORPAY_KEY_SECRET"];
-    if (!keySecret) throw new Error("Payments are not configured yet.");
+    const config = cashfreeConfig();
+    if (!config) throw new Error("Payments are not configured yet.");
 
-    const { createHmac } = await import("node:crypto");
-    const expected = createHmac("sha256", keySecret)
-      .update(`${data.razorpayOrderId}|${data.razorpayPaymentId}`)
-      .digest("hex");
-    if (expected !== data.razorpaySignature) {
-      throw new Error("Payment verification failed.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: request } = await supabaseAdmin
+      .from("upgrade_requests")
+      .select("id, term, status")
+      .eq("payment_order_id", data.orderId)
+      .eq("user_id", context.userId)
+      .maybeSingle();
+    if (!request) throw new Error("Upgrade request not found.");
+    if (request.status === "paid") return { ok: true };
+
+    const res = await fetch(`${config.baseUrl}/orders/${encodeURIComponent(data.orderId)}`, {
+      method: "GET",
+      headers: cashfreeHeaders(config.clientId, config.secretKey),
+    });
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      throw new Error(`Cashfree verification failed (${res.status}): ${body}`);
+    }
+    const order = (await res.json()) as { order_status: string };
+    if (order.order_status !== "PAID") throw new Error("Payment has not been completed.");
+
+    let paymentId: string | null = null;
+    const paymentsRes = await fetch(
+      `${config.baseUrl}/orders/${encodeURIComponent(data.orderId)}/payments`,
+      { method: "GET", headers: cashfreeHeaders(config.clientId, config.secretKey) },
+    );
+    if (paymentsRes.ok) {
+      const payments = (await paymentsRes.json()) as
+        { data?: { cf_payment_id?: string }[] } | { cf_payment_id?: string }[];
+      const list = Array.isArray(payments) ? payments : (payments.data ?? []);
+      paymentId = list.find((p) => p.cf_payment_id)?.cf_payment_id ?? null;
     }
 
-    const planUntil = planUntilForTerm(data.term).toISOString();
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    if (!request.term) throw new Error("Upgrade request is missing its term.");
+    const planUntil = planUntilForTerm(request.term as BillingTerm).toISOString();
 
     const { error: updateError } = await supabaseAdmin
       .from("profiles")
@@ -167,12 +234,9 @@ export const verifyRazorpayPayment = createServerFn({ method: "POST" })
       .from("upgrade_requests")
       .update({
         status: "paid",
-        term: data.term,
-        razorpay_payment_id: data.razorpayPaymentId,
-        razorpay_signature: data.razorpaySignature,
+        payment_id: paymentId,
       })
-      .eq("razorpay_order_id", data.razorpayOrderId)
-      .eq("user_id", context.userId);
+      .eq("id", request.id);
 
     return { ok: true };
   });

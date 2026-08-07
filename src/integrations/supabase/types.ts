@@ -63,9 +63,9 @@ export type Database = {
           currency: string;
           id: string;
           plan_tier: string;
-          razorpay_order_id: string | null;
-          razorpay_payment_id: string | null;
-          razorpay_signature: string | null;
+          payment_order_id: string | null;
+          payment_id: string | null;
+          payment_signature: string | null;
           status: string;
           term: string | null;
           updated_at: string;
@@ -77,9 +77,9 @@ export type Database = {
           currency?: string;
           id?: string;
           plan_tier?: string;
-          razorpay_order_id?: string | null;
-          razorpay_payment_id?: string | null;
-          razorpay_signature?: string | null;
+          payment_order_id?: string | null;
+          payment_id?: string | null;
+          payment_signature?: string | null;
           status?: string;
           term?: string | null;
           updated_at?: string;
@@ -91,9 +91,9 @@ export type Database = {
           currency?: string;
           id?: string;
           plan_tier?: string;
-          razorpay_order_id?: string | null;
-          razorpay_payment_id?: string | null;
-          razorpay_signature?: string | null;
+          payment_order_id?: string | null;
+          payment_id?: string | null;
+          payment_signature?: string | null;
           status?: string;
           term?: string | null;
           updated_at?: string;

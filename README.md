@@ -66,7 +66,7 @@ This creates six tables with Row Level Security:
 | `qr_codes`         | Saved QR codes with style, content, dynamic link slug, scan count          |
 | `qr_scans`         | Per-scan records (device, country, referrer, timestamp)                    |
 | `visits`           | Daily site visitors (visitor cookie + per-day rollup)                      |
-| `upgrade_requests` | Enterprise upgrade ledger (manual requests and Razorpay order/payment ids) |
+| `upgrade_requests` | Enterprise upgrade ledger (manual requests and Cashfree order/payment ids) |
 | `admins`           | Admin allow-list (email) — service role only, no RLS policies              |
 
 ### Plans & Payments
@@ -77,10 +77,10 @@ Accounts default to the free **Professional** plan (`profiles.plan_tier = 'profe
 Enterprise access lasts until `profiles.plan_until` (set from the purchased daily/weekly/monthly/
 yearly term) and does not auto-renew — expired access falls back to Professional limits.
 
-Enterprise payments use Razorpay. Set `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` in your
+Enterprise payments use Cashfree. Set `CASHFREE_CLIENT_ID` and `CASHFREE_SECRET_KEY` in your
 environment to enable live checkout. Until they're set, the upgrade button creates a
 `pending` row in `upgrade_requests` for manual follow-up. Legal pages live at `/privacy`,
-`/terms`, `/payment` and `/refunds`.
+`/terms`, `/payment`, `/refunds` and `/contact`.
 
 ### Admin Panel
 
@@ -162,7 +162,7 @@ src/
     qr/render.ts           # Custom SVG renderer, PNG/SVG export, slug generator
     codes.functions.ts     # Server functions — CRUD for codes, analytics query
     plans.ts               # Plan definitions, term pricing, plan expiry helpers
-    plans.functions.ts     # Server functions — plan status, Razorpay order/verify, manual upgrade
+    plans.functions.ts     # Server functions — plan status, Cashfree order/verify, manual upgrade
     admin.functions.ts     # Server functions — admin panel data + actions (admin-gated)
     utils.ts               # cn() utility (clsx + tailwind-merge)
   integrations/

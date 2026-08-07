@@ -641,7 +641,7 @@ const PRICING_FAQ = [
   },
   {
     q: "What payment methods do you accept?",
-    a: "Enterprise is billed in INR through Razorpay, with daily, weekly, monthly and yearly options. See the Payment policy for details.",
+    a: "Enterprise is billed in INR through Cashfree, with daily, weekly, monthly and yearly options. See the Payment policy for details.",
   },
 ];
 

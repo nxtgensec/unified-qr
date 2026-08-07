@@ -45,7 +45,7 @@ function PrivacyPage() {
         </p>
         <p>
           <strong className="text-foreground">Payments.</strong> Card and payment details are
-          processed entirely by Razorpay. We never see or store your card number. We keep the order
+          processed entirely by Cashfree. We never see or store your card number. We keep the order
           and payment identifiers needed to confirm your purchase.
         </p>
       </LegalSection>
@@ -70,7 +70,7 @@ function PrivacyPage() {
       <LegalSection title="4. Where your data lives">
         <p>
           Data is stored in Postgres on Supabase, with each account's records isolated by row-level
-          security. The site is hosted on Vercel. Payments are processed by Razorpay, a regulated
+          security. The site is hosted on Vercel. Payments are processed by Cashfree, a regulated
           Indian payment provider.
         </p>
       </LegalSection>
@@ -78,7 +78,7 @@ function PrivacyPage() {
       <LegalSection title="5. Data sharing">
         <p>
           We share data only with the processors needed to operate the service — Supabase
-          (database), Vercel (hosting) and Razorpay (payments) — and only to the extent they need
+          (database), Vercel (hosting) and Cashfree (payments) — and only to the extent they need
           it. We never sell or rent your data.
         </p>
       </LegalSection>

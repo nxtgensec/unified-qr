@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { exportBackup, toBackupCode } from "@/lib/backup";
 import type { BackupCode } from "@/lib/backup";
 import { importCodes, listCodes } from "@/lib/codes.functions";
-import { getMyPlan } from "@/lib/plans.functions";
+import { getMyPlan, verifyCashfreePayment } from "@/lib/plans.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/settings")({
@@ -36,11 +36,34 @@ function SettingsPage() {
   const queryClient = useQueryClient();
   const fetchPlan = useServerFn(getMyPlan);
   const fetchCodes = useServerFn(listCodes);
+  const verifyPayment = useServerFn(verifyCashfreePayment);
   const { data: plan, isLoading } = useQuery({
     queryKey: ["plan"],
     queryFn: () => fetchPlan(),
     staleTime: 60_000,
   });
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const orderId = params.get("order_id");
+    if (!orderId) return;
+    void (async () => {
+      try {
+        await verifyPayment({ data: { orderId } });
+        toast.success("Welcome to Enterprise!");
+        void queryClient.invalidateQueries({ queryKey: ["plan"] });
+        void queryClient.invalidateQueries({ queryKey: ["codes"] });
+        void queryClient.invalidateQueries({ queryKey: ["analytics"] });
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Payment could not be verified.");
+      } finally {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("order_id");
+        url.searchParams.delete("order_status");
+        window.history.replaceState({}, "", url.toString());
+      }
+    })();
+  }, [verifyPayment, queryClient]);
 
   const importMutation = useMutation({
     mutationFn: (codes: unknown) => importCodes({ data: { codes } }),
