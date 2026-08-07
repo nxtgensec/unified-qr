@@ -65,6 +65,12 @@ export const requestUpgrade = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error: profileError } = await context.supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", context.userId)
+      .single();
+    if (profileError) throw new Error("Unauthorized");
     const { data, error } = await supabaseAdmin
       .from("upgrade_requests")
       .insert({ user_id: context.userId, plan_tier: "enterprise", status: "pending" })
@@ -141,7 +147,7 @@ export const createCashfreeOrder = createServerFn({ method: "POST" })
           customer_phone: "9999999999",
         },
         order_meta: {
-          return_url: `${origin}/app/settings?order_id={order_id}`,
+          return_url: `${origin}/settings?order_id={order_id}`,
         },
         order_note: `Enterprise ${data.term} plan`,
         order_tags: { userId: context.userId, term: data.term },
@@ -187,11 +193,18 @@ export const verifyCashfreePayment = createServerFn({ method: "POST" })
     const config = cashfreeConfig();
     if (!config) throw new Error("Payments are not configured yet.");
 
+    const { error: profileError } = await context.supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", context.userId)
+      .single();
+    if (profileError) throw new Error("Unauthorized");
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: request } = await supabaseAdmin
       .from("upgrade_requests")
-      .select("id, term, status")
+      .select("id, term, status, amount")
       .eq("payment_order_id", data.orderId)
       .eq("user_id", context.userId)
       .maybeSingle();
@@ -206,8 +219,23 @@ export const verifyCashfreePayment = createServerFn({ method: "POST" })
       const body = await res.text().catch(() => "");
       throw new Error(`Cashfree verification failed (${res.status}): ${body}`);
     }
-    const order = (await res.json()) as { order_status: string };
+    const order = (await res.json()) as {
+      order_status: string;
+      order_amount?: number;
+      order_currency?: string;
+    };
     if (order.order_status !== "PAID") throw new Error("Payment has not been completed.");
+    if (order.order_currency && order.order_currency !== ENTERPRISE_CURRENCY) {
+      throw new Error("Payment currency mismatch.");
+    }
+    if (
+      request.amount &&
+      request.amount > 0 &&
+      order.order_amount != null &&
+      Math.round(Number(order.order_amount) * 100) !== request.amount
+    ) {
+      throw new Error("Payment amount mismatch.");
+    }
 
     let paymentId: string | null = null;
     const paymentsRes = await fetch(

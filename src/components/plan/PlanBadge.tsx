@@ -1,20 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { Sparkles } from "lucide-react";
 
-import { getMyPlan } from "@/lib/plans.functions";
+import { fetchMyPlan } from "@/lib/client-queries";
 import { cn } from "@/lib/utils";
 
 export function PlanBadge({ className }: { className?: string }) {
-  const fetch = useServerFn(getMyPlan);
   const { data } = useQuery({
     queryKey: ["plan"],
-    queryFn: () => fetch(),
+    queryFn: fetchMyPlan,
     staleTime: 60_000,
   });
 
-  const enterprise = data?.plan === "enterprise";
+  const enterprise = data === "enterprise";
 
   return (
     <Link

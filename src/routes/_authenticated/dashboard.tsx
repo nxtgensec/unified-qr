@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import {
   ArrowRight,
   BarChart3,
@@ -18,7 +17,7 @@ import { toast } from "sonner";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { listCodes } from "@/lib/codes.functions";
+import { fetchMyCodes } from "@/lib/client-queries";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -33,11 +32,10 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function Dashboard() {
-  const fetchCodes = useServerFn(listCodes);
   const [copied, setCopied] = useState<string | null>(null);
   const { data, isLoading } = useQuery({
     queryKey: ["codes"],
-    queryFn: () => fetchCodes(),
+    queryFn: fetchMyCodes,
     staleTime: 30_000,
   });
 
