@@ -804,7 +804,7 @@ function Landing() {
                 <Globe className="h-3.5 w-3.5" />
                 Built by NxtGenSec
               </span>
-              <h1 className="hero-enter hero-delay-1 mt-6 text-balance text-5xl font-semibold tracking-tight sm:text-6xl">
+              <h1 className="hero-enter hero-delay-1 mt-6 text-balance text-4xl font-semibold tracking-tight sm:text-6xl">
                 The open platform for{" "}
                 <span className="bg-gradient-to-b from-foreground to-foreground/55 bg-clip-text text-transparent">
                   everything QR.
@@ -1563,26 +1563,28 @@ function Landing() {
               </div>
             </div>
 
-            <div className="mt-14 rounded-2xl border border-border bg-card">
-              <div className="grid grid-cols-[minmax(0,1fr)_88px_88px] gap-3 border-b border-border px-5 py-3 text-xs uppercase tracking-wider text-muted-foreground sm:px-7">
-                <span>Feature</span>
-                <span className="text-center">Professional</span>
-                <span className="text-center">Enterprise</span>
-              </div>
-              {PLAN_MATRIX.map((row) => (
-                <div
-                  key={row.feature}
-                  className="grid grid-cols-[minmax(0,1fr)_88px_88px] items-center gap-3 border-b border-border px-5 py-3.5 text-sm last:border-b-0 sm:px-7"
-                >
-                  <span className="font-medium">{row.feature}</span>
-                  <span className="flex justify-center">
-                    <PricingCell value={row.free} />
-                  </span>
-                  <span className="flex justify-center">
-                    <PricingCell value={row.pro} />
-                  </span>
+            <div className="mt-14 overflow-x-auto rounded-2xl border border-border bg-card">
+              <div className="min-w-[420px]">
+                <div className="grid grid-cols-[minmax(0,1fr)_88px_88px] gap-3 border-b border-border px-5 py-3 text-xs uppercase tracking-wider text-muted-foreground sm:px-7">
+                  <span>Feature</span>
+                  <span className="text-center">Professional</span>
+                  <span className="text-center">Enterprise</span>
                 </div>
-              ))}
+                {PLAN_MATRIX.map((row) => (
+                  <div
+                    key={row.feature}
+                    className="grid grid-cols-[minmax(0,1fr)_88px_88px] items-center gap-3 border-b border-border px-5 py-3.5 text-sm last:border-b-0 sm:px-7"
+                  >
+                    <span className="font-medium">{row.feature}</span>
+                    <span className="flex justify-center">
+                      <PricingCell value={row.free} />
+                    </span>
+                    <span className="flex justify-center">
+                      <PricingCell value={row.pro} />
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="mt-10 rounded-2xl border border-border bg-elevated p-6 sm:p-8">

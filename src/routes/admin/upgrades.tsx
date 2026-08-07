@@ -56,38 +56,56 @@ function AdminUpgrades() {
       {isLoading ? (
         <Skeleton className="h-96" />
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-border bg-card">
-          <table className="w-full min-w-[760px] text-left text-sm">
-            <thead>
-              <tr className="border-b border-border text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="px-4 py-3 font-medium">Created</th>
-                <th className="px-4 py-3 font-medium">User</th>
-                <th className="px-4 py-3 font-medium">Term</th>
-                <th className="px-4 py-3 font-medium">Amount</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(data ?? []).length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
-                    No upgrade requests yet.
-                  </td>
+        <>
+          <div className="hidden overflow-x-auto rounded-xl border border-border bg-card md:block">
+            <table className="w-full min-w-[760px] text-left text-sm">
+              <thead>
+                <tr className="border-b border-border text-[11px] uppercase tracking-wider text-muted-foreground">
+                  <th className="px-4 py-3 font-medium">Created</th>
+                  <th className="px-4 py-3 font-medium">User</th>
+                  <th className="px-4 py-3 font-medium">Term</th>
+                  <th className="px-4 py-3 font-medium">Amount</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Actions</th>
                 </tr>
-              ) : (
-                (data ?? []).map((r) => (
-                  <Row
-                    key={r.id}
-                    request={r}
-                    busy={mutation.isPending}
-                    onMarkPaid={(term) => mutation.mutate({ upgradeId: r.id, term })}
-                  />
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {(data ?? []).length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                      No upgrade requests yet.
+                    </td>
+                  </tr>
+                ) : (
+                  (data ?? []).map((r) => (
+                    <Row
+                      key={r.id}
+                      request={r}
+                      busy={mutation.isPending}
+                      onMarkPaid={(term) => mutation.mutate({ upgradeId: r.id, term })}
+                    />
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+          <div className="space-y-3 md:hidden">
+            {(data ?? []).length === 0 ? (
+              <div className="rounded-xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">
+                No upgrade requests yet.
+              </div>
+            ) : (
+              (data ?? []).map((r) => (
+                <MobileCard
+                  key={r.id}
+                  request={r}
+                  busy={mutation.isPending}
+                  onMarkPaid={(term) => mutation.mutate({ upgradeId: r.id, term })}
+                />
+              ))
+            )}
+          </div>
+        </>
       )}
     </AdminShell>
   );
@@ -102,7 +120,6 @@ function Row({
   busy: boolean;
   onMarkPaid: (term: BillingTerm) => void;
 }) {
-  const [term, setTerm] = useState<BillingTerm>((request.term as BillingTerm | null) ?? "monthly");
   const pending = request.status === "pending";
 
   return (
@@ -124,38 +141,112 @@ function Row({
         {request.amount > 0 ? `${formatPaise(request.amount)} ${request.currency}` : "—"}
       </td>
       <td className="px-4 py-3">
-        <span
-          className={`rounded-full border px-2 py-0.5 text-[11px] capitalize ${
-            pending
-              ? "border-amber-500/40 bg-amber-500/10 text-amber-400"
-              : "border-emerald-500/40 bg-emerald-500/10 text-emerald-400"
-          }`}
-        >
-          {request.status}
-        </span>
+        <StatusBadge status={request.status} />
       </td>
       <td className="px-4 py-3">
         {pending ? (
-          <div className="flex items-center gap-2">
-            <select
-              value={term}
-              onChange={(e) => setTerm(e.target.value as BillingTerm)}
-              className="rounded-lg border border-input bg-background px-2 py-1.5 text-xs capitalize focus:outline-none focus:ring-1 focus:ring-ring"
-            >
-              {TERMS.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-            <Button size="sm" variant="secondary" disabled={busy} onClick={() => onMarkPaid(term)}>
-              Mark paid
-            </Button>
-          </div>
+          <MarkPaid busy={busy} onMarkPaid={onMarkPaid} />
         ) : (
           <span className="text-xs text-muted-foreground">—</span>
         )}
       </td>
     </tr>
+  );
+}
+
+function MobileCard({
+  request,
+  busy,
+  onMarkPaid,
+}: {
+  request: AdminUpgradeRequest;
+  busy: boolean;
+  onMarkPaid: (term: BillingTerm) => void;
+}) {
+  const pending = request.status === "pending";
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-medium">{request.email || "unknown"}</p>
+          <p className="truncate text-[11px] text-muted-foreground">
+            {request.orderId ?? "no order"}
+          </p>
+        </div>
+        <StatusBadge status={request.status} />
+      </div>
+      <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+        <div>
+          <dt className="text-muted-foreground">Created</dt>
+          <dd className="mt-0.5">
+            {new Date(request.createdAt).toLocaleString("en-IN", {
+              day: "numeric",
+              month: "short",
+              hour: "numeric",
+              minute: "2-digit",
+            })}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-muted-foreground">Term</dt>
+          <dd className="mt-0.5 capitalize">{request.term ?? "—"}</dd>
+        </div>
+        <div>
+          <dt className="text-muted-foreground">Amount</dt>
+          <dd className="mt-0.5">
+            {request.amount > 0 ? `${formatPaise(request.amount)} ${request.currency}` : "—"}
+          </dd>
+        </div>
+      </dl>
+      {pending && (
+        <div className="mt-3 border-t border-border pt-3">
+          <MarkPaid busy={busy} onMarkPaid={onMarkPaid} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const pending = status === "pending";
+  return (
+    <span
+      className={`shrink-0 rounded-full border px-2 py-0.5 text-[11px] capitalize ${
+        pending
+          ? "border-amber-500/40 bg-amber-500/10 text-amber-400"
+          : "border-emerald-500/40 bg-emerald-500/10 text-emerald-400"
+      }`}
+    >
+      {status}
+    </span>
+  );
+}
+
+function MarkPaid({
+  busy,
+  onMarkPaid,
+}: {
+  busy: boolean;
+  onMarkPaid: (term: BillingTerm) => void;
+}) {
+  const [term, setTerm] = useState<BillingTerm>("monthly");
+  return (
+    <div className="flex items-center gap-2">
+      <select
+        value={term}
+        onChange={(e) => setTerm(e.target.value as BillingTerm)}
+        className="rounded-lg border border-input bg-background px-2 py-1.5 text-xs capitalize focus:outline-none focus:ring-1 focus:ring-ring"
+      >
+        {TERMS.map((t) => (
+          <option key={t} value={t}>
+            {t}
+          </option>
+        ))}
+      </select>
+      <Button size="sm" variant="secondary" disabled={busy} onClick={() => onMarkPaid(term)}>
+        Mark paid
+      </Button>
+    </div>
   );
 }

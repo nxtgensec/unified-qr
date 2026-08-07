@@ -147,6 +147,7 @@ export function DashboardShell({
                   Admin panel
                 </Link>
               )}
+              <PlanBadge className="w-full justify-center" />
               <Button
                 variant="ghost"
                 size="sm"

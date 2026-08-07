@@ -692,7 +692,7 @@ function SelectField({
 function OptionRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="w-32 shrink-0 text-xs text-muted-foreground">{label}</span>
+      <span className="w-full shrink-0 text-xs text-muted-foreground sm:w-32">{label}</span>
       {children}
     </div>
   );

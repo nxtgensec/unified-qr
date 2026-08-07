@@ -222,22 +222,25 @@ function CodesPage() {
                     </div>
 
                     {editing === code.id ? (
-                      <div className="mt-4 flex gap-2">
+                      <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                         <Input
                           value={draft}
                           onChange={(e) => setDraft(e.target.value)}
                           placeholder="https://new-destination.com"
+                          className="sm:flex-1"
                         />
-                        <Button
-                          size="sm"
-                          disabled={updateMutation.isPending}
-                          onClick={() => updateMutation.mutate({ id: code.id, targetUrl: draft })}
-                        >
-                          Save
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={() => setEditing(null)}>
-                          Cancel
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            disabled={updateMutation.isPending}
+                            onClick={() => updateMutation.mutate({ id: code.id, targetUrl: draft })}
+                          >
+                            Save
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => setEditing(null)}>
+                            Cancel
+                          </Button>
+                        </div>
                       </div>
                     ) : (
                       <div className="mt-4 flex flex-wrap gap-2">
